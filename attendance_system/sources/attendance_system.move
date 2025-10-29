@@ -24,7 +24,18 @@ module attendance_system::attendance_system {
     }
 
     #[test_only]
-    use sui::
+    use sui::test_scenario as ts;
+    #[test_only]
+    use sui::test_utils::{destroy};
+    
+
+    #[test]
+    public fun test_that_test_scenerio_works() {
+        let mut test = ts::begin(@USER);
+        init(test.ctx());
+        test.next_tx(@USER);
+        test.end();
+    }
 
 
 }
