@@ -14,16 +14,6 @@ module attendance_system::attendance_system;
         number_of_students: u64,
     }
 
-    public fun register_student(name: String, card_id: String, department: String, ctx: &mut TxContext) {
-        let new_strudent: Student = Student{
-            id :object::new(ctx),
-            name,
-            department, 
-            card_id, 
-        }
-
-    }
-
     fun init(ctx: &mut TxContext) {
         let attendance_list = AttendanceList {
             id: object::new(ctx),
@@ -33,16 +23,50 @@ module attendance_system::attendance_system;
         sui::transfer::transfer(attendance_list, ctx.sender())
     }
 
-    #[test_only]
-    use sui::test_scenario as ts;
-    #[test_only]
-    use sui::test_utils::{destroy};
+    public fun register_student(name: String, card_id: String, department: String, ctx: &mut TxContext) {
+        let new_student = Student{
+            id :object::new(ctx),
+            name,
+            department,
+            card_id, 
+        };
+        sui::transfer::public_transfer(new_student, ctx.sender());
+
+    }
+
     
 
-    #[test]
-    public fun test_that_test_scenerio_works() {
-        let mut test = ts::begin(@USER);
-        init(test.ctx());
-        test.next_tx(@USER);
-        test.end();
+    #[test_only]
+    public fun init_for_testing(ctx: &mut TxContext) {
+        init(ctx)
     }
+
+    #[test_only]
+    public fun get_number_student_student_created(attendance_list: AttendanceList) {
+        attendance_list.number_of_students
+    }
+
+
+
+
+//do things from here
+    public fun register_student(
+    attendance_list: &mut AttendanceList,
+    name: String,
+    card_id: String,
+    department: String,
+    ctx: &mut TxContext
+): Student {
+    let new_student = Student {
+        id: object::new(ctx),
+        name,
+        department,
+        card_id,
+    };
+    // Increment counter
+    attendance_list.number_of_students = attendance_list.number_of_students + 1;
+
+    sui::transfer::public_transfer(new_student, ctx.sender());
+    new_student
+}
+
