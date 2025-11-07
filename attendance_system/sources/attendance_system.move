@@ -1,17 +1,27 @@
-module attendance_system::attendance_system {
+module attendance_system::attendance_system;
     use std::string::String;
 
 
-    // public struct Student has key, store {
-    //     id: object::UID,
-    //     name: String,
-    //     department: String,
-    //     card_id: String
-    // }
+    public struct Student has key, store {
+        id: object::UID,
+        name: String,
+        department: String,
+        card_id: String
+    }
 
     public struct AttendanceList has key {
         id: object::UID,
         number_of_students: u64,
+    }
+
+    public fun register_student(name: String, card_id: String, department: String, ctx: &mut TxContext) {
+        let new_strudent: Student = Student{
+            id :object::new(ctx),
+            name,
+            department, 
+            card_id, 
+        }
+
     }
 
     fun init(ctx: &mut TxContext) {
@@ -36,6 +46,3 @@ module attendance_system::attendance_system {
         test.next_tx(@USER);
         test.end();
     }
-
-
-}
