@@ -17,7 +17,6 @@ module attendance_system::attendance_system {
         name: String,
         owner: address,
         students: vector<address>,
-        // Map student address to vector of attendance record addresses
         records_by_student: table::Table<address, vector<address>>,
     }
 
@@ -112,7 +111,6 @@ module attendance_system::attendance_system {
 
         let the_address: address = student.id.to_address();
         vector::push_back(&mut org.students, the_address);
-        // Initialize empty attendance vector for this student
         table::add(&mut org.records_by_student, the_address, vector::empty<address>());
         transfer::public_transfer(student, ctx.sender());
 
@@ -141,8 +139,6 @@ module attendance_system::attendance_system {
             timestamp,
         };
         let rec_addr: address = rec.id.to_address();
-
-        // Add record address to the student's vector in the table
         let records_vec = table::borrow_mut(&mut org.records_by_student, student_addr);
         vector::push_back(records_vec, rec_addr);
 
@@ -160,7 +156,6 @@ module attendance_system::attendance_system {
         }
     }
 
-    /// Get all attendance record addresses for a student
     public fun get_attendance_records_for_student(
         org: &AttendanceOrganisation,
         student_addr: address
@@ -183,7 +178,8 @@ module attendance_system::attendance_system {
 
     #[test_only]
     public fun init_for_testing(ctx: &mut TxContext) { init(ctx); }
-
+    
+    #[test_only]
     public fun get_student_address(organisation: &AttendanceOrganisation, index: u64): address {
           *vector::borrow(&organisation.students, index)
     }
