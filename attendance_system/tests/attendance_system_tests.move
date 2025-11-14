@@ -4,7 +4,7 @@ module attendance_system::attendance_system_tests {
     use sui::test_utils::{destroy};
     use attendance_system::attendance_system::{Self, AttendanceSystem, Student, AttendanceRecord, AttendanceOrganisation};
     use std::unit_test::assert_eq;
-
+    use std::vector;
 
     #[test]
     public fun test_to_register_to_create_organisation() {
@@ -12,7 +12,7 @@ module attendance_system::attendance_system_tests {
         attendance_system::init_for_testing(test.ctx());
         test.next_tx(@USER);
 
-        // Get the AttendanceOrganisation object from sender
+        // Get the AttendanceSystem object from sender
         let mut attendance_system = ts::take_from_sender<AttendanceSystem>(&mut test);
 
         let new_organization = attendance_system::create_organisation(&mut attendance_system, b"Sui hub".to_string(), test.ctx());
@@ -36,7 +36,7 @@ module attendance_system::attendance_system_tests {
         let number_of_created_organizations = attendance_system::get_number_of_organisation_created(&attendance_system);
         assert!(number_of_created_organizations == 1, 0);
 
-        test.next_tx(@USER);  // i am proceeding with next transaction
+        test.next_tx(@USER);  // Proceed with next transaction
         let mut attendance_organisation = ts::take_from_sender<AttendanceOrganisation>(&mut test);
 
         let register_student_response = attendance_system::register_student(
@@ -45,16 +45,63 @@ module attendance_system::attendance_system_tests {
             b"cardId123".to_string(),
             b"sui move engineer".to_string(),
             test.ctx(),
-            );
+        );
 
         let the_number_of_student_created = attendance_system::get_number_student_created(&attendance_organisation);
         assert_eq!(the_number_of_student_created, 1);
 
+        destroy(attendance_system);
+        destroy(attendance_organisation);
+        test.end();
+    }
 
+   #[test]
+    public fun test_to_register_student_and_record_attendance() {
+        let mut test = ts::begin(@USER);
+        attendance_system::init_for_testing(test.ctx());
+        test.next_tx(@USER);
+
+        let mut attendance_system = ts::take_from_sender<AttendanceSystem>(&mut test);
+        let new_organization = attendance_system::create_organisation(&mut attendance_system, b"Sui hub".to_string(), test.ctx());
+        let number_of_created_organizations = attendance_system::get_number_of_organisation_created(&attendance_system);
+        assert!(number_of_created_organizations == 1, 0);
+
+        test.next_tx(@USER);  // Proceed to next transaction
+        let mut attendance_organisation = ts::take_from_sender<AttendanceOrganisation>(&mut test);
+
+        let register_student_response = attendance_system::register_student(
+            &mut attendance_organisation, 
+            b"Miracle".to_string(),
+            b"cardId123".to_string(),
+            b"sui move engineer".to_string(),
+            test.ctx(),
+        );
+
+        let the_number_of_student_created = attendance_system::get_number_student_created(&attendance_organisation);
+        assert_eq!(the_number_of_student_created, 1);
+
+        // Get the student address from organisation.students vector
+        let student_addr = attendance_system::get_student_address(&attendance_organisation, 0);
+
+
+        // Proceed to next transaction for attendance
+        test.next_tx(@USER);
+
+        let timestamp = 123456789; // Use a fixed or generated timestamp for testing
+
+        let attendance_record_response = attendance_system::record_attendance(
+            &mut attendance_organisation,
+            student_addr,
+            timestamp,
+            test.ctx(),
+        );
+
+        // Assert that attendance was recorded (e.g., check attendance count)
+        let attendance_count = attendance_system::get_number_attendance_records(&attendance_organisation, student_addr);
+        assert_eq!(attendance_count, 1);
 
         destroy(attendance_system);
         destroy(attendance_organisation);
         test.end();
-
     }
 }
