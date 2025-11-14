@@ -87,7 +87,7 @@ module attendance_system::attendance_system {
             name: org.name,
             owner: org.owner,
         });
-
+        
         transfer::transfer(org, ctx.sender());
 
 
@@ -110,10 +110,10 @@ module attendance_system::attendance_system {
             card_id,
         };
 
-        let student_address: address = student.id.to_address();
+        let the_address: address = student.id.to_address();
         vector::push_back(&mut org.students, the_address);
         // Initialize empty attendance vector for this student
-        table::add(&mut org.records_by_student, student_address, vector::empty<address>());
+        table::add(&mut org.records_by_student, the_address, vector::empty<address>());
         transfer::public_transfer(student, ctx.sender());
 
         event::emit(StudentRegisteredEvent {
