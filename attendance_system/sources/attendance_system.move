@@ -4,7 +4,7 @@ module attendance_system::attendance_system {
     // use sui::tx_context::TxContext;
     // use sui::transfer;
     // use std::vector;
-    
+
     public struct AttendanceSystem has key, store {
         id: UID,
         organisations: vector<address>,
@@ -89,7 +89,6 @@ module attendance_system::attendance_system {
         }
     }
 
-    /// Record an attendance event for a student in an org
     public fun record_attendance(
         org: &mut AttendanceOrganisation,
         student_addr: address,
@@ -109,12 +108,14 @@ module attendance_system::attendance_system {
         }
     }
 
-    /// Utility: number of students in org (tracked by address)
+    public fun get_number_of_organisation_created(attendance_system: &AttendanceSystem): u64 {
+        vector::length(&attendance_system.organisations)
+    }
+
     public fun get_number_student_created(org: &AttendanceOrganisation): u64 {
         vector::length(&org.students)
     }
 
-    /// Utility: number of attendance records in org
     public fun get_number_attendance_records(org: &AttendanceOrganisation): u64 {
         vector::length(&org.records)
     }
