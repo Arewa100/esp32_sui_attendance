@@ -53,7 +53,7 @@ export async function getStudentByCardId(
             eventData.organisation === orgObjectId
           ) {
             const studentAddress = eventData.student;
-            log.info(`✅ Found student: ${cardId} -> ${studentAddress}`);
+            log.info(`Found student: ${cardId} -> ${studentAddress}`);
             
             // Cache the result
             studentCache.set(cacheKey, { address: studentAddress, orgObjectId });
@@ -68,7 +68,7 @@ export async function getStudentByCardId(
       pageCount++;
     }
 
-    log.error(`❌ No student found for cardId: ${cardId} in org: ${orgObjectId}`);
+    log.error(`No student found for cardId: ${cardId} in org: ${orgObjectId}`);
     return null;
   } catch (error) {
     log.error("Error fetching student by card ID", error);
@@ -170,7 +170,7 @@ export async function recordAttendance(
   orgObjectId: string,
   studentAddress: string
 ): Promise<string> {
-  log.info(`🔄 Recording attendance for student: ${studentAddress} in org: ${orgObjectId}`);
+  log.info(`Recording attendance for student: ${studentAddress} in org: ${orgObjectId}`);
 
   // Verify organisation object exists
   try {
@@ -181,7 +181,7 @@ export async function recordAttendance(
       hasContent: !!org?.content,
     });
   } catch (verifyError) {
-    log.error(`❌ Cannot access organisation object ${orgObjectId}:`, verifyError);
+    log.error(`Cannot access organisation object ${orgObjectId}:`, verifyError);
     throw new Error(`Organisation object verification failed: ${verifyError}`);
   }
 
@@ -189,7 +189,7 @@ export async function recordAttendance(
   const isActive = await checkSubscriptionActive(orgObjectId);
   if (!isActive) {
     const error = "Subscription expired or inactive. Please renew subscription.";
-    log.error(`❌ ${error}`);
+    log.error(`${error}`);
     throw new Error(error);
   }
 
@@ -209,7 +209,7 @@ export async function recordAttendance(
   tx.setGasBudget(100_000_000);
 
   try {
-    log.info(`📤 Sending attendance transaction to Sui network...`);
+    log.info(`Sending attendance transaction to Sui network...`);
     log.info(`Target: ${config.packageId}::attendance_system::record_attendance`);
     log.info(`Network: ${config.network}`);
     log.info(`Signer: ${suiService.address}`);
@@ -217,7 +217,7 @@ export async function recordAttendance(
     const result = await suiService.executeTransaction(tx);
     const digest = result.digest;
     
-    log.info(`✅ Attendance recorded successfully!`);
+    log.info(`Attendance recorded successfully!`);
     log.info(`Transaction digest: ${digest}`);
     log.info(`Effects status: ${result.effects?.status?.status}`);
     
@@ -230,14 +230,14 @@ export async function recordAttendance(
 
     return digest;
   } catch (error: any) {
-    log.error("❌ Failed to record attendance - DETAILED ERROR:");
+    log.error("Failed to record attendance - DETAILED ERROR:");
     log.error("Error type:", error?.constructor?.name || typeof error);
     log.error("Error message:", error?.message || String(error));
     
     // Check for subscription expired error
     const errorString = String(error?.message || error);
     if (errorString.includes("subscription") || errorString.includes("expired")) {
-      log.warn("⚠️ Subscription-related error detected");
+      log.warn("Subscription-related error detected");
     }
 
     throw error;
@@ -251,7 +251,7 @@ export async function processAttendanceEvent(
   event: AttendanceEvent
 ): Promise<void> {
   try {
-    log.info(`🔍 Processing attendance event for cardId: ${event.cardId}`);
+    log.info(`Processing attendance event for cardId: ${event.cardId}`);
     log.info(`Event details:`, {
       cardId: event.cardId,
       orgObjectId: event.orgObjectId,
@@ -267,38 +267,38 @@ export async function processAttendanceEvent(
 
     if (!studentAddress) {
       const error = `Student not found for card ID: ${event.cardId}. Please ensure this student is registered in the organisation.`;
-      log.error(`❌ ${error}`);
+      log.error(`${error}`);
       event.error = error;
       throw new Error(error);
     }
 
-    log.info(`✅ Found student: ${studentAddress}`);
+    log.info(`Found student: ${studentAddress}`);
 
     // Check subscription status
     const isActive = await checkSubscriptionActive(event.orgObjectId);
     if (!isActive) {
       const error = "Subscription expired or inactive. Please renew subscription before recording attendance.";
-      log.error(`❌ ${error}`);
+      log.error(`${error}`);
       event.error = error;
       throw new Error(error);
     }
 
     // Record attendance on blockchain
     try {
-      log.info(`📢 Recording attendance on blockchain...`);
+      log.info(`Recording attendance on blockchain...`);
       const txDigest = await recordAttendance(event.orgObjectId, studentAddress);
       event.blockchainTxDigest = txDigest;
-      log.info(`✅ Attendance recorded on blockchain: ${txDigest}`);
+      log.info(`Attendance recorded on blockchain: ${txDigest}`);
     } catch (error: any) {
       const errorMsg = String(error?.message || error);
-      log.error("❌ Failed to record attendance:", errorMsg);
+      log.error("Failed to record attendance:", errorMsg);
       event.error = `Blockchain error: ${errorMsg}`;
       throw error;
     }
 
-    log.info(`✅ Event processing complete for cardId: ${event.cardId}`);
+    log.info(`Event processing complete for cardId: ${event.cardId}`);
   } catch (error: any) {
-    log.error("❌ Error processing attendance event:", error.message);
+    log.error("Error processing attendance event:", error.message);
     event.error = error.message;
     throw error;
   }
@@ -309,7 +309,7 @@ export async function processAttendanceEvent(
  */
 export function clearStudentCache(): void {
   studentCache.clear();
-  log.info("🗑️ Student cache cleared");
+  log.info("Student cache cleared");
 }
 
 /**

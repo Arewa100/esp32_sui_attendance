@@ -1,0 +1,21 @@
+# Configuration files (keep sensitive data out of version control)
+include/config.h
+config.h
+
+# PlatformIO
+.pio/
+.vscode/
+
+# Arduino build files
+build/
+*.hex
+*.elf
+*.bin
+
+# IDE files
+.idea/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db

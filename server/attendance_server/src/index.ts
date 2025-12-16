@@ -76,10 +76,10 @@ async function startServer() {
     // Verify system object exists
     try {
       const systemObj = await suiService.getObject(config.systemObjectId);
-      log.info(`✅ System object verified: ${config.systemObjectId}`);
+      log.info(`System object verified: ${config.systemObjectId}`);
       log.info(`System type: ${systemObj?.type}`);
     } catch (error) {
-      log.error(`❌ Cannot access system object: ${config.systemObjectId}`);
+      log.error(`Cannot access system object: ${config.systemObjectId}`);
       log.error("Please verify SYSTEM_OBJECT_ID in your .env file");
       throw error;
     }
@@ -103,7 +103,7 @@ async function startServer() {
 
 // Graceful shutdown
 function shutdown(signal: string) {
-  log.info(`👋 ${signal} received, shutting down gracefully...`);
+  log.info(`${signal} received, shutting down gracefully...`);
   clearStudentCache();
   process.exit(0);
 }
