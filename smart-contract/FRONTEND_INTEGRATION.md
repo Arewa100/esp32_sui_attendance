@@ -4,6 +4,8 @@
 
 This guide provides comprehensive instructions for integrating the ESP32 Sui Attendance System smart contract with frontend applications and ESP32 hardware devices.
 
+**SDK Version**: This guide uses the modern Sui TypeScript SDK (`@mysten/sui` v1.45.2+) and `@mysten/dapp-kit` (v0.19.11+). For the latest SDK documentation, see [https://sdk.mystenlabs.com/typescript](https://sdk.mystenlabs.com/typescript).
+
 ## Table of Contents
 
 - [Frontend Integration](#frontend-integration)
@@ -25,7 +27,7 @@ This guide provides comprehensive instructions for integrating the ESP32 Sui Att
 ### Prerequisites
 
 - Node.js 18+ and npm/yarn
-- Sui Wallet Standard compatible wallet (Sui Wallet, Ethos Wallet, etc.)
+- Sui Wallet extension installed in browser
 - Access to Sui RPC endpoint (testnet/mainnet)
 - Published smart contract package ID
 
@@ -34,28 +36,81 @@ This guide provides comprehensive instructions for integrating the ESP32 Sui Att
 #### 1. Install Dependencies
 
 ```bash
-npm install @mysten/sui.js @mysten/wallet-standard
+npm install @mysten/sui @mysten/dapp-kit @tanstack/react-query
 # or
-yarn add @mysten/sui.js @mysten/wallet-standard
+yarn add @mysten/sui @mysten/dapp-kit @tanstack/react-query
 ```
 
-#### 2. Connect Wallet
+**Note**: The modern Sui TypeScript SDK uses `@mysten/sui` (modular packages) instead of the legacy `@mysten/sui.js`. See [Sui TypeScript SDK Documentation](https://sdk.mystenlabs.com/typescript) for details.
+
+#### 2. Setup Network Configuration
 
 ```typescript
-import { getWallets, Wallet } from '@mysten/wallet-standard';
+// networkConfig.ts
+import { getFullnodeUrl } from "@mysten/sui/client";
+import { createNetworkConfig } from "@mysten/dapp-kit";
 
-// Get available wallets
-const wallets = getWallets();
-const suiWallet = wallets.find(wallet => wallet.name === 'Sui Wallet');
+const { networkConfig, useNetworkVariable, useNetworkVariables } =
+  createNetworkConfig({
+    devnet: {
+      url: getFullnodeUrl("devnet"),
+    },
+    testnet: {
+      url: getFullnodeUrl("testnet"),
+    },
+    mainnet: {
+      url: getFullnodeUrl("mainnet"),
+    },
+  });
 
-if (!suiWallet) {
-  throw new Error('Sui Wallet not found');
+export { useNetworkVariable, useNetworkVariables, networkConfig };
+```
+
+#### 3. Setup App with Sui Providers
+
+```typescript
+// main.tsx
+import { SuiClientProvider, WalletProvider } from "@mysten/dapp-kit";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { networkConfig } from "./networkConfig";
+
+const queryClient = new QueryClient();
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
+        <WalletProvider autoConnect>
+          {/* Your app components */}
+        </WalletProvider>
+      </SuiClientProvider>
+    </QueryClientProvider>
+  );
 }
+```
 
-// Connect to wallet
-await suiWallet.features['standard:connect'].connect();
-const accounts = await suiWallet.features['standard:connect'].getAccounts();
-const currentAccount = accounts[0];
+#### 4. Connect Wallet in Components
+
+```typescript
+// Using @mysten/dapp-kit hooks
+import { ConnectButton, useCurrentAccount } from '@mysten/dapp-kit';
+
+function MyComponent() {
+  const account = useCurrentAccount();
+  
+  return (
+    <div>
+      {account ? (
+        <div>
+          <p>Connected: {account.address}</p>
+          <ConnectButton />
+        </div>
+      ) : (
+        <ConnectButton />
+      )}
+    </div>
+  );
+}
 ```
 
 #### 3. Get Package and Object IDs
@@ -82,34 +137,49 @@ The smart contract emits events for all major operations. Listen to these events
 #### Setup Event Listener
 
 ```typescript
-import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
+import { useSuiClient } from '@mysten/dapp-kit';
 
-const client = new SuiClient({ url: getFullnodeUrl(CONFIG.NETWORK) });
-
-// Listen for OrganisationCreatedEvent
-async function listenForOrganisationCreated() {
-  const unsubscribe = await client.subscribeEvent({
-    filter: {
-      Package: CONFIG.PACKAGE_ID,
-    },
-    onMessage: (event) => {
-      if (event.type.includes('OrganisationCreatedEvent')) {
-        const parsed = parseOrganisationCreatedEvent(event);
-        console.log('New organisation created:', parsed);
-        // Update UI
-      }
-    },
-  });
+// Using hook in React component
+function EventListener() {
+  const client = useSuiClient();
   
-  return unsubscribe;
+  useEffect(() => {
+    // Query events (for historical events)
+    async function queryEvents() {
+      const events = await client.queryEvents({
+        query: {
+          MoveModule: {
+            package: CONFIG.PACKAGE_ID,
+            module: 'events', // Your events module name
+          },
+        },
+        limit: 50,
+      });
+      
+      events.data.forEach((event) => {
+        if (event.type.includes('OrganisationCreatedEvent')) {
+          const parsed = parseOrganisationCreatedEvent(event);
+          console.log('New organisation created:', parsed);
+          // Update UI
+        }
+      });
+    }
+    
+    queryEvents();
+    
+    // Poll for new events (or use websocket subscription if available)
+    const interval = setInterval(queryEvents, 5000);
+    return () => clearInterval(interval);
+  }, [client]);
 }
 
 // Parse event data
 function parseOrganisationCreatedEvent(event: any) {
   return {
-    organisation: event.parsedJson.organisation,
-    name: event.parsedJson.name,
-    owner: event.parsedJson.owner,
+    organisation: event.parsedJson?.organisation,
+    name: event.parsedJson?.name,
+    owner: event.parsedJson?.owner,
     timestamp: event.timestampMs,
   };
 }
@@ -152,116 +222,194 @@ function parseOrganisationCreatedEvent(event: any) {
 
 ### Transaction Building
 
+**Important**: The modern SDK uses `Transaction` from `@mysten/sui/transactions` (not `TransactionBlock`). See [Sui TypeScript SDK Documentation](https://sdk.mystenlabs.com/typescript) for the latest API.
+
 #### 1. Create Organisation
 
 ```typescript
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { Transaction } from '@mysten/sui/transactions';
+import { useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 
-async function createOrganisation(name: string) {
-  const tx = new TransactionBlock();
+function CreateOrganisationComponent() {
+  const { mutate: signAndExecute } = useSignAndExecuteTransaction();
   
-  tx.moveCall({
-    target: `${CONFIG.PACKAGE_ID}::attendance_system::create_organisation`,
-    arguments: [
-      tx.object(CONFIG.SYSTEM_OBJECT_ID),
-      tx.pure(name),
-    ],
-  });
+  async function createOrganisation(name: string) {
+    const tx = new Transaction();
+    
+    tx.moveCall({
+      target: `${CONFIG.PACKAGE_ID}::attendance_system::create_organisation`,
+      arguments: [
+        tx.object(CONFIG.SYSTEM_OBJECT_ID),
+        tx.pure.string(name),
+      ],
+    });
+    
+    // Execute transaction
+    signAndExecute(
+      {
+        transaction: tx,
+        options: {
+          showEffects: true,
+          showEvents: true,
+          showObjectChanges: true,
+        },
+      },
+      {
+        onSuccess: (result) => {
+          console.log('Transaction successful:', result.digest);
+        },
+        onError: (error) => {
+          console.error('Transaction failed:', error);
+        },
+      }
+    );
+  }
   
-  const result = await suiWallet.features['standard:signAndExecuteTransaction'].signAndExecuteTransaction({
-    transaction: tx,
-    account: currentAccount,
-  });
-  
-  return result;
+  return <button onClick={() => createOrganisation('My Org')}>Create Organisation</button>;
 }
 ```
 
 #### 2. Register Student
 
 ```typescript
-async function registerStudent(
-  orgObjectId: string,
-  name: string,
-  cardId: string,
-  department: string
-) {
-  const tx = new TransactionBlock();
+import { Transaction } from '@mysten/sui/transactions';
+import { useSignAndExecuteTransaction } from '@mysten/dapp-kit';
+
+function RegisterStudentComponent() {
+  const { mutate: signAndExecute } = useSignAndExecuteTransaction();
   
-  tx.moveCall({
-    target: `${CONFIG.PACKAGE_ID}::attendance_system::register_student`,
-    arguments: [
-      tx.object(orgObjectId),
-      tx.pure(name),
-      tx.pure(cardId),
-      tx.pure(department),
-    ],
-  });
+  async function registerStudent(
+    orgObjectId: string,
+    name: string,
+    cardId: string,
+    department: string
+  ) {
+    const tx = new Transaction();
+    
+    tx.moveCall({
+      target: `${CONFIG.PACKAGE_ID}::attendance_system::register_student`,
+      arguments: [
+        tx.object(orgObjectId),
+        tx.pure.string(name),
+        tx.pure.string(cardId),
+        tx.pure.string(department),
+      ],
+    });
+    
+    signAndExecute(
+      {
+        transaction: tx,
+        options: {
+          showEffects: true,
+          showEvents: true,
+        },
+      },
+      {
+        onSuccess: (result) => {
+          console.log('Student registered:', result.digest);
+        },
+      }
+    );
+  }
   
-  const result = await suiWallet.features['standard:signAndExecuteTransaction'].signAndExecuteTransaction({
-    transaction: tx,
-    account: currentAccount,
-  });
-  
-  return result;
+  // Usage in component...
 }
 ```
 
 #### 3. Pay Subscription
 
 ```typescript
-async function paySubscription(
-  orgObjectId: string,
-  paymentAmount: number // in MIST (10 SUI = 10,000,000,000 MIST)
-) {
-  const tx = new TransactionBlock();
+import { Transaction } from '@mysten/sui/transactions';
+import { useSignAndExecuteTransaction } from '@mysten/dapp-kit';
+
+function PaySubscriptionComponent() {
+  const { mutate: signAndExecute } = useSignAndExecuteTransaction();
   
-  // Split coin for payment
-  const [payment] = tx.splitCoins(tx.gas, [paymentAmount]);
+  async function paySubscription(
+    orgObjectId: string,
+    paymentAmount: bigint // in MIST (10 SUI = 10_000_000_000n)
+  ) {
+    const tx = new Transaction();
+    
+    // Split coin for payment
+    const [payment] = tx.splitCoins(tx.gas, [paymentAmount]);
+    
+    tx.moveCall({
+      target: `${CONFIG.PACKAGE_ID}::attendance_system::pay_subscription`,
+      arguments: [
+        tx.object(CONFIG.SYSTEM_OBJECT_ID),
+        tx.object(orgObjectId),
+        payment,
+        tx.object(CONFIG.CLOCK_OBJECT_ID), // Shared Clock object (0x6)
+      ],
+    });
+    
+    // Set gas budget
+    tx.setGasBudget(100_000_000);
+    
+    signAndExecute(
+      {
+        transaction: tx,
+        options: {
+          showEffects: true,
+          showEvents: true,
+        },
+      },
+      {
+        onSuccess: (result) => {
+          console.log('Subscription paid:', result.digest);
+        },
+      }
+    );
+  }
   
-  tx.moveCall({
-    target: `${CONFIG.PACKAGE_ID}::attendance_system::pay_subscription`,
-    arguments: [
-      tx.object(CONFIG.SYSTEM_OBJECT_ID),
-      tx.object(orgObjectId),
-      payment,
-      tx.object(CONFIG.CLOCK_OBJECT_ID), // Shared Clock object
-    ],
-  });
-  
-  const result = await suiWallet.features['standard:signAndExecuteTransaction'].signAndExecuteTransaction({
-    transaction: tx,
-    account: currentAccount,
-  });
-  
-  return result;
+  // Usage: paySubscription(orgId, 10_000_000_000n) // 10 SUI
 }
 ```
 
 #### 4. Record Attendance
 
 ```typescript
-async function recordAttendance(
-  orgObjectId: string,
-  studentAddress: string
-) {
-  const tx = new TransactionBlock();
+import { Transaction } from '@mysten/sui/transactions';
+import { useSignAndExecuteTransaction } from '@mysten/dapp-kit';
+
+function RecordAttendanceComponent() {
+  const { mutate: signAndExecute } = useSignAndExecuteTransaction();
   
-  tx.moveCall({
-    target: `${CONFIG.PACKAGE_ID}::attendance_system::record_attendance`,
-    arguments: [
-      tx.object(orgObjectId),
-      tx.pure(studentAddress),
-      tx.object(CONFIG.CLOCK_OBJECT_ID), // Shared Clock object
-    ],
-  });
+  async function recordAttendance(
+    orgObjectId: string,
+    studentAddress: string
+  ) {
+    const tx = new Transaction();
+    
+    tx.moveCall({
+      target: `${CONFIG.PACKAGE_ID}::attendance_system::record_attendance`,
+      arguments: [
+        tx.object(orgObjectId),
+        tx.pure.address(studentAddress),
+        tx.object(CONFIG.CLOCK_OBJECT_ID), // Shared Clock object (0x6)
+      ],
+    });
+    
+    tx.setGasBudget(100_000_000);
+    
+    signAndExecute(
+      {
+        transaction: tx,
+        options: {
+          showEffects: true,
+          showEvents: true,
+        },
+      },
+      {
+        onSuccess: (result) => {
+          console.log('Attendance recorded:', result.digest);
+        },
+      }
+    );
+  }
   
-  const result = await suiWallet.features['standard:signAndExecuteTransaction'].signAndExecuteTransaction({
-    transaction: tx,
-    account: currentAccount,
-  });
-  
-  return result;
+  // Usage in component...
 }
 ```
 
@@ -272,54 +420,106 @@ Since Move doesn't support view functions directly, use the Sui RPC to query obj
 #### Get Organisation Data
 
 ```typescript
-async function getOrganisationData(orgObjectId: string) {
-  const object = await client.getObject({
-    id: orgObjectId,
-    options: {
-      showContent: true,
-      showType: true,
+import { useSuiClient } from '@mysten/dapp-kit';
+import { useQuery } from '@tanstack/react-query';
+
+function useOrganisationData(orgObjectId: string) {
+  const client = useSuiClient();
+  
+  return useQuery({
+    queryKey: ['organisation', orgObjectId],
+    queryFn: async () => {
+      const object = await client.getObject({
+        id: orgObjectId,
+        options: {
+          showContent: true,
+          showType: true,
+          showOwner: true,
+        },
+      });
+      
+      return object.data;
     },
   });
+}
+
+// Usage in component
+function OrganisationComponent({ orgId }: { orgId: string }) {
+  const { data: org, isLoading } = useOrganisationData(orgId);
   
-  return object.data?.content;
+  if (isLoading) return <div>Loading...</div>;
+  
+  const fields = (org?.content as any)?.fields;
+  return <div>Name: {fields?.name}</div>;
 }
 ```
 
 #### Get Student by Card ID
 
 ```typescript
-async function getStudentByCardId(orgObjectId: string, cardId: string) {
-  // This requires calling the on-chain function via a transaction
-  // or maintaining an off-chain index from events
-  
-  // Option 1: Query events to build index
+import { useSuiClient } from '@mysten/dapp-kit';
+
+async function getStudentByCardId(
+  client: SuiClient,
+  orgObjectId: string,
+  cardId: string
+) {
+  // Query events to find student with matching card_id
   const events = await client.queryEvents({
     query: {
       MoveEventType: `${CONFIG.PACKAGE_ID}::events::StudentRegisteredEvent`,
     },
+    limit: 100,
   });
   
-  // Find student with matching card_id
+  // Find student with matching card_id and organisation
   const studentEvent = events.data.find(
-    (e) => e.parsedJson?.card_id === cardId && e.parsedJson?.organisation === orgObjectId
+    (e) => 
+      e.parsedJson?.card_id === cardId && 
+      e.parsedJson?.organisation === orgObjectId
   );
   
-  return studentEvent?.parsedJson?.student;
+  return studentEvent?.parsedJson?.student || null;
+}
+
+// React hook version
+function useStudentByCardId(orgObjectId: string, cardId: string) {
+  const client = useSuiClient();
+  
+  return useQuery({
+    queryKey: ['student', orgObjectId, cardId],
+    queryFn: () => getStudentByCardId(client, orgObjectId, cardId),
+    enabled: !!orgObjectId && !!cardId,
+  });
 }
 ```
 
 #### Get Subscription Status
 
 ```typescript
-async function getSubscriptionStatus(orgObjectId: string) {
-  // Query organisation object to get subscription data
-  const org = await getOrganisationData(orgObjectId);
+import { useSuiClient } from '@mysten/dapp-kit';
+
+async function getSubscriptionStatus(
+  client: SuiClient,
+  orgObjectId: string
+) {
+  const org = await client.getObject({
+    id: orgObjectId,
+    options: {
+      showContent: true,
+    },
+  });
   
-  if (!org || !('fields' in org)) {
-    return null;
+  if (!org.data?.content || !('fields' in org.data.content)) {
+    return {
+      isActive: false,
+      expiryTimestamp: 0,
+      paymentAmount: 0,
+    };
   }
   
-  const subscription = (org.fields as any).subscription;
+  const fields = (org.data.content as any).fields;
+  const subscription = fields?.subscription;
   
   if (!subscription || !('fields' in subscription)) {
     return {
@@ -330,32 +530,41 @@ async function getSubscriptionStatus(orgObjectId: string) {
   }
   
   const currentTime = Date.now();
-  const expiryTimestamp = parseInt(subscription.fields.expiry_timestamp);
-  const isActive = expiryTimestamp > currentTime && subscription.fields.is_active;
+  const expiryTimestamp = Number(subscription.fields.expiry_timestamp);
+  const isActive = 
+    expiryTimestamp > currentTime && 
+    subscription.fields.is_active === true;
   
   return {
     isActive,
     expiryTimestamp,
-    paymentAmount: parseInt(subscription.fields.payment_amount),
+    paymentAmount: Number(subscription.fields.payment_amount),
   };
+}
+
+// React hook version
+function useSubscriptionStatus(orgObjectId: string) {
+  const client = useSuiClient();
+  
+  return useQuery({
+    queryKey: ['subscription', orgObjectId],
+    queryFn: () => getSubscriptionStatus(client, orgObjectId),
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
 }
 ```
 
 #### Get Attendance Records
 
 ```typescript
-async function getAttendanceRecords(orgObjectId: string, studentAddress: string) {
-  // Query organisation object to get records_by_student table
-  const org = await getOrganisationData(orgObjectId);
-  
-  if (!org || !('fields' in org)) {
-    return [];
-  }
-  
-  // The records_by_student is a Table, which requires special handling
-  // You may need to maintain an off-chain index from AttendanceRecordedEvent
-  
-  // Option: Query events
+import { useSuiClient } from '@mysten/dapp-kit';
+
+async function getAttendanceRecords(
+  client: SuiClient,
+  orgObjectId: string,
+  studentAddress: string
+) {
+  // Query events for attendance records
   const events = await client.queryEvents({
     query: {
       MoveEventType: `${CONFIG.PACKAGE_ID}::events::AttendanceRecordedEvent`,
@@ -366,13 +575,27 @@ async function getAttendanceRecords(orgObjectId: string, studentAddress: string)
         { MoveEventField: { path: '/organisation', value: orgObjectId } },
       ],
     },
+    limit: 100,
+    order: 'descending', // Most recent first
   });
   
   return events.data.map((e) => ({
     record: e.parsedJson?.record,
-    timestamp: parseInt(e.parsedJson?.timestamp || '0'),
+    timestamp: Number(e.parsedJson?.timestamp || 0),
     student: e.parsedJson?.student,
+    organisation: e.parsedJson?.organisation,
   }));
+}
+
+// React hook version
+function useAttendanceRecords(orgObjectId: string, studentAddress: string) {
+  const client = useSuiClient();
+  
+  return useQuery({
+    queryKey: ['attendance', orgObjectId, studentAddress],
+    queryFn: () => getAttendanceRecords(client, orgObjectId, studentAddress),
+    enabled: !!orgObjectId && !!studentAddress,
+  });
 }
 ```
 
@@ -525,53 +748,192 @@ async function processAttendanceRecord(deviceId: string, cardId: string, orgObje
 
 ## Complete Integration Example
 
+### Backend Sui Client Service
+
+```typescript
+// suiClient.ts - Backend service for Sui interactions
+import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
+import { decodeSuiPrivateKey } from "@mysten/sui/cryptography";
+import { Transaction } from "@mysten/sui/transactions";
+
+class SuiService {
+  public client: SuiClient;
+  public keypair: Ed25519Keypair;
+  public address: string;
+
+  constructor() {
+    // Initialize client with network
+    this.client = new SuiClient({ 
+      url: getFullnodeUrl(process.env.SUI_NETWORK || "testnet") 
+    });
+
+    // Decode and load server private key
+    const parsed = decodeSuiPrivateKey(process.env.SERVER_PRIVATE_KEY!);
+    this.keypair = Ed25519Keypair.fromSecretKey(parsed.secretKey);
+    this.address = this.keypair.getPublicKey().toSuiAddress();
+  }
+
+  async executeTransaction(tx: Transaction) {
+    const result = await this.client.signAndExecuteTransaction({
+      transaction: tx,
+      signer: this.keypair,
+      options: {
+        showEffects: true,
+        showEvents: true,
+        showObjectChanges: true,
+      },
+    });
+
+    if (result.effects?.status?.status !== "success") {
+      throw new Error(
+        `Transaction failed: ${result.effects?.status?.error || "Unknown error"}`
+      );
+    }
+
+    return result;
+  }
+
+  async getObject(objectId: string) {
+    return await this.client.getObject({
+      id: objectId,
+      options: {
+        showContent: true,
+        showType: true,
+        showOwner: true,
+      },
+    });
+  }
+
+  async queryEvents(query: any, limit = 50) {
+    return await this.client.queryEvents({
+      query,
+      limit,
+    });
+  }
+}
+
+export const suiService = new SuiService();
+```
+
 ### Backend API Endpoint
 
 ```typescript
-// Express.js example
-import express from 'express';
-import { recordAttendance, getStudentByCardId } from './sui-client';
+// attendanceService.ts - Business logic for attendance
+import { Transaction } from "@mysten/sui/transactions";
+import { suiService } from "./suiClient";
+
+const CONFIG = {
+  PACKAGE_ID: process.env.PACKAGE_ID!,
+  CLOCK_OBJECT_ID: "0x6", // Shared Clock object
+};
+
+// Get student address by card ID from events
+async function getStudentByCardId(
+  orgObjectId: string,
+  cardId: string
+): Promise<string | null> {
+  const events = await suiService.queryEvents({
+    query: {
+      MoveEventType: `${CONFIG.PACKAGE_ID}::events::StudentRegisteredEvent`,
+    },
+    limit: 100,
+  });
+
+  const studentEvent = events.data.find(
+    (e) =>
+      e.parsedJson?.card_id === cardId &&
+      e.parsedJson?.organisation === orgObjectId
+  );
+
+  return studentEvent?.parsedJson?.student || null;
+}
+
+// Check subscription status
+async function checkSubscriptionActive(orgObjectId: string): Promise<boolean> {
+  const org = await suiService.getObject(orgObjectId);
+  const fields = (org.data?.content as any)?.fields;
+  const subscription = fields?.subscription;
+
+  if (!subscription || !("fields" in subscription)) {
+    return false;
+  }
+
+  const currentTime = Date.now();
+  const expiryTimestamp = Number(subscription.fields.expiry_timestamp);
+  return (
+    expiryTimestamp > currentTime && subscription.fields.is_active === true
+  );
+}
+
+// Record attendance on-chain
+async function recordAttendance(
+  orgObjectId: string,
+  studentAddress: string
+): Promise<string> {
+  const tx = new Transaction();
+
+  tx.moveCall({
+    target: `${CONFIG.PACKAGE_ID}::attendance_system::record_attendance`,
+    arguments: [
+      tx.object(orgObjectId),
+      tx.pure.address(studentAddress),
+      tx.object(CONFIG.CLOCK_OBJECT_ID),
+    ],
+  });
+
+  tx.setGasBudget(100_000_000);
+
+  const result = await suiService.executeTransaction(tx);
+  return result.digest;
+}
+
+// Express.js API endpoint
+import express from "express";
 
 const app = express();
 app.use(express.json());
 
-app.post('/api/attendance', async (req, res) => {
+app.post("/api/attendance", async (req, res) => {
   try {
     const { device_id, card_id, org_object_id } = req.body;
-    
+
     // Validate input
     if (!device_id || !card_id || !org_object_id) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: "Missing required fields" });
     }
-    
+
     // Get student address from card ID
     const studentAddress = await getStudentByCardId(org_object_id, card_id);
     if (!studentAddress) {
-      return res.status(404).json({ error: 'Student not found' });
+      return res.status(404).json({ error: "Student not found" });
     }
-    
+
     // Check subscription
-    const subscription = await getSubscriptionStatus(org_object_id);
-    if (!subscription.isActive) {
-      return res.status(403).json({ error: 'Subscription expired' });
+    const isActive = await checkSubscriptionActive(org_object_id);
+    if (!isActive) {
+      return res.status(403).json({ error: "Subscription expired" });
     }
-    
+
     // Record attendance
-    const result = await recordAttendance(org_object_id, studentAddress);
-    
+    const txDigest = await recordAttendance(org_object_id, studentAddress);
+
     res.json({
       success: true,
-      transaction: result.digest,
+      transaction: txDigest,
       student: studentAddress,
     });
-  } catch (error) {
-    console.error('Error recording attendance:', error);
-    res.status(500).json({ error: 'Internal server error' });
+  } catch (error: any) {
+    console.error("Error recording attendance:", error);
+    res.status(500).json({ 
+      error: "Internal server error",
+      message: error.message 
+    });
   }
 });
 
 app.listen(3000, () => {
-  console.log('Server running on port 3000');
+  console.log("Server running on port 3000");
 });
 ```
 
@@ -610,12 +972,28 @@ app.listen(3000, () => {
 
 ## Additional Resources
 
-- [Sui TypeScript SDK Documentation](https://docs.sui.io/build/typescript-sdk)
-- [Sui Wallet Standard](https://github.com/wallet-standard/wallet-standard)
-- [Sui Explorer](https://suiexplorer.com/)
-- [ESP32 Arduino Documentation](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/)
+- [Sui TypeScript SDK Documentation](https://sdk.mystenlabs.com/typescript) - Official SDK documentation
+- [Sui dApp Kit Documentation](https://sdk.mystenlabs.com/dapp-kit) - React hooks and components for Sui
+- [Sui Explorer](https://suiexplorer.com/) - Explore transactions and objects
+- [Sui Developer Portal](https://docs.sui.io/) - Complete Sui documentation
+- [ESP32 Arduino Documentation](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/) - Hardware integration
+
+## SDK Migration Notes
+
+If you're migrating from the legacy `@mysten/sui.js` SDK:
+
+1. **Package Name**: `@mysten/sui.js` → `@mysten/sui`
+2. **Transaction Class**: `TransactionBlock` → `Transaction`
+3. **Client Import**: `@mysten/sui.js/client` → `@mysten/sui/client`
+4. **Wallet Integration**: Use `@mysten/dapp-kit` instead of `@mysten/wallet-standard`
+5. **Transaction Building**: 
+   - `tx.pure(value)` → `tx.pure.string(value)` or `tx.pure.address(value)`
+   - `tx.splitCoins()` syntax remains similar
+6. **Execution**: Use `useSignAndExecuteTransaction` hook from dapp-kit
+
+For complete migration guide, see the [Sui TypeScript SDK Documentation](https://sdk.mystenlabs.com/typescript).
 
 ---
 
-**Note**: This guide provides a foundation for integration. Adapt the code examples to your specific technology stack and requirements.
+**Note**: This guide uses the modern Sui TypeScript SDK (`@mysten/sui`). The code examples are based on the latest SDK patterns and best practices. Adapt the examples to your specific technology stack and requirements.
 
