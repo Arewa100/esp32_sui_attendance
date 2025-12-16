@@ -1,187 +1,144 @@
+/// Main module: Central orchestration module for the Attendance System
+/// This module provides high-level entry points that coordinate all sub-modules
 module attendance_system::attendance_system {
     use std::string::String;
-    use sui::event;
-    use sui::object::{UID, Self};
-    use sui::tx_context::TxContext;
-    use sui::transfer;
     use std::vector;
-    use 0x2::table;
+    use sui::coin::Coin;
+    use sui::sui::SUI;
+    use sui::clock::Clock;
+    
+    // Import sub-modules
+    use attendance_system::organisation::{Self};
+    use attendance_system::student::{Self};
+    use attendance_system::attendance::{Self};
+    use attendance_system::subscription::{Self};
+    
+    // Import types for internal use
+    use attendance_system::types::{
+        AttendanceSystem,
+        AttendanceOrganisation,
+        RegisterResponse,
+    };
 
-    public struct AttendanceSystem has key, store {
-        id: UID,
-        organisations: vector<address>,
+    // ========== INITIALIZATION ==========
+
+    fun init(ctx: &mut sui::tx_context::TxContext) {
+        use attendance_system::types::{Self as types};
+        
+        let system = types::create_attendance_system(
+            vector::empty<address>(),
+            sui::tx_context::sender(ctx),
+            ctx,
+        );
+        sui::transfer::public_transfer(system, sui::tx_context::sender(ctx));
+
+        // Create and transfer AdminCap to the deployer
+        let admin_cap = types::create_admin_cap(ctx);
+        sui::transfer::public_transfer(admin_cap, sui::tx_context::sender(ctx));
     }
 
-    public struct AttendanceOrganisation has key, store {
-        id: UID,
-        name: String,
-        owner: address,
-        students: vector<address>,
-        records_by_student: table::Table<address, vector<address>>,
-    }
-
-    public struct Student has key, store {
-        id: UID,
-        name: String,
-        department: String,
-        card_id: String,
-    }
-
-    public struct AttendanceRecord has key, store {
-        id: UID,
-        student_id: address,
-        timestamp: u64,
-    }
-
-    public struct RegisterResponse has copy, drop {
-        message: String,
-    }
-
-    public struct OrganisationCreatedEvent has copy, drop {
-        organisation: address,
-        name: String,
-        owner: address,
-    }
-
-    public struct StudentRegisteredEvent has copy, drop {
-        student: address,
-        name: String,
-        department: String,
-        card_id: String,
-        organisation: address,
-    }
-
-    public struct AttendanceRecordedEvent has copy, drop {
-        record: address,
-        student: address,
-        timestamp: u64,
-        organisation: address,
-    }
-
-    fun init(ctx: &mut TxContext) {
-        let system = AttendanceSystem {
-            id: object::new(ctx),
-            organisations: vector::empty<address>(),
-        };
-        transfer::transfer(system, ctx.sender());
-    }
+    // ========== ORGANISATION MANAGEMENT ==========
 
     public fun create_organisation(
         system: &mut AttendanceSystem,
         name: String,
-        ctx: &mut TxContext
+        ctx: &mut sui::tx_context::TxContext,
     ): RegisterResponse {
-        let org = AttendanceOrganisation {
-            id: object::new(ctx),
-            name,
-            owner: ctx.sender(),
-            students: vector::empty<address>(),
-            records_by_student: table::new<address, vector<address>>(ctx),
-        };
-        let address_of_organisation: address = org.id.to_address();
-        vector::push_back(&mut system.organisations, address_of_organisation);
-
-        event::emit(OrganisationCreatedEvent {
-            organisation: address_of_organisation,
-            name: org.name,
-            owner: org.owner,
-        });
-        
-        transfer::transfer(org, ctx.sender());
-
-
-        RegisterResponse {
-            message: b"Organisation created".to_string()
-        }
+        organisation::create_organisation(system, name, ctx)
     }
+
+    public fun get_number_of_organisation_created(system: &AttendanceSystem): u64 {
+        organisation::get_number_of_organisations(system)
+    }
+
+    public fun get_org_owner(org: &AttendanceOrganisation): address {
+        organisation::get_org_owner(org)
+    }
+
+    // ========== STUDENT MANAGEMENT ==========
 
     public fun register_student(
         org: &mut AttendanceOrganisation,
         name: String,
         card_id: String,
         department: String,
-        ctx: &mut TxContext
+        ctx: &mut sui::tx_context::TxContext,
     ): RegisterResponse {
-        let student = Student {
-            id: object::new(ctx),
-            name,
-            department,
-            card_id,
-        };
-
-        let the_address: address = student.id.to_address();
-        vector::push_back(&mut org.students, the_address);
-        table::add(&mut org.records_by_student, the_address, vector::empty<address>());
-        transfer::public_transfer(student, ctx.sender());
-
-        event::emit(StudentRegisteredEvent {
-            student: the_address,
-            name,
-            department,
-            card_id,
-            organisation: org.id.to_address(),
-        });
-
-        RegisterResponse {
-            message: b"Student registered".to_string()
-        }
+        student::register_student(org, name, card_id, department, ctx)
     }
+
+    public fun get_number_student_created(org: &AttendanceOrganisation): u64 {
+        student::get_number_students(org)
+    }
+
+    public fun get_student_by_card_id(org: &AttendanceOrganisation, card_id: String): std::option::Option<address> {
+        student::get_student_by_card_id(org, card_id)
+    }
+
+    public fun is_student_registered(org: &AttendanceOrganisation, student_addr: address): bool {
+        student::is_student_registered(org, student_addr)
+    }
+
+    // ========== ATTENDANCE RECORDING ==========
 
     public fun record_attendance(
         org: &mut AttendanceOrganisation,
         student_addr: address,
-        timestamp: u64,
-        ctx: &mut TxContext
+        clock: &Clock,
+        ctx: &mut sui::tx_context::TxContext,
     ): RegisterResponse {
-        let rec = AttendanceRecord {
-            id: object::new(ctx),
-            student_id: student_addr,
-            timestamp,
-        };
-        let rec_addr: address = rec.id.to_address();
-        let records_vec = table::borrow_mut(&mut org.records_by_student, student_addr);
-        vector::push_back(records_vec, rec_addr);
-
-        transfer::transfer(rec, org.owner);
-
-        event::emit(AttendanceRecordedEvent {
-            record: rec_addr,
-            student: student_addr,
-            timestamp,
-            organisation: org.id.to_address(),
-        });
-
-        RegisterResponse {
-            message: b"Attendance recorded".to_string()
-        }
+        attendance::record_attendance(org, student_addr, clock, ctx)
     }
 
     public fun get_attendance_records_for_student(
         org: &AttendanceOrganisation,
-        student_addr: address
+        student_addr: address,
     ): &vector<address> {
-        table::borrow(&org.records_by_student, student_addr)
-    }
-
-    public fun get_number_of_organisation_created(attendance_system: &AttendanceSystem): u64 {
-        vector::length(&attendance_system.organisations)
-    }
-
-    public fun get_number_student_created(org: &AttendanceOrganisation): u64 {
-        vector::length(&org.students)
+        attendance::get_attendance_records_for_student(org, student_addr)
     }
 
     public fun get_number_attendance_records(org: &AttendanceOrganisation, student_addr: address): u64 {
-        let records = table::borrow(&org.records_by_student, student_addr);
-        vector::length(records)
+        attendance::get_number_attendance_records(org, student_addr)
     }
 
+    // ========== SUBSCRIPTION MANAGEMENT ==========
+
+    /// Pay subscription fee (10 SUI) to extend subscription by 30 days
+    public entry fun pay_subscription(
+        system: &AttendanceSystem,
+        org: &mut AttendanceOrganisation,
+        payment: Coin<SUI>,
+        clock: &Clock,
+        ctx: &mut sui::tx_context::TxContext,
+    ) {
+        subscription::pay_subscription(system, org, payment, clock, ctx)
+    }
+
+    /// Check if subscription is active
+    public fun check_subscription_active(org: &AttendanceOrganisation, clock: &Clock): bool {
+        subscription::check_subscription_active(org, clock)
+    }
+
+    /// Get subscription status (for view functions)
+    public fun get_subscription_status(org: &AttendanceOrganisation, clock: &Clock): (bool, u64, u64) {
+        subscription::get_subscription_status(org, clock)
+    }
+
+    // ========== SYSTEM QUERIES ==========
+
+    public fun get_system_owner(system: &AttendanceSystem): address {
+        attendance_system::types::get_system_owner(system)
+    }
+
+    // ========== TEST HELPERS ==========
+
     #[test_only]
-    public fun init_for_testing(ctx: &mut TxContext) { init(ctx); }
+    public fun init_for_testing(ctx: &mut sui::tx_context::TxContext) { 
+        init(ctx) 
+    }
     
     #[test_only]
-    public fun get_student_address(organisation: &AttendanceOrganisation, index: u64): address {
-          *vector::borrow(&organisation.students, index)
+    public fun get_student_address(org: &AttendanceOrganisation, index: u64): address {
+        student::get_student_address(org, index)
     }
-
 }
