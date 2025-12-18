@@ -111,3 +111,4 @@ Frontend Dashboard ← Query Events/Objects ← Sui RPC
 - Events are the primary way to track attendance history
 - Organization owner is checked for student registration authorization
 
+

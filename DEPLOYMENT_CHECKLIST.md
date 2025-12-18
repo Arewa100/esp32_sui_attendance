@@ -256,3 +256,4 @@ Transaction Digest: ____________________
 - Check server logs: `npm run dev` shows real-time logs
 - Frontend console: Browser DevTools for errors
 
+
