@@ -1,182 +1,165 @@
-# Contract Review & Improvements Summary
+# Contract Improvements Summary
 
-## Clock Usage in Production
+## Overview
 
-**Good News**: The Clock usage will work perfectly in production! 
+This document outlines the improvements made to the ESP32 Sui Attendance System smart contract.
 
-- **Clock is a shared object** in Sui that's always available on-chain
-- Your Node.js backend will pass it as a parameter when calling functions
-- This is standard Sui practice - the Clock object is automatically available
-- **No special handling needed** - just include it in your transaction calls
+## Key Improvements
 
-Example from your Node.js backend:
+### 1. **Shared Object Architecture**
+
+- Made `AttendanceSystem` a shared object so anyone can create organisations
+- Anyone can sign and execute the `create_organisation` transaction
+- Enables permissionless organisation creation
+
+### 2. **On-Chain Clock Integration**
+
+- Uses Sui's shared Clock object (`0x6`) for timestamps
+- `record_attendance()` generates timestamps automatically from on-chain Clock
+- Ensures tamper-proof, trustable timestamps
+- Standard Sui pattern that works in production
+
+Example usage:
 ```typescript
-// Clock is available as a shared object
 const CLOCK_OBJECT_ID = "0x6"; // Standard Sui Clock
-await client.executeTransactionBlock({
-  transactionBlock: txb.moveCall({
-    target: `${PACKAGE_ID}::attendance_system::record_attendance`,
-    arguments: [
-      orgObjectId,
-      studentAddress,
-      CLOCK_OBJECT_ID, // Clock provides timestamp automatically (no manual timestamp needed!)
-      // ... other args
-    ]
-  })
+
+const txb = new Transaction();
+txb.moveCall({
+  target: `${PACKAGE_ID}::attendance_system::record_attendance`,
+  arguments: [
+    tx.object(orgObjectId),
+    tx.pure.address(studentAddress),
+    tx.object(CLOCK_OBJECT_ID), // Clock provides timestamp automatically
+  ]
 });
-// Note: Timestamp is now automatically generated from on-chain Clock - no manipulation possible!
 ```
 
-## Improvements Made
+### 3. **Access Control**
 
-### 1. **Security Enhancements**
+- `register_student()` requires organization owner authorization
+- Only organization owners can register students to their organisations
+- Prevents unauthorized modifications
 
-#### Access Control
-- **`register_student()`** now requires organization owner authorization
-- Prevents unauthorized student registration
+### 4. **Student Validation**
 
-#### Student Validation
-- **`record_attendance()`** now validates student belongs to organization
+- `record_attendance()` validates student belongs to the organization
+- Added `card_id_to_student` mapping table for efficient lookups
 - Prevents recording attendance for non-existent students
 
-#### Timestamp Security (CRITICAL FIX)
-- **`record_attendance()`** now uses on-chain Clock timestamp directly
-- **Removed** caller-provided timestamp parameter (was manipulatable!)
-- Uses `clock::timestamp_ms(clock)` for trustable, tamper-proof timestamps
-- Prevents timestamp manipulation attacks
+### 5. **Duplicate Prevention**
 
-#### Duplicate Prevention
-- Added `card_id_to_student` mapping table
-- Prevents duplicate card_id registration
-- New function: `get_student_by_card_id()` for RFID lookup
+- Card ID uniqueness enforced at registration
+- `get_student_by_card_id()` function for RFID lookups
+- Ensures each card ID maps to exactly one student per organization
 
-### 2. **Payment Fix**
+### 6. **Subscription System**
 
-#### Correct Payment Recipient
-- **Before**: Payments went to `org.owner` (wrong!)
-- **After**: Payments go to `system.system_owner` (you, the system owner)
-- This ensures you receive the 10 SUI subscription fees
+- 10 SUI for 30 days of service
+- Payments routed to system owner (deployer address)
+- Subscription status checked before recording attendance
+- Automatic expiry tracking
 
-### 3. **Code Quality**
+### 7. **Constants & Error Codes**
 
-#### Constants Added
 ```move
 const SUBSCRIPTION_FEE: u64 = 10000000000; // 10 SUI
 const SUBSCRIPTION_DURATION_MS: u64 = 2592000000; // 30 days
+
+const E_SUBSCRIPTION_EXPIRED = 1;
+const E_INSUFFICIENT_PAYMENT = 2;
+const E_STUDENT_NOT_FOUND = 3;
+const E_UNAUTHORIZED = 4;
+const E_DUPLICATE_CARD_ID = 5;
 ```
 
-#### Error Codes
-- `E_SUBSCRIPTION_EXPIRED = 1`
-- `E_INSUFFICIENT_PAYMENT = 2`
-- `E_STUDENT_NOT_FOUND = 3`
-- `E_UNAUTHORIZED = 4`
-- `E_DUPLICATE_CARD_ID = 5`
-
-### 4. **New Helper Functions**
+### 8. **Helper Functions**
 
 - `get_student_by_card_id()` - Lookup student by RFID card_id
 - `is_student_registered()` - Check if student exists
-- `get_org_owner()` - Get organization owner
-- `get_system_owner()` - Get system owner
+- `get_org_owner()` - Get organization owner address
+- `get_system_owner()` - Get system owner address
+- `check_subscription_active()` - Check subscription status
+- `get_subscription_status()` - Get full subscription details
 
-### 5. **System Owner Tracking**
+## Function Signatures
 
-- `AttendanceSystem` now stores `system_owner` address
-- Set during `init()` to the deployer
-- Used for receiving subscription payments
+### `create_organisation()`
+```move
+public fun create_organisation(
+    system: &mut AttendanceSystem,  // Shared object
+    name: String,
+    ctx: &mut TxContext
+)
+```
 
-## Updated Function Signatures
+### `register_student()`
+```move
+public fun register_student(
+    org: &mut AttendanceOrganisation,
+    name: String,
+    card_id: String,
+    department: String,
+    ctx: &mut TxContext
+)
+```
+- Only organization owner can call
+- Checks for duplicate card_id
 
-### `pay_subscription()` - Now requires system parameter
+### `pay_subscription()`
 ```move
 public entry fun pay_subscription(
-    system: &AttendanceSystem,  // NEW: Required for payment routing
+    system: &AttendanceSystem,
     org: &mut AttendanceOrganisation,
     payment: Coin<SUI>,
     clock: &Clock,
     ctx: &mut TxContext
 )
 ```
+- Requires system object for payment routing
+- Payment goes to system owner
 
-### `register_student()` - Now has access control
-- Only organization owner can register students
-- Checks for duplicate card_id
-
-### `record_attendance()` - Now validates student and uses secure timestamps
-- Checks subscription is active
+### `record_attendance()`
+```move
+public fun record_attendance(
+    org: &mut AttendanceOrganisation,
+    student_address: address,
+    clock: &Clock,
+    ctx: &mut TxContext
+)
+```
+- Validates subscription is active
 - Validates student belongs to organization
-- **Uses on-chain Clock timestamp** (removed manipulatable timestamp parameter)
+- Uses on-chain Clock for timestamp
 
-## Production Readiness
+## Production Features
 
-### What Works
-1. Clock usage - Standard Sui pattern, works in production
-2. Subscription model - Fully functional
-3. Access control - Properly implemented
-4. Payment routing - Correctly goes to system owner
-5. Student validation - Prevents invalid operations
+1. **Clock object** - Standard Sui shared object, always available at `0x6`
+2. **Subscription model** - Enforces payment before attendance recording
+3. **Access control** - Role-based permissions for sensitive operations
+4. **Payment routing** - Subscription fees go to system owner
+5. **Event emission** - All operations emit events for frontend integration
 
-### Node.js Backend Updates Needed
+## Backend Integration
 
-1. **Update `pay_subscription` call** to include `AttendanceSystem`:
+Your Node.js backend should:
+
+1. Pass `AttendanceSystem` object to `pay_subscription`
+2. Use `get_student_by_card_id()` for RFID card lookups
+3. Pass Clock object (`0x6`) in attendance recording transactions
+
 ```typescript
-// Before
-await paySubscription(org, payment, clock);
+// Example: Record attendance from ESP32 card scan
+const tx = new Transaction();
 
-// After
-await paySubscription(system, org, payment, clock);
-```
-
-2. **Use `get_student_by_card_id()` for RFID lookups**:
-```typescript
-// When ESP32 sends RFID card_id
-const student = await getStudentByCardId(org, cardId);
-```
-
-3. **Pass Clock object** in all transactions (already standard)
-
-## Security Checklist
-
-- Access control on student registration
-- Student validation in attendance recording
-- Duplicate card_id prevention
-- Subscription validation
-- Payment goes to correct recipient
-- Proper error codes
-
-## Next Steps
-
-1. **Update tests** to reflect new function signatures
-2. **Update Node.js backend** to pass `AttendanceSystem` to `pay_subscription`
-3. **Test Clock integration** in your Node.js server
-4. **Deploy and verify** subscription payments go to your address
-
-## Clock Production Usage
-
-The Clock object is a **shared object** in Sui, meaning:
-- It's always available on-chain
-- You reference it by its object ID
-- Your Node.js backend includes it in transaction calls
-- No special setup required - it's part of the Sui framework
-
-**Example Clock Object ID**: `0x6` (standard Sui Clock address)
-
-Your backend code will look like:
-```typescript
-const CLOCK_OBJECT_ID = "0x6"; // Standard Sui Clock
-
-const txb = new TransactionBlock();
-txb.moveCall({
+tx.moveCall({
   target: `${PACKAGE_ID}::attendance_system::record_attendance`,
   arguments: [
-    orgObjectId,
-    studentAddress,
-    CLOCK_OBJECT_ID, // Pass Clock as shared object - it provides timestamp automatically!
-    // ... other args
+    tx.object(orgObjectId),
+    tx.pure.address(studentAddress),
+    tx.object("0x6"), // Clock shared object
   ]
 });
-// No timestamp parameter needed - Clock provides it securely on-chain!
+
+tx.setGasBudget(100_000_000);
+const result = await suiService.executeTransaction(tx);
 ```
-
-This is standard and will work perfectly in production!
-
