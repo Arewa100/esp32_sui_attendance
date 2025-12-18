@@ -20,3 +20,10 @@ String getLastResponse();
 
 #endif // ATTENDANCE_CLIENT_H
 
+
+
+
+
+
+
+

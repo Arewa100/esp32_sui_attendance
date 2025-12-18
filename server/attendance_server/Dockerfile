@@ -20,3 +20,10 @@ EXPOSE 4000
 # Start server
 CMD ["npm", "start"]
 
+
+
+
+
+
+
+

@@ -2,7 +2,7 @@
 
 Firmware for ESP32 devices to read RFID cards and send attendance data to the backend server.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Hardware Requirements](#hardware-requirements)
 - [Wiring Diagram](#wiring-diagram)
@@ -12,7 +12,7 @@ Firmware for ESP32 devices to read RFID cards and send attendance data to the ba
 - [Troubleshooting](#troubleshooting)
 - [API Reference](#api-reference)
 
-## 🔧 Hardware Requirements
+## Hardware Requirements
 
 - **ESP32 Development Board** (ESP32-WROOM-32 or compatible)
 - **MFRC522 RFID Reader Module**
@@ -20,7 +20,7 @@ Firmware for ESP32 devices to read RFID cards and send attendance data to the ba
 - **Power Supply** (5V USB or external power)
 - **Jumper Wires** for connections
 
-## 🔌 Wiring Diagram
+## Wiring Diagram
 
 Connect the MFRC522 to ESP32 as follows:
 
@@ -36,7 +36,7 @@ Connect the MFRC522 to ESP32 as follows:
 
 **Note**: You can change the pin assignments in the code if needed.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 firmware/esp32_attendance/
@@ -56,7 +56,7 @@ firmware/esp32_attendance/
 └── README.md                # This file
 ```
 
-## 📦 Installation
+## Installation
 
 ### Option 1: PlatformIO (Recommended)
 
@@ -83,7 +83,7 @@ firmware/esp32_attendance/
 7. Adjust `#include "../include/config.h"` to `#include "config.h"` in `main.cpp`
 8. Upload to ESP32
 
-## ⚙️ Configuration
+## Configuration
 
 1. Copy `include/config.h.example` to `include/config.h`
 2. Update values in `include/config.h`:
@@ -110,7 +110,7 @@ firmware/esp32_attendance/
 | `ORG_OBJECT_ID` | Sui organisation object ID | "0x789abc123def456" |
 | `DEVICE_ID` | Unique device identifier | "ESP32_ATTENDANCE_001" |
 
-## 🚀 Usage
+## Usage
 
 ### Basic Operation
 
@@ -129,30 +129,30 @@ ESP32 Sui Attendance System
 
 Connecting to WiFi: MyWiFi
 ..........
-✅ WiFi connected!
+WiFi connected!
 IP Address: 192.168.1.50
 Signal Strength (RSSI): -45 dBm
 
 Initializing RFID module...
-✅ RFID module initialized
+RFID module initialized
 Firmware Version: 92
 
-✅ System ready!
+System ready!
 Waiting for RFID card...
 
-📇 Card detected: A1B2C3D4
-📤 Sending attendance record to server...
+Card detected: A1B2C3D4
+Sending attendance record to server...
 Card ID: A1B2C3D4
 Organisation: 0x789abc123def456
 Device ID: ESP32_ATTENDANCE_001
 Payload: {"cardId":"A1B2C3D4","orgObjectId":"0x789abc123def456","deviceId":"ESP32_ATTENDANCE_001"}
-✅ HTTP Response code: 200
+HTTP Response code: 200
 Response: {"ok":true,"message":"Attendance event received and processing","cardId":"A1B2C3D4","orgObjectId":"0x789abc123def456","receivedAt":"2025-12-16T13:30:45.123Z"}
-✅ Attendance record sent successfully!
+Attendance record sent successfully!
 Server is processing the transaction...
 ```
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### WiFi Connection Issues
 
@@ -196,7 +196,7 @@ Server is processing the transaction...
 - Verify card is registered in the organisation
 - Try registering the card again
 
-## 📡 API Reference
+## API Reference
 
 ### Request Format
 
@@ -235,7 +235,7 @@ Content-Type: application/json
 }
 ```
 
-## 🔐 Security Considerations
+## Security Considerations
 
 1. **WiFi Credentials**: Keep WiFi password secure
 2. **Server URL**: Use HTTPS in production
@@ -243,7 +243,7 @@ Content-Type: application/json
 4. **Card Security**: RFID cards can be cloned - implement additional security if needed
 5. **Network**: Use secure WiFi network (WPA2/WPA3)
 
-## 📝 Module Architecture
+## Module Architecture
 
 The firmware is organized into separate modules for better maintainability:
 
@@ -254,7 +254,7 @@ The firmware is organized into separate modules for better maintainability:
 
 Each module has a `.h` header file and `.cpp` implementation file, following separation of concerns principles.
 
-## 🛠️ Customization
+## Customization
 
 ### Change RFID Pins
 
@@ -303,11 +303,11 @@ void loop() {
 }
 ```
 
-## 📄 License
+## License
 
 See LICENSE file for details.
 
-## 🤝 Support
+## Support
 
 For issues or questions:
 - Check the [Troubleshooting](#troubleshooting) section

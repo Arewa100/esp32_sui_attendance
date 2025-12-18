@@ -26,7 +26,7 @@ This document provides a comprehensive overview of the test coverage for the ESP
 **Assertions**:
 - Organization count equals 1 after creation
 
-**Status**: ✅ Passing
+**Status**: Passing
 
 **Coverage**:
 - `init()` function
@@ -53,7 +53,7 @@ This document provides a comprehensive overview of the test coverage for the ESP
 **Assertions**:
 - Student count equals 1 after registration
 
-**Status**: ✅ Passing
+**Status**: Passing
 
 **Coverage**:
 - `register_student()` function
@@ -81,7 +81,7 @@ This document provides a comprehensive overview of the test coverage for the ESP
 **Assertions**:
 - Attendance count equals 1 after recording
 
-**Status**: ✅ Passing
+**Status**: Passing
 
 **Coverage**:
 - Complete attendance workflow
@@ -120,7 +120,7 @@ This document provides a comprehensive overview of the test coverage for the ESP
 - Expiry timestamp is greater than 0
 - Payment amount equals 10 SUI (10,000,000,000 MIST)
 
-**Status**: ✅ Passing
+**Status**: Passing
 
 **Coverage**:
 - `pay_subscription()` function
@@ -155,7 +155,7 @@ This document provides a comprehensive overview of the test coverage for the ESP
 **Assertions**:
 - Transaction aborts with error code 1 (E_SUBSCRIPTION_EXPIRED)
 
-**Status**: ✅ Passing (Expected Failure)
+**Status**: Passing (Expected Failure)
 
 **Coverage**:
 - Subscription requirement enforcement
@@ -183,7 +183,7 @@ This document provides a comprehensive overview of the test coverage for the ESP
 **Assertions**:
 - Transaction aborts with error code 2 (E_INSUFFICIENT_PAYMENT)
 
-**Status**: ✅ Passing (Expected Failure)
+**Status**: Passing (Expected Failure)
 
 **Coverage**:
 - Payment amount validation
@@ -200,56 +200,56 @@ This document provides a comprehensive overview of the test coverage for the ESP
 ### Functions Tested
 
 #### Initialization
-- ✅ `init()` - Tested indirectly through `init_for_testing()`
+- `init()` - Tested indirectly through `init_for_testing()`
 
 #### Organization Management
-- ✅ `create_organisation()` - Tested in 6/6 tests
-- ✅ `get_number_of_organisation_created()` - Tested in 1/6 tests
-- ✅ `get_org_owner()` - Not directly tested (getter function)
+- `create_organisation()` - Tested in 6/6 tests
+- `get_number_of_organisation_created()` - Tested in 1/6 tests
+- `get_org_owner()` - Not directly tested (getter function)
 
 #### Student Management
-- ✅ `register_student()` - Tested in 3/6 tests
-- ✅ `get_number_student_created()` - Tested in 2/6 tests
-- ✅ `get_student_by_card_id()` - Not directly tested
-- ✅ `is_student_registered()` - Not directly tested
-- ✅ `get_student_address()` - Tested in 2/6 tests (test helper)
+- `register_student()` - Tested in 3/6 tests
+- `get_number_student_created()` - Tested in 2/6 tests
+- `get_student_by_card_id()` - Not directly tested
+- `is_student_registered()` - Not directly tested
+- `get_student_address()` - Tested in 2/6 tests (test helper)
 
 #### Attendance Recording
-- ✅ `record_attendance()` - Tested in 2/6 tests
-- ✅ `get_attendance_records_for_student()` - Not directly tested
-- ✅ `get_number_attendance_records()` - Tested in 1/6 tests
+- `record_attendance()` - Tested in 2/6 tests
+- `get_attendance_records_for_student()` - Not directly tested
+- `get_number_attendance_records()` - Tested in 1/6 tests
 
 #### Subscription Management
-- ✅ `pay_subscription()` - Tested in 2/6 tests
-- ✅ `check_subscription_active()` - Tested in 1/6 tests
-- ✅ `get_subscription_status()` - Tested in 1/6 tests
+- `pay_subscription()` - Tested in 2/6 tests
+- `check_subscription_active()` - Tested in 1/6 tests
+- `get_subscription_status()` - Tested in 1/6 tests
 
 ### Error Codes Tested
 
-- ✅ `E_SUBSCRIPTION_EXPIRED` (1) - Tested in `test_attendance_without_subscription`
-- ✅ `E_INSUFFICIENT_PAYMENT` (2) - Tested in `test_subscription_payment_insufficient`
-- ⚠️ `E_STUDENT_NOT_FOUND` (3) - Not explicitly tested
-- ⚠️ `E_UNAUTHORIZED` (4) - Not explicitly tested
-- ⚠️ `E_DUPLICATE_CARD_ID` (5) - Not explicitly tested
+- `E_SUBSCRIPTION_EXPIRED` (1) - Tested in `test_attendance_without_subscription`
+- `E_INSUFFICIENT_PAYMENT` (2) - Tested in `test_subscription_payment_insufficient`
+- `E_STUDENT_NOT_FOUND` (3) - Not explicitly tested
+- `E_UNAUTHORIZED` (4) - Not explicitly tested
+- `E_DUPLICATE_CARD_ID` (5) - Not explicitly tested
 
 ### Edge Cases Covered
 
-- ✅ Organization creation
-- ✅ Student registration
-- ✅ Subscription payment
-- ✅ Attendance recording with active subscription
-- ✅ Attendance recording without subscription (failure case)
-- ✅ Insufficient payment (failure case)
+- Organization creation
+- Student registration
+- Subscription payment
+- Attendance recording with active subscription
+- Attendance recording without subscription (failure case)
+- Insufficient payment (failure case)
 
 ### Edge Cases Not Covered
 
-- ⚠️ Duplicate card ID registration
-- ⚠️ Unauthorized student registration (non-owner)
-- ⚠️ Recording attendance for non-existent student
-- ⚠️ Multiple subscription renewals
-- ⚠️ Subscription renewal after expiry
-- ⚠️ Multiple attendance records for same student
-- ⚠️ Query functions (getter functions)
+- Duplicate card ID registration
+- Unauthorized student registration (non-owner)
+- Recording attendance for non-existent student
+- Multiple subscription renewals
+- Subscription renewal after expiry
+- Multiple attendance records for same student
+- Query functions (getter functions)
 
 ## Test Quality Metrics
 
@@ -333,5 +333,12 @@ Overall, the test coverage is **good** for the current feature set, with room fo
 
 **Last Updated**: Generated from test suite analysis
 **Test Framework Version**: Sui Move 2024.beta
+
+
+
+
+
+
+
 
 

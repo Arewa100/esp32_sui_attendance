@@ -30,7 +30,9 @@ module attendance_system::attendance_system {
             sui::tx_context::sender(ctx),
             ctx,
         );
-        sui::transfer::public_transfer(system, sui::tx_context::sender(ctx));
+        // Share the system object so anyone can create organisations
+        // Subscription payments still go to system_owner (deployer address)
+        sui::transfer::public_share_object(system);
 
         // Create and transfer AdminCap to the deployer
         let admin_cap = types::create_admin_cap(ctx);
@@ -39,6 +41,8 @@ module attendance_system::attendance_system {
 
     // ========== ORGANISATION MANAGEMENT ==========
 
+    /// Create a new organisation (permissionless - anyone can call when system is shared)
+    /// Subscription payments will go to the system_owner (deployer)
     public fun create_organisation(
         system: &mut AttendanceSystem,
         name: String,

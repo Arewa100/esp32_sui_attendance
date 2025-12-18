@@ -16,3 +16,10 @@ String getRFIDVersion();
 
 #endif // RFID_CONTROL_H
 
+
+
+
+
+
+
+

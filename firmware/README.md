@@ -2,7 +2,7 @@
 
 This directory contains firmware for ESP32 devices used in the Sui Attendance System.
 
-## 📁 Structure
+## Structure
 
 ```
 firmware/
@@ -14,7 +14,7 @@ firmware/
     └── .gitignore                        # Git ignore rules
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 1. **Install Arduino IDE** and ESP32 board support
 2. **Install required libraries**: MFRC522
@@ -24,14 +24,14 @@ firmware/
 
 See [esp32_attendance/README.md](./esp32_attendance/README.md) for detailed instructions.
 
-## 🔧 Hardware Setup
+## Hardware Setup
 
 - ESP32 development board
 - MFRC522 RFID reader module
 - RFID cards/tags
 - Power supply
 
-## 📡 Communication Flow
+## Communication Flow
 
 ```
 ESP32 Device
@@ -43,16 +43,16 @@ Backend Server
     ↓ (Records on Sui Blockchain)
 ```
 
-## 📝 Features
+## Features
 
-- ✅ WiFi connectivity
-- ✅ RFID card reading
-- ✅ HTTP communication with backend
-- ✅ Error handling and logging
-- ✅ Configurable settings
-- ✅ Serial debugging
+- WiFi connectivity
+- RFID card reading
+- HTTP communication with backend
+- Error handling and logging
+- Configurable settings
+- Serial debugging
 
-## 🔐 Security Notes
+## Security Notes
 
 - Keep WiFi credentials secure
 - Use HTTPS in production
@@ -62,4 +62,11 @@ Backend Server
 ---
 
 For detailed documentation, see the [esp32_attendance](./esp32_attendance/) folder.
+
+
+
+
+
+
+
 

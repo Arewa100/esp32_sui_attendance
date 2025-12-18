@@ -17,15 +17,16 @@ module attendance_system::attendance_system_tests {
         attendance_system::init_for_testing(test.ctx());
         test.next_tx(@USER);
 
-        // Get the AttendanceSystem object from sender
-        let mut attendance_system = ts::take_from_sender<AttendanceSystem>(&mut test);
+        // Get the AttendanceSystem object (now shared)
+        let mut attendance_system = ts::take_shared<AttendanceSystem>(&mut test);
 
         let new_organization = attendance_system::create_organisation(&mut attendance_system, b"Sui hub".to_string(), test.ctx());
 
         let number_of_created_organizations = attendance_system::get_number_of_organisation_created(&attendance_system);
         assert!(number_of_created_organizations == 1, 0);
 
-        destroy(attendance_system);
+        // Return shared object
+        ts::return_shared(attendance_system);
         destroy(new_organization);
         test.end();
     }
@@ -36,7 +37,7 @@ module attendance_system::attendance_system_tests {
         attendance_system::init_for_testing(test.ctx());
         test.next_tx(@USER);
 
-        let mut attendance_system = ts::take_from_sender<AttendanceSystem>(&mut test);
+        let mut attendance_system = ts::take_shared<AttendanceSystem>(&mut test);
         let new_organization = attendance_system::create_organisation(&mut attendance_system, b"Sui hub".to_string(), test.ctx());
         let number_of_created_organizations = attendance_system::get_number_of_organisation_created(&attendance_system);
         assert!(number_of_created_organizations == 1, 0);
@@ -55,7 +56,8 @@ module attendance_system::attendance_system_tests {
         let the_number_of_student_created = attendance_system::get_number_student_created(&attendance_organisation);
         assert_eq!(the_number_of_student_created, 1);
 
-        destroy(attendance_system);
+        // Return shared object
+        ts::return_shared(attendance_system);
         destroy(attendance_organisation);
         test.end();
     }
@@ -72,7 +74,7 @@ module attendance_system::attendance_system_tests {
         
         test.next_tx(@USER);
 
-        let mut attendance_system = ts::take_from_sender<AttendanceSystem>(&mut test);
+        let mut attendance_system = ts::take_shared<AttendanceSystem>(&mut test);
         let clock_obj = ts::take_shared<clock::Clock>(&mut test);
         let new_organization = attendance_system::create_organisation(&mut attendance_system, b"Sui hub".to_string(), test.ctx());
         let number_of_created_organizations = attendance_system::get_number_of_organisation_created(&attendance_system);
@@ -116,9 +118,9 @@ module attendance_system::attendance_system_tests {
         let attendance_count = attendance_system::get_number_attendance_records(&attendance_organisation, student_addr);
         assert_eq!(attendance_count, 1);
 
-        // Return shared clock object
+        // Return shared objects
+        ts::return_shared(attendance_system);
         ts::return_shared(clock_obj);
-        destroy(attendance_system);
         destroy(attendance_organisation);
         test.end();
     }
@@ -135,7 +137,7 @@ module attendance_system::attendance_system_tests {
         
         test.next_tx(@USER);
 
-        let mut attendance_system = ts::take_from_sender<AttendanceSystem>(&mut test);
+        let mut attendance_system = ts::take_shared<AttendanceSystem>(&mut test);
         let clock_obj = ts::take_shared<clock::Clock>(&mut test);
         let new_organization = attendance_system::create_organisation(&mut attendance_system, b"Test Org".to_string(), test.ctx());
 
@@ -156,9 +158,9 @@ module attendance_system::attendance_system_tests {
         assert!(expiry > 0, 2);
         assert_eq!(payment_amount, 10000000000);
 
-        // Return shared clock object
+        // Return shared objects
+        ts::return_shared(attendance_system);
         ts::return_shared(clock_obj);
-        destroy(attendance_system);
         destroy(attendance_organisation);
         test.end();
     }
@@ -176,7 +178,7 @@ module attendance_system::attendance_system_tests {
         
         test.next_tx(@USER);
 
-        let mut attendance_system = ts::take_from_sender<AttendanceSystem>(&mut test);
+        let mut attendance_system = ts::take_shared<AttendanceSystem>(&mut test);
         let clock_obj = ts::take_shared<clock::Clock>(&mut test);
         let new_organization = attendance_system::create_organisation(&mut attendance_system, b"Test Org".to_string(), test.ctx());
 
@@ -204,10 +206,10 @@ module attendance_system::attendance_system_tests {
             test.ctx(),
         );
 
-        // Return shared clock object
+        // Return shared objects
         // Note: This test is expected to fail, so cleanup code below won't execute
+        ts::return_shared(attendance_system);
         ts::return_shared(clock_obj);
-        destroy(attendance_system);
         destroy(attendance_organisation);
         test.end();
     }
@@ -225,7 +227,7 @@ module attendance_system::attendance_system_tests {
         
         test.next_tx(@USER);
 
-        let mut attendance_system = ts::take_from_sender<AttendanceSystem>(&mut test);
+        let mut attendance_system = ts::take_shared<AttendanceSystem>(&mut test);
         let clock_obj = ts::take_shared<clock::Clock>(&mut test);
         let new_organization = attendance_system::create_organisation(&mut attendance_system, b"Test Org".to_string(), test.ctx());
 
@@ -236,10 +238,10 @@ module attendance_system::attendance_system_tests {
         let payment = coin::mint_for_testing<SUI>(5000000000, test.ctx()); // 5 SUI
         attendance_system::pay_subscription(&attendance_system, &mut attendance_organisation, payment, &clock_obj, test.ctx());
 
-        // Return shared clock object
+        // Return shared objects
         // Note: This test is expected to fail, so cleanup code below won't execute
+        ts::return_shared(attendance_system);
         ts::return_shared(clock_obj);
-        destroy(attendance_system);
         destroy(attendance_organisation);
         test.end();
     }

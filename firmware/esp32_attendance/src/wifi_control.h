@@ -18,3 +18,10 @@ String getWiFiIP();
 
 #endif // WIFI_CONTROL_H
 
+
+
+
+
+
+
+

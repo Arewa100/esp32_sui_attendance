@@ -2,7 +2,7 @@
 
 A decentralized attendance tracking system built on Sui blockchain, designed for educational institutions to manage student attendance using RFID card technology and ESP32 hardware.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
@@ -19,7 +19,7 @@ A decentralized attendance tracking system built on Sui blockchain, designed for
 - [Contributing](#contributing)
 - [License](#license)
 
-## 🎯 Overview
+## Overview
 
 The ESP32 Sui Attendance System is a blockchain-based solution that enables educational institutions to:
 - Create and manage organizations
@@ -30,7 +30,7 @@ The ESP32 Sui Attendance System is a blockchain-based solution that enables educ
 
 The system uses Sui's Move language for smart contract development, ensuring type safety, resource management, and secure execution.
 
-## ✨ Features
+## Features
 
 ### Core Functionality
 - **Organization Management**: Create and manage attendance organizations
@@ -47,7 +47,7 @@ The system uses Sui's Move language for smart contract development, ensuring typ
 - **Test Coverage**: Comprehensive unit tests for all functionality
 - **On-Chain Clock**: Uses Sui's Clock object for tamper-proof timestamps
 
-## 🏗️ Architecture
+## Architecture
 
 ### Module Structure
 
@@ -84,7 +84,7 @@ User → Frontend → Sui Wallet → Smart Contract → On-Chain Storage
 5. **Subscription**: Subscription status and expiry information
 6. **AdminCap**: Administrative capability (currently unused, reserved for future features)
 
-## 📦 Smart Contract Structure
+## Smart Contract Structure
 
 ### Main Module: `attendance_system.move`
 
@@ -128,7 +128,7 @@ module attendance_system::attendance_system {
 - **attendance.move**: Records attendance with subscription validation
 - **subscription.move**: Handles subscription payments and status checks
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 
@@ -178,7 +178,7 @@ attendance_system/
     └── attendance_system_tests.move
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Running Tests
 
@@ -205,7 +205,7 @@ The test suite includes:
 
 See [TEST_COVERAGE.md](./TEST_COVERAGE.md) for detailed coverage information.
 
-## 🚢 Deployment
+## Deployment
 
 ### Local Development
 
@@ -261,7 +261,7 @@ After deployment, you'll receive:
 
 Save these IDs for frontend integration.
 
-## 📖 Usage Guide
+## Usage Guide
 
 ### 1. Initialize the System
 
@@ -368,7 +368,7 @@ let records = attendance_system::get_attendance_records_for_student(&org, studen
 let count = attendance_system::get_number_attendance_records(&org, student_addr);
 ```
 
-## 📡 Events
+## Events
 
 The contract emits the following events for frontend integration:
 
@@ -415,7 +415,7 @@ struct SubscriptionRenewedEvent {
 
 Frontend applications should listen to these events to update UI in real-time. See the [Frontend Integration Guide](../frontend/README.md) for implementation details.
 
-## 🔐 Access Control
+## Access Control
 
 ### Public Functions (Anyone can call)
 - `create_organisation`: Anyone can create an organization
@@ -438,7 +438,7 @@ Frontend applications should listen to these events to update UI in real-time. S
 
 Attendance recording will fail if subscription is expired or inactive.
 
-## 💳 Subscription Model
+## Subscription Model
 
 ### Pricing
 - **Fee**: 10 SUI per subscription period
@@ -456,7 +456,7 @@ Attendance recording will fail if subscription is expired or inactive.
 - Uses on-chain `Clock` object for accurate timestamp comparison
 - Cannot be manipulated by users
 
-## 🔒 Security Considerations
+## Security Considerations
 
 ### Implemented Security Features
 
@@ -481,7 +481,7 @@ Attendance recording will fail if subscription is expired or inactive.
 - No maximum limit on students per organization
 - AdminCap currently unused (reserved for future features)
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please follow these guidelines:
 
@@ -499,11 +499,11 @@ Contributions are welcome! Please follow these guidelines:
 - Keep modules focused and cohesive
 - Maintain test coverage
 
-## 📄 License
+## License
 
 See [LICENSE](../../LICENSE) file for details.
 
-## 🔗 Related Documentation
+## Related Documentation
 
 - [Test Coverage](./TEST_COVERAGE.md)
 - [Frontend Integration Guide](../frontend/README.md)
@@ -511,7 +511,7 @@ See [LICENSE](../../LICENSE) file for details.
 - [Sui Move Documentation](https://docs.sui.io/build/move)
 - [Sui Developer Portal](https://docs.sui.io/)
 
-## 📞 Support
+## Support
 
 For issues, questions, or contributions:
 - Open an issue on GitHub
@@ -520,6 +520,9 @@ For issues, questions, or contributions:
 
 ---
 
-**Built with ❤️ using Sui Move**
+**Built with Sui Move**
+
+
+
 
 
