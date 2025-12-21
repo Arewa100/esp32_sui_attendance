@@ -111,6 +111,34 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+  
+  /* Custom dot cursor - Light mode */
+  * {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='%23222'/%3E%3C/svg%3E") 4 4, auto;
+  }
+  
+  /* Dark mode dot cursor */
+  .dark * {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='%23fff'/%3E%3C/svg%3E") 4 4, auto;
+  }
+  
+  /* Slightly larger dot for clickable elements */
+  button, a, [role="button"], [onclick], input[type="button"], input[type="submit"], .cursor-pointer, label {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='4' fill='%23222'/%3E%3C/svg%3E") 5 5, pointer;
+  }
+  
+  .dark button, .dark a, .dark [role="button"], .dark [onclick], .dark input[type="button"], .dark input[type="submit"], .dark .cursor-pointer, .dark label {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='4' fill='%23fff'/%3E%3C/svg%3E") 5 5, pointer;
+  }
+  
+  /* Text cursor (vertical line) for input fields */
+  input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="search"], textarea, [contenteditable="true"] {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='16' viewBox='0 0 2 16'%3E%3Crect x='0' y='0' width='2' height='16' fill='%23222'/%3E%3C/svg%3E") 1 8, text;
+  }
+  
+  .dark input[type="text"], .dark input[type="email"], .dark input[type="password"], .dark input[type="number"], .dark input[type="search"], .dark textarea, .dark [contenteditable="true"] {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='16' viewBox='0 0 2 16'%3E%3Crect x='0' y='0' width='2' height='16' fill='%23fff'/%3E%3C/svg%3E") 1 8, text;
+  }
 }
 
 @layer utilities {

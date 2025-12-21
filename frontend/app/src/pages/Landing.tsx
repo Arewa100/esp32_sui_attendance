@@ -10,6 +10,8 @@ import {
   CheckCircle2,
   Wallet
 } from "lucide-react";
+import { useGlobalStats } from "@/hooks/use-global-stats";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const features = [
   {
@@ -44,6 +46,8 @@ const benefits = [
 ];
 
 export default function Landing() {
+  const { formattedStats, isLoading } = useGlobalStats();
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -109,13 +113,17 @@ export default function Landing() {
           {/* Stats */}
           <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
             {[
-              { value: "100+", label: "Organisations" },
-              { value: "50K+", label: "Students" },
-              { value: "1M+", label: "Records" },
-              { value: "99.9%", label: "Uptime" }
+              { value: isLoading ? "—" : formattedStats.organisations, label: "Organisations" },
+              { value: isLoading ? "—" : formattedStats.students, label: "Students" },
+              { value: isLoading ? "—" : formattedStats.records, label: "Records" },
+              { value: isLoading ? "—" : formattedStats.uptime, label: "Uptime" }
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-foreground">{stat.value}</div>
+                {isLoading ? (
+                  <Skeleton className="h-10 w-20 mx-auto mb-2" />
+                ) : (
+                  <div className="text-3xl md:text-4xl font-bold text-foreground">{stat.value}</div>
+                )}
                 <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
               </div>
             ))}
