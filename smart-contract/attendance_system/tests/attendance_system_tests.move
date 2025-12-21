@@ -43,7 +43,7 @@ module attendance_system::attendance_system_tests {
         assert!(number_of_created_organizations == 1, 0);
 
         test.next_tx(@USER);  // Proceed with next transaction
-        let mut attendance_organisation = ts::take_from_sender<AttendanceOrganisation>(&mut test);
+        let mut attendance_organisation = ts::take_shared<AttendanceOrganisation>(&mut test);
 
         let register_student_response = attendance_system::register_student(
             &mut attendance_organisation, 
@@ -53,12 +53,12 @@ module attendance_system::attendance_system_tests {
             test.ctx(),
         );
 
-        let the_number_of_student_created = attendance_system::get_number_student_created(&attendance_organisation);
+        let the_number_of_student_created = attendance_system::get_number_student_created(&attendance_system, &attendance_organisation, test.ctx());
         assert_eq!(the_number_of_student_created, 1);
 
-        // Return shared object
+        // Return shared objects
         ts::return_shared(attendance_system);
-        destroy(attendance_organisation);
+        ts::return_shared(attendance_organisation);
         test.end();
     }
 
@@ -81,7 +81,7 @@ module attendance_system::attendance_system_tests {
         assert!(number_of_created_organizations == 1, 0);
 
         test.next_tx(@USER);  // Proceed to next transaction
-        let mut attendance_organisation = ts::take_from_sender<AttendanceOrganisation>(&mut test);
+        let mut attendance_organisation = ts::take_shared<AttendanceOrganisation>(&mut test);
 
         let register_student_response = attendance_system::register_student(
             &mut attendance_organisation, 
@@ -91,7 +91,7 @@ module attendance_system::attendance_system_tests {
             test.ctx(),
         );
 
-        let the_number_of_student_created = attendance_system::get_number_student_created(&attendance_organisation);
+        let the_number_of_student_created = attendance_system::get_number_student_created(&attendance_system, &attendance_organisation, test.ctx());
         assert_eq!(the_number_of_student_created, 1);
 
         // Get the student address from organisation.students vector
@@ -108,6 +108,7 @@ module attendance_system::attendance_system_tests {
 
         // Timestamp is now automatically generated from on-chain clock (prevents manipulation)
         let attendance_record_response = attendance_system::record_attendance(
+            &attendance_system,
             &mut attendance_organisation,
             student_addr,
             &clock_obj,
@@ -115,13 +116,13 @@ module attendance_system::attendance_system_tests {
         );
 
         // Assert that attendance was recorded (e.g., check attendance count)
-        let attendance_count = attendance_system::get_number_attendance_records(&attendance_organisation, student_addr);
+        let attendance_count = attendance_system::get_number_attendance_records(&attendance_system, &attendance_organisation, student_addr, test.ctx());
         assert_eq!(attendance_count, 1);
 
         // Return shared objects
         ts::return_shared(attendance_system);
         ts::return_shared(clock_obj);
-        destroy(attendance_organisation);
+        ts::return_shared(attendance_organisation);
         test.end();
     }
 
@@ -142,10 +143,10 @@ module attendance_system::attendance_system_tests {
         let new_organization = attendance_system::create_organisation(&mut attendance_system, b"Test Org".to_string(), test.ctx());
 
         test.next_tx(@USER);
-        let mut attendance_organisation = ts::take_from_sender<AttendanceOrganisation>(&mut test);
+        let mut attendance_organisation = ts::take_shared<AttendanceOrganisation>(&mut test);
 
         // Check subscription is not active initially
-        let (is_active, _, _) = attendance_system::get_subscription_status(&attendance_organisation, &clock_obj);
+        let (is_active, _, _) = attendance_system::get_subscription_status(&attendance_system, &attendance_organisation, &clock_obj, test.ctx());
         assert!(!is_active, 0);
 
         // Pay subscription
@@ -153,7 +154,7 @@ module attendance_system::attendance_system_tests {
         attendance_system::pay_subscription(&attendance_system, &mut attendance_organisation, payment, &clock_obj, test.ctx());
 
         // Check subscription is now active
-        let (is_active_after, expiry, payment_amount) = attendance_system::get_subscription_status(&attendance_organisation, &clock_obj);
+        let (is_active_after, expiry, payment_amount) = attendance_system::get_subscription_status(&attendance_system, &attendance_organisation, &clock_obj, test.ctx());
         assert!(is_active_after, 1);
         assert!(expiry > 0, 2);
         assert_eq!(payment_amount, 10000000000);
@@ -161,7 +162,7 @@ module attendance_system::attendance_system_tests {
         // Return shared objects
         ts::return_shared(attendance_system);
         ts::return_shared(clock_obj);
-        destroy(attendance_organisation);
+        ts::return_shared(attendance_organisation);
         test.end();
     }
 
@@ -183,7 +184,7 @@ module attendance_system::attendance_system_tests {
         let new_organization = attendance_system::create_organisation(&mut attendance_system, b"Test Org".to_string(), test.ctx());
 
         test.next_tx(@USER);
-        let mut attendance_organisation = ts::take_from_sender<AttendanceOrganisation>(&mut test);
+        let mut attendance_organisation = ts::take_shared<AttendanceOrganisation>(&mut test);
 
         let register_student_response = attendance_system::register_student(
             &mut attendance_organisation, 
@@ -200,6 +201,7 @@ module attendance_system::attendance_system_tests {
         // This should fail because subscription is not active
         // Timestamp is now automatically generated from on-chain clock
         attendance_system::record_attendance(
+            &attendance_system,
             &mut attendance_organisation,
             student_addr,
             &clock_obj,
@@ -210,7 +212,7 @@ module attendance_system::attendance_system_tests {
         // Note: This test is expected to fail, so cleanup code below won't execute
         ts::return_shared(attendance_system);
         ts::return_shared(clock_obj);
-        destroy(attendance_organisation);
+        ts::return_shared(attendance_organisation);
         test.end();
     }
 
@@ -232,7 +234,7 @@ module attendance_system::attendance_system_tests {
         let new_organization = attendance_system::create_organisation(&mut attendance_system, b"Test Org".to_string(), test.ctx());
 
         test.next_tx(@USER);
-        let mut attendance_organisation = ts::take_from_sender<AttendanceOrganisation>(&mut test);
+        let mut attendance_organisation = ts::take_shared<AttendanceOrganisation>(&mut test);
 
         // Try to pay with insufficient amount (less than 10 SUI)
         let payment = coin::mint_for_testing<SUI>(5000000000, test.ctx()); // 5 SUI
@@ -242,7 +244,7 @@ module attendance_system::attendance_system_tests {
         // Note: This test is expected to fail, so cleanup code below won't execute
         ts::return_shared(attendance_system);
         ts::return_shared(clock_obj);
-        destroy(attendance_organisation);
+        ts::return_shared(attendance_organisation);
         test.end();
     }
 }

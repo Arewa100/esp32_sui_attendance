@@ -196,10 +196,12 @@ export async function recordAttendance(
   const tx = new Transaction();
 
   // Call record_attendance function
+  // Note: system parameter is now required (first argument) for access control
   tx.moveCall({
     target: `${config.packageId}::attendance_system::record_attendance`,
     arguments: [
-      tx.object(orgObjectId),
+      tx.object(config.systemObjectId), // AttendanceSystem shared object
+      tx.object(orgObjectId), // AttendanceOrganisation shared object
       tx.pure.address(studentAddress),
       tx.object(CLOCK_OBJECT_ID), // Shared Clock object
     ],

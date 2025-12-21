@@ -69,10 +69,10 @@ export function buildPaySubscriptionTx(args: {
   tx.moveCall({
     target: contractTarget("pay_subscription"),
     arguments: [
-      systemRef, // Shared object
-      orgRef, // Owned object (organisation)
+      systemRef, // Shared object (AttendanceSystem)
+      orgRef, // Shared object (AttendanceOrganisation)
       paymentCoin,
-      clockRef // Shared object (clock)
+      clockRef // Shared object (Clock)
     ]
   });
   tx.setGasBudget(150_000_000);

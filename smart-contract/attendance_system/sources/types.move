@@ -15,7 +15,8 @@ module attendance_system::types {
 
     // Changed from owned to shared object so server (system owner) can sign transactions
     // Access control is enforced via owner field checks in functions
-    public struct AttendanceOrganisation has key {
+    // Note: 'store' ability is required for public_share_object, but object is still shared (not owned)
+    public struct AttendanceOrganisation has key, store {
         id: UID,
         name: String,
         owner: address,
