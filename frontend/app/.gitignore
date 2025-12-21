@@ -1,22 +1,83 @@
-# Dependencies
+# ============================================
+# Frontend App .gitignore
+# ============================================
+
+# Node.js dependencies
 node_modules/
+**/node_modules/
 
-# Build output
-dist/
-
-# Logs
-*.log
-
-# Environment
+# Environment files for different networks
 .env
 .env.local
 .env.*.local
+.env.mainnet
+.env.mainnnet
+.env.testnet
+.env.development
+.env.production
 
-# Editor
+# TypeScript build artifacts
+dist/
+build/
+*.tsbuildinfo
+.next/
+out/
+
+# Vite
+.vite/
+vite.config.*.timestamp-*
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+logs/
+*.log
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+.jest/
+
+# OS / editor files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 .vscode/
+.idea/
 *.swp
+*.swo
+*~
 
-# TypeScript cache
-tsconfig.tsbuildinfo
+# Build outputs
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
 
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.cache
+.cache/
+
+# Package manager locks (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# IDE specific
+*.code-workspace
+*.iml
+
+# System files
+desktop.ini
 
