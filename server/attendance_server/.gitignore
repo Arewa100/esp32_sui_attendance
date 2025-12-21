@@ -1,15 +1,64 @@
+# ============================================
+# Server .gitignore
+# ============================================
+
+# Node.js dependencies
 node_modules/
-dist/
-logs/
+**/node_modules/
+
+# Environment files
 .env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Logs
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+.jest/
+
+# OS / editor files
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.cache
 
+# IDE specific
+*.code-workspace
+*.iml
 
+# Database files (if using local DB)
+*.db
+*.sqlite
+*.sqlite3
 
-
-
-
-
-
+# Uploads directory (if any)
+uploads/
+files/

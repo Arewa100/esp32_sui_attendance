@@ -24,28 +24,33 @@ export type RecentActivity = {
 export function useDashboardStats() {
   const account = useCurrentAccount();
   const client = useSuiClient();
-  const { data: createdEvents } = useOrganisationCreatedEvents(200);
+  const { data: createdEvents, isLoading: isLoadingEvents } = useOrganisationCreatedEvents(200);
   
   // Get organizations owned by current user
   const userOrganisations = createdEvents?.filter(
     (e) => account?.address ? e.owner === account.address : false
   ) ?? [];
 
-  // Get all attendance events
-  const { data: allAttendanceEvents } = useQuery({
-    queryKey: ["events", "AttendanceRecordedEvent", "all", CONFIG.PACKAGE_ID],
+  // Optimized: Only fetch attendance events for user's organizations
+  // Use a more reasonable limit and filter server-side when possible
+  const { data: allAttendanceEvents, isLoading: isLoadingAttendance } = useQuery({
+    queryKey: ["events", "AttendanceRecordedEvent", "user", CONFIG.PACKAGE_ID, account?.address],
     queryFn: async () => {
-      if (!CONFIG.PACKAGE_ID) return [];
+      if (!CONFIG.PACKAGE_ID || !account?.address) return [];
+      
+      // Fetch a reasonable amount of events (reduced from 10000)
       const res = await client.queryEvents({
         query: { MoveEventType: `${CONFIG.PACKAGE_ID}::events::AttendanceRecordedEvent` },
-        limit: 10000,
+        limit: 1000, // Reduced from 10000 for faster loading
         order: "descending",
       });
       return res.data.map((e) => e.parsedJson as any);
     },
     enabled: !!CONFIG.PACKAGE_ID && !!account?.address,
-    staleTime: 10_000,
-    refetchInterval: 15_000,
+    staleTime: 30_000, // Increased cache time
+    refetchInterval: 30_000, // Reduced refetch frequency
+    // Use placeholder data for instant UI updates
+    placeholderData: (previousData) => previousData,
   });
 
   // Filter attendance events to only user's organizations
@@ -53,22 +58,37 @@ export function useDashboardStats() {
     userOrganisations.some((org) => org.organisation === e.organisation)
   ) ?? [];
 
-  // Fetch organization details in parallel
-  const orgQueries = userOrganisations.map((org) => ({
-    id: org.organisation,
-    query: useOrganisationObject(org.organisation),
+  // Optimized: Only fetch organization details for active organizations (with recent activity)
+  // This reduces the number of parallel queries
+  const activeOrgIds = userOrganisations
+    .filter((org) => {
+      // Only fetch details for orgs with recent activity (last 7 days)
+      const recentActivity = userAttendanceEvents?.some(
+        (event) => event.organisation === org.organisation && 
+        (Date.now() - Number(event.timestamp)) < 7 * 24 * 60 * 60 * 1000
+      );
+      return recentActivity;
+    })
+    .map((org) => org.organisation)
+    .slice(0, 10); // Limit to first 10 active orgs for performance
+
+  // Fetch organization details in parallel (only for active orgs)
+  const orgQueries = activeOrgIds.map((orgId) => ({
+    id: orgId,
+    query: useOrganisationObject(orgId),
   }));
 
-  // Calculate stats
+  // Calculate stats with optimized calculations
   const stats: DashboardStats = {
     totalOrganisations: userOrganisations.length,
+    // Use cached data or estimate from events
     activeStudents: orgQueries.reduce((sum, { query }) => {
       return sum + (query.data?.fields?.students?.length ?? 0);
     }, 0),
-    attendanceRecords: userAttendanceEvents.length,
+    attendanceRecords: userAttendanceEvents?.length ?? 0,
     activeSessions: userOrganisations.filter((org) => {
       // An active session is an organization with recent activity (within last 24 hours)
-      const recentActivity = userAttendanceEvents.some(
+      const recentActivity = userAttendanceEvents?.some(
         (event) => event.organisation === org.organisation && 
         (Date.now() - Number(event.timestamp)) < 24 * 60 * 60 * 1000
       );
@@ -78,7 +98,7 @@ export function useDashboardStats() {
 
   return {
     stats,
-    isLoading: orgQueries.some(({ query }) => query.isLoading),
+    isLoading: isLoadingEvents || isLoadingAttendance || orgQueries.some(({ query }) => query.isLoading),
     userOrganisations,
     userAttendanceEvents,
   };
@@ -88,13 +108,15 @@ export function useRecentActivity(limit = 5) {
   const account = useCurrentAccount();
   const client = useSuiClient();
   const { data: createdEvents } = useOrganisationCreatedEvents(200);
+  
+  // Optimized: Fetch only what we need (limit * 2 for filtering buffer)
   const { data: allAttendanceEvents } = useQuery({
-    queryKey: ["events", "AttendanceRecordedEvent", "all", CONFIG.PACKAGE_ID, limit],
+    queryKey: ["events", "AttendanceRecordedEvent", "recent", CONFIG.PACKAGE_ID, limit],
     queryFn: async () => {
       if (!CONFIG.PACKAGE_ID) return [];
       const res = await client.queryEvents({
         query: { MoveEventType: `${CONFIG.PACKAGE_ID}::events::AttendanceRecordedEvent` },
-        limit: 500,
+        limit: limit * 10, // Fetch more than needed for filtering, but not too much
         order: "descending",
       });
       return res.data.map((e) => ({
@@ -103,8 +125,9 @@ export function useRecentActivity(limit = 5) {
       }));
     },
     enabled: !!CONFIG.PACKAGE_ID && !!account?.address,
-    staleTime: 10_000,
-    refetchInterval: 15_000,
+    staleTime: 30_000, // Increased cache time
+    refetchInterval: 30_000, // Reduced refetch frequency
+    placeholderData: (previousData) => previousData, // Use placeholder for instant updates
   });
 
   // Get user's organizations
@@ -116,20 +139,21 @@ export function useRecentActivity(limit = 5) {
     userOrganisations.map((org) => [org.organisation, org.name])
   );
 
-  // Fetch student names for attendance events
+  // Optimized: Fetch student events with reasonable limit
   const { data: studentEvents } = useQuery({
-    queryKey: ["events", "StudentRegisteredEvent", "all", CONFIG.PACKAGE_ID, limit],
+    queryKey: ["events", "StudentRegisteredEvent", "recent", CONFIG.PACKAGE_ID, limit],
     queryFn: async () => {
       if (!CONFIG.PACKAGE_ID) return [];
       const res = await client.queryEvents({
         query: { MoveEventType: `${CONFIG.PACKAGE_ID}::events::StudentRegisteredEvent` },
-        limit: 1000,
+        limit: 500, // Reduced from 1000
         order: "descending",
       });
       return res.data.map((e) => e.parsedJson as any);
     },
     enabled: !!CONFIG.PACKAGE_ID && !!account?.address,
-    staleTime: 10_000,
+    staleTime: 60_000, // Longer cache for student data (changes less frequently)
+    placeholderData: (previousData) => previousData,
   });
 
   const studentNameMap = new Map(

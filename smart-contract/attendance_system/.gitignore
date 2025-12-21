@@ -1,1 +1,46 @@
-build/*
+# ============================================
+# Sui Move Smart Contract .gitignore
+# ============================================
+
+# Move build artifacts
+build/
+*.mv
+.move/
+.move_history/
+
+# Sui CLI
+.sui/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.mainnet
+.env.testnet
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# IDE specific
+*.code-workspace
+*.iml
+
+# Lock files (optional - uncomment if you want to ignore)
+# Move.lock

@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PhoneShell from "../components/PhoneShell";
 import { WalletPill } from "../components/WalletPill";
 import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { CONFIG } from "../config";
 import { buildCreateOrganisationTx } from "../services/transactions";
+import { usePreFetchObjectMetadata } from "../hooks/use-object-metadata";
 
 export default function CreateOrganisationPage() {
   const navigate = useNavigate();
@@ -14,7 +15,11 @@ export default function CreateOrganisationPage() {
   const [error, setError] = useState<string | null>(null);
 
   const systemObjectId = useMemo(() => CONFIG.SYSTEM_OBJECT_ID, []);
-  const canSubmit = !!account && !!systemObjectId && name.trim().length > 0 && !isPending;
+  
+  // Pre-fetch system object metadata immediately when component mounts
+  const { data: systemMetadata, isReady: isMetadataReady } = usePreFetchObjectMetadata(systemObjectId);
+
+  const canSubmit = !!account && !!systemObjectId && name.trim().length > 0 && !isPending && isMetadataReady;
 
   return (
     <PhoneShell className="bg-white dark:bg-background-dark min-w-[320px]">
@@ -133,11 +138,18 @@ export default function CreateOrganisationPage() {
           disabled={!canSubmit}
           onClick={() => {
             setError(null);
+            if (!isMetadataReady) {
+              setError("Loading object metadata...");
+              return;
+            }
             try {
+              // Use cached metadata - no blocking network calls here!
               const tx = buildCreateOrganisationTx({
                 systemObjectId,
-                name: name.trim()
+                name: name.trim(),
+                systemMetadata, // Pass cached metadata
               });
+              // Wallet popup appears immediately - no delays!
               signAndExecute(
                 { transaction: tx },
                 {
@@ -156,7 +168,7 @@ export default function CreateOrganisationPage() {
         >
           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
           <span className="relative text-white text-base font-bold tracking-wide flex items-center gap-2">
-            {isPending ? "Creating..." : "Create Organisation"}
+            {!isMetadataReady ? "Preparing..." : isPending ? "Creating..." : "Create Organisation"}
             <span className="material-symbols-outlined text-[20px]">
               arrow_forward
             </span>

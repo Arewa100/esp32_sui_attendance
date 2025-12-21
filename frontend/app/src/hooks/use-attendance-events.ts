@@ -50,8 +50,9 @@ export function useOrganisationCreatedEvents(limit = 200) {
       return res.data.map((e) => e.parsedJson as unknown as OrganisationCreatedEvent);
     },
     enabled: !!CONFIG.PACKAGE_ID,
-    staleTime: 10_000,
-    refetchInterval: 15_000,
+    staleTime: 30_000, // Increased cache time
+    refetchInterval: 30_000, // Reduced refetch frequency
+    placeholderData: (previousData) => previousData, // Use placeholder for instant updates
   });
 }
 
@@ -114,6 +115,9 @@ export function useSubscriptionRenewedEvents(orgId?: string, limit = 200) {
     refetchInterval: 30_000,
   });
 }
+
+
+
 
 
 

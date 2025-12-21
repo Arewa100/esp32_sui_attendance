@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { ChevronLeft, Building2, Loader2, CheckCircle2, AlertCircle } from "luci
 import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { CONFIG } from "@/config";
 import { buildCreateOrganisationTx } from "@/services/transactions";
+import { usePreFetchObjectMetadata } from "@/hooks/use-object-metadata";
 
 type TransactionStatus = "idle" | "pending" | "success" | "error";
 
@@ -20,16 +21,38 @@ export default function CreateOrganisation() {
   const [error, setError] = useState<string | null>(null);
 
   const systemObjectId = useMemo(() => CONFIG.SYSTEM_OBJECT_ID, []);
-  const canSubmit = !!account && !!systemObjectId && name.trim().length > 0 && status === "idle";
+  
+  // Pre-fetch system object metadata immediately when component mounts
+  // This eliminates blocking network calls during transaction flow
+  const { data: systemMetadata, isReady: isMetadataReady } = usePreFetchObjectMetadata(systemObjectId);
+
+  const canSubmit = !!account && !!systemObjectId && name.trim().length > 0 && status === "idle" && isMetadataReady;
+
+  // Pre-fetch metadata on mount
+  useEffect(() => {
+    if (systemObjectId && !systemMetadata) {
+      // Metadata will be fetched automatically by the hook
+    }
+  }, [systemObjectId, systemMetadata]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
+    if (!isMetadataReady) {
+      setError("Loading object metadata...");
+      return;
+    }
 
     setError(null);
     setStatus("pending");
     try {
-      const tx = buildCreateOrganisationTx({ systemObjectId, name: name.trim() });
+      // Use cached metadata - no blocking network calls here!
+      const tx = buildCreateOrganisationTx({ 
+        systemObjectId, 
+        name: name.trim(),
+        systemMetadata 
+      });
+      // Wallet popup appears immediately - no delays!
       await mutateAsync({ transaction: tx });
       setStatus("success");
       setTimeout(() => navigate("/organisations"), 1000);
@@ -137,7 +160,12 @@ export default function CreateOrganisation() {
                 className="flex-1"
                 disabled={!canSubmit}
               >
-                {status === "pending" ? (
+                {!isMetadataReady ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Preparing...
+                  </>
+                ) : status === "pending" ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Creating...

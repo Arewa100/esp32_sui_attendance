@@ -5,6 +5,7 @@ import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-ki
 import { CONFIG } from "../config";
 import { buildPaySubscriptionTx } from "../services/transactions";
 import { useSubscriptionStatus } from "../hooks/use-subscription-status";
+import { useMultipleObjectMetadata } from "../hooks/use-object-metadata";
 
 export default function SubscriptionPage() {
   const navigate = useNavigate();
@@ -14,7 +15,20 @@ export default function SubscriptionPage() {
   const [error, setError] = useState<string | null>(null);
   const systemObjectId = useMemo(() => CONFIG.SYSTEM_OBJECT_ID, []);
   const { data: subscriptionStatus, isLoading: isLoadingStatus } = useSubscriptionStatus(orgObjectId);
-  const canPay = !!account && !!orgObjectId && !!systemObjectId && !isPending;
+  
+  // Pre-fetch all required object metadata in parallel
+  // This eliminates blocking network calls during transaction flow
+  const { data: metadataMap, isSuccess: isMetadataReady } = useMultipleObjectMetadata([
+    systemObjectId,
+    orgObjectId,
+    CONFIG.CLOCK_OBJECT_ID,
+  ]);
+
+  const systemMetadata = metadataMap?.get(systemObjectId || "");
+  const orgMetadata = metadataMap?.get(orgObjectId || "");
+  const clockMetadata = metadataMap?.get(CONFIG.CLOCK_OBJECT_ID);
+
+  const canPay = !!account && !!orgObjectId && !!systemObjectId && !isPending && isMetadataReady;
 
   // Update time remaining every second
   const [currentTime, setCurrentTime] = useState(Date.now());
@@ -247,11 +261,20 @@ export default function SubscriptionPage() {
               setError("Missing organisation object id in route.");
               return;
             }
+            if (!isMetadataReady || !systemMetadata || !orgMetadata || !clockMetadata) {
+              setError("Loading object metadata...");
+              return;
+            }
             try {
+              // Use cached metadata - no blocking network calls here!
               const tx = buildPaySubscriptionTx({
                 systemObjectId,
-                orgObjectId
+                orgObjectId,
+                systemMetadata,
+                orgMetadata,
+                clockMetadata,
               });
+              // Wallet popup appears immediately - no delays!
               signAndExecute(
                 { transaction: tx },
                 {
@@ -268,7 +291,7 @@ export default function SubscriptionPage() {
           }}
         >
           <span className="material-symbols-outlined">fingerprint</span>
-          {isPending ? "Processing..." : "Pay 10 SUI to Renew"}
+          {!isMetadataReady ? "Preparing..." : isPending ? "Processing..." : "Pay 10 SUI to Renew"}
         </button>
         <p className="text-center text-xs text-text-light dark:text-gray-500 mt-3">
           Process secured by ESP32 Sui Blockchain Protocol

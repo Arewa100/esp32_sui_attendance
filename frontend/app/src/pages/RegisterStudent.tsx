@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { ChevronLeft, Users, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { buildRegisterStudentTx } from "@/services/transactions";
+import { usePreFetchObjectMetadata } from "@/hooks/use-object-metadata";
 
 type TransactionStatus = "idle" | "pending" | "success" | "error";
 
@@ -24,6 +25,17 @@ export default function RegisterStudent() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Pre-fetch organisation object metadata immediately when component mounts
+  // This eliminates blocking network calls during transaction flow
+  const { data: orgMetadata, isReady: isMetadataReady } = usePreFetchObjectMetadata(id);
+
+  // Pre-fetch metadata on mount
+  useEffect(() => {
+    if (id && !orgMetadata) {
+      // Metadata will be fetched automatically by the hook
+    }
+  }, [id, orgMetadata]);
+
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) newErrors.name = "Name is required";
@@ -37,16 +49,23 @@ export default function RegisterStudent() {
     e.preventDefault();
     if (!validate()) return;
     if (!id) return;
+    if (!isMetadataReady) {
+      setSubmitError("Loading object metadata...");
+      return;
+    }
 
     setStatus("pending");
     setSubmitError(null);
     try {
+      // Use cached metadata - no blocking network calls here!
       const tx = buildRegisterStudentTx({
         orgObjectId: id,
         name: formData.name.trim(),
         cardId: formData.cardId.trim(),
         department: formData.department.trim(),
+        orgMetadata, // Pass cached metadata
       });
+      // Wallet popup appears immediately - no delays!
       await mutateAsync({ transaction: tx });
       setStatus("success");
       setTimeout(() => navigate(`/organisations/${id}`), 1000);
@@ -180,9 +199,14 @@ export default function RegisterStudent() {
               <Button 
                 type="submit" 
                 className="flex-1"
-                disabled={status !== "idle" || !account}
+                disabled={status !== "idle" || !account || !isMetadataReady}
               >
-                {status === "pending" ? (
+                {!isMetadataReady ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Preparing...
+                  </>
+                ) : status === "pending" ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Registering...

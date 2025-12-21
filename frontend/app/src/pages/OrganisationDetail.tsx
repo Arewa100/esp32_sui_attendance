@@ -34,6 +34,7 @@ import {
 import { useOrganisationObject, useStudentsByIds } from "@/hooks/use-attendance-objects";
 import { useAttendanceRecordedEvents, useStudentRegisteredEvents, useSubscriptionRenewedEvents } from "@/hooks/use-attendance-events";
 import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
+import SubscribeButton from "@/components/SubscribeButton";
 
 export default function OrganisationDetail() {
   const { id } = useParams();
@@ -59,16 +60,19 @@ export default function OrganisationDetail() {
     const fields = orgData?.fields;
     const lastRenewal = subscriptionEvents?.[0];
     const expiry = lastRenewal?.expiry_timestamp ?? fields?.subscription?.fields?.expiry_timestamp;
+    
+    // Determine status based on subscription, not just hardcoded "active"
+    const isSubscriptionActive = subscriptionStatus?.isActive ?? false;
 
     return {
       name: fields?.name ?? orgId ?? "Organisation",
-      status: "active" as const,
+      status: isSubscriptionActive ? "active" as const : "inactive" as const,
       students: fields?.students?.length ?? 0,
       records: attendanceEvents?.length ?? 0,
       created: undefined as string | undefined,
       subscriptionExpiry: expiry ? new Date(Number(expiry)).toISOString() : undefined,
     };
-  }, [attendanceEvents?.length, orgData?.fields, orgId, subscriptionEvents]);
+  }, [attendanceEvents?.length, orgData?.fields, orgId, subscriptionEvents, subscriptionStatus?.isActive]);
 
   const students = useMemo(() => {
     return (studentsFromObjects ?? []).map((s) => ({
@@ -148,7 +152,16 @@ export default function OrganisationDetail() {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-foreground">{organisation.name}</h1>
-              <Badge className="bg-primary">{organisation.status}</Badge>
+              {subscriptionStatus?.isActive && (
+                <Badge className="bg-green-500 hover:bg-green-600">
+                  Active
+                </Badge>
+              )}
+              {!subscriptionStatus?.isActive && subscriptionStatus !== undefined && (
+                <Badge variant="destructive">
+                  Inactive
+                </Badge>
+              )}
             </div>
             <p className="text-muted-foreground">
               {orgLoading ? "Loading on-chain data..." : "On-chain organisation"}{" "}
@@ -162,12 +175,26 @@ export default function OrganisationDetail() {
             </p>
           </div>
         </div>
-        <Button asChild>
-          <Link to={`/organisations/${id}/register`}>
-            <Plus className="mr-2 h-4 w-4" />
-            Register Student
-          </Link>
-        </Button>
+        <div className="flex items-center gap-3">
+          {!subscriptionStatus?.isActive && orgId && (
+            <SubscribeButton
+              orgObjectId={orgId}
+              variant="default"
+              size="sm"
+              showStatus={false}
+              onSuccess={() => {
+                // Refetch subscription status
+                window.location.reload();
+              }}
+            />
+          )}
+          <Button asChild size="sm">
+            <Link to={`/organisations/${id}/register`}>
+              <Plus className="mr-2 h-4 w-4" />
+              Register Student
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -396,6 +423,59 @@ export default function OrganisationDetail() {
 
         {/* Settings Tab */}
         <TabsContent value="settings" className="space-y-6 mt-6">
+          {/* Subscription Management */}
+          <Card className="border-border">
+            <CardHeader>
+              <CardTitle>Subscription Management</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Subscribe to enable attendance recording for your organisation. 
+                  Each subscription lasts 30 days and costs 10 SUI.
+                </p>
+                {subscriptionStatus && (
+                  <div className="p-4 rounded-lg bg-muted">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Status:</span>
+                        <span className={subscriptionStatus.isActive ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
+                          {subscriptionStatus.isActive ? "Active" : subscriptionStatus.expiryTimestamp ? "Expired" : "No Subscription"}
+                        </span>
+                      </div>
+                      {subscriptionStatus.expiryTimestamp && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">Expires:</span>
+                          <span className="text-sm text-muted-foreground">
+                            {new Date(subscriptionStatus.expiryTimestamp).toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                      {subscriptionStatus.timeRemaining && subscriptionStatus.isActive && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">Time Remaining:</span>
+                          <span className="text-sm text-muted-foreground">
+                            {subscriptionStatus.timeRemaining.days}d {subscriptionStatus.timeRemaining.hours}h {subscriptionStatus.timeRemaining.minutes}m
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                <SubscribeButton
+                  orgObjectId={orgId || ""}
+                  variant="default"
+                  size="default"
+                  showStatus={false}
+                  onSuccess={() => {
+                    // Refetch subscription status
+                    window.location.reload();
+                  }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="border-border">
             <CardHeader>
               <CardTitle>Organisation Settings</CardTitle>

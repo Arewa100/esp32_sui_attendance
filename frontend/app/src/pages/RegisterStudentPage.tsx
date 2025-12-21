@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PhoneShell from "../components/PhoneShell";
 import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { buildRegisterStudentTx } from "../services/transactions";
+import { usePreFetchObjectMetadata } from "../hooks/use-object-metadata";
 
 export default function RegisterStudentPage() {
   const navigate = useNavigate();
@@ -14,13 +15,17 @@ export default function RegisterStudentPage() {
   const [cardId, setCardId] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  // Pre-fetch organisation object metadata immediately when component mounts
+  const { data: orgMetadata, isReady: isMetadataReady } = usePreFetchObjectMetadata(orgObjectId);
+
   const canSubmit =
     !!account &&
     !!orgObjectId &&
     fullName.trim().length > 0 &&
     department.trim().length > 0 &&
     cardId.trim().length > 0 &&
-    !isPending;
+    !isPending &&
+    isMetadataReady;
 
   return (
     <PhoneShell>
@@ -170,13 +175,20 @@ export default function RegisterStudentPage() {
               setError("Select a department.");
               return;
             }
+            if (!isMetadataReady) {
+              setError("Loading object metadata...");
+              return;
+            }
             try {
+              // Use cached metadata - no blocking network calls here!
               const tx = buildRegisterStudentTx({
                 orgObjectId,
                 name: fullName.trim(),
                 department: department.trim(),
-                cardId: cardId.trim()
+                cardId: cardId.trim(),
+                orgMetadata, // Pass cached metadata
               });
+              // Wallet popup appears immediately - no delays!
               signAndExecute(
                 { transaction: tx },
                 {
@@ -189,7 +201,7 @@ export default function RegisterStudentPage() {
             }
           }}
         >
-          <span className="truncate">{isPending ? "Registering..." : "Register Student"}</span>
+          <span className="truncate">{!isMetadataReady ? "Preparing..." : isPending ? "Registering..." : "Register Student"}</span>
         </button>
       </div>
     </PhoneShell>
