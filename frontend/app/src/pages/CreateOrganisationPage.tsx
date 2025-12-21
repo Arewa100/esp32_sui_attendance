@@ -133,7 +133,7 @@ export default function CreateOrganisationPage() {
           </div>
         </div>
         <button
-          className="relative w-full overflow-hidden rounded-xl bg-primary hover:bg-primary-dark disabled:opacity-60 disabled:hover:bg-primary transition-all duration-300 h-14 flex items-center justify-center group shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+          className="relative w-full overflow-hidden rounded-xl bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-60 disabled:hover:bg-primary/10 transition-all duration-300 h-14 flex items-center justify-center group shadow-lg shadow-blue-500/20 active:scale-[0.98]"
           type="button"
           disabled={!canSubmit}
           onClick={() => {

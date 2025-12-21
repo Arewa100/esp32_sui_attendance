@@ -82,7 +82,7 @@ export default function OrganisationDashboardPage() {
                 </p>
               </div>
               <button
-                className="w-full md:w-fit px-6 py-2.5 bg-primary hover:bg-blue-600 active:bg-blue-700 text-white text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm"
+                className="w-full md:w-fit px-6 py-2.5 bg-primary/10 text-primary hover:bg-primary/20 active:bg-primary/30 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm"
                 type="button"
                 onClick={() => navigate(`/orgs/${orgObjectId}/subscription`)}
               >
@@ -194,7 +194,7 @@ export default function OrganisationDashboardPage() {
                 </div>
               </div>
               <button
-                className="shrink-0 h-9 px-4 bg-primary hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+                className="shrink-0 h-9 px-4 bg-primary/10 text-primary hover:bg-primary/20 text-sm font-medium rounded-lg transition-colors shadow-sm"
                 type="button"
                 onClick={() => navigate(`/orgs/${orgObjectId}/students/new`)}
               >

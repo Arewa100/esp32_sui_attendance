@@ -252,7 +252,7 @@ export default function SubscriptionPage() {
 
       <div className="sticky bottom-0 left-0 right-0 p-4 bg-surface-light dark:bg-[#1c2633] border-t border-gray-200 dark:border-gray-800 z-40 pb-8">
         <button
-          className="flex w-full items-center justify-center gap-2 rounded-xl h-14 bg-primary hover:bg-blue-600 disabled:opacity-60 disabled:hover:bg-primary text-white font-bold text-base transition-all shadow-lg shadow-blue-500/30 active:scale-[0.98]"
+          className="flex w-full items-center justify-center gap-2 rounded-xl h-14 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-60 disabled:hover:bg-primary/10 font-bold text-base transition-all shadow-lg shadow-blue-500/30 active:scale-[0.98]"
           type="button"
           disabled={!canPay}
           onClick={() => {

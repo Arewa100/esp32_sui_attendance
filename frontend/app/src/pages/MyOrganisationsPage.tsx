@@ -28,7 +28,7 @@ export default function MyOrganisationsPage() {
               </span>
             </button>
             <button
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white hover:bg-blue-600 transition-colors shadow-sm"
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors shadow-sm"
               type="button"
               onClick={() => navigate("/orgs/new")}
               aria-label="Add organisation"

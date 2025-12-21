@@ -127,7 +127,7 @@ export default function RegisterStudentPage() {
                   onChange={(e) => setCardId(e.target.value)}
                 />
                 <button
-                  className="text-primary hover:text-white hover:bg-primary flex border border-[#dbdfe6] dark:border-gray-700 bg-white dark:bg-[#1a222d] items-center justify-center px-4 rounded-r-xl border-l-0 transition-all cursor-pointer group"
+                  className="text-primary hover:bg-primary/10 flex border border-[#dbdfe6] dark:border-gray-700 bg-white dark:bg-[#1a222d] items-center justify-center px-4 rounded-r-xl border-l-0 transition-all cursor-pointer group"
                   type="button"
                 >
                   <span className="material-symbols-outlined group-hover:scale-110 transition-transform">
@@ -162,7 +162,7 @@ export default function RegisterStudentPage() {
 
       <div className="fixed bottom-0 w-full max-w-md left-1/2 -translate-x-1/2 bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-gray-800 p-4 pb-8 z-30">
         <button
-          className="flex w-full min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-5 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 disabled:opacity-60 disabled:hover:bg-primary"
+          className="flex w-full min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-5 bg-primary/10 text-primary text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/20 transition-colors shadow-lg shadow-primary/20 disabled:opacity-60 disabled:hover:bg-primary/10"
           type="button"
           disabled={!canSubmit}
           onClick={() => {

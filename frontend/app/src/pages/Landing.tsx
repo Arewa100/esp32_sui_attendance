@@ -188,15 +188,15 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-primary">
+      <section className="py-20 px-6 bg-primary/5">
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             Ready to get started?
           </h2>
-          <p className="text-lg text-primary-foreground/80 mb-8">
+          <p className="text-lg text-muted-foreground mb-8">
             Connect your wallet and create your first organisation today.
           </p>
-          <Button size="lg" variant="secondary" asChild>
+          <Button size="lg" variant="default" asChild>
             <Link to="/dashboard">
               Launch Dashboard
               <ArrowRight className="ml-2 h-4 w-4" />
