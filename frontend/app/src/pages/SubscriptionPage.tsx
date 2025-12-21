@@ -1,11 +1,11 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import PhoneShell from "../components/PhoneShell";
+import PhoneShell from "@/components/PhoneShell";
 import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
-import { CONFIG } from "../config";
-import { buildPaySubscriptionTx } from "../services/transactions";
-import { useSubscriptionStatus } from "../hooks/use-subscription-status";
-import { useMultipleObjectMetadata } from "../hooks/use-object-metadata";
+import { CONFIG } from "@/config";
+import { buildPaySubscriptionTx } from "@/services/transactions";
+import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
+import { useMultipleObjectMetadata } from "@/hooks/use-object-metadata";
 
 export default function SubscriptionPage() {
   const navigate = useNavigate();

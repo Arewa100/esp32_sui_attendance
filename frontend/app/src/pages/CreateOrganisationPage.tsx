@@ -1,11 +1,11 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import PhoneShell from "../components/PhoneShell";
-import { WalletPill } from "../components/WalletPill";
+import PhoneShell from "@/components/PhoneShell";
+import { WalletPill } from "@/components/WalletPill";
 import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
-import { CONFIG } from "../config";
-import { buildCreateOrganisationTx } from "../services/transactions";
-import { usePreFetchObjectMetadata } from "../hooks/use-object-metadata";
+import { CONFIG } from "@/config";
+import { buildCreateOrganisationTx } from "@/services/transactions";
+import { usePreFetchObjectMetadata } from "@/hooks/use-object-metadata";
 
 export default function CreateOrganisationPage() {
   const navigate = useNavigate();

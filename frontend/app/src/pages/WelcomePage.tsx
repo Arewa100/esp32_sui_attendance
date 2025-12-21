@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
-import PhoneShell from "../components/PhoneShell";
+import PhoneShell from "@/components/PhoneShell";
 
 export default function WelcomePage() {
   const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import PhoneShell from "../components/PhoneShell";
-import { WalletPill } from "../components/WalletPill";
+import PhoneShell from "@/components/PhoneShell";
+import { WalletPill } from "@/components/WalletPill";
 
 export default function MyOrganisationsPage() {
   const navigate = useNavigate();

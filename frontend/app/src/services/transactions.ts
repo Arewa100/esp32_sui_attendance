@@ -1,5 +1,5 @@
 import { Transaction } from "@mysten/sui/transactions";
-import { CONFIG, contractTarget } from "../config";
+import { CONFIG, contractTarget } from "@/config";
 import { ObjectMetadata } from "@/hooks/use-object-metadata";
 import { getObjectReference } from "@/utils/object-reference";
 

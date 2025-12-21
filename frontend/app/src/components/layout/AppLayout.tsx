@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { WalletPill } from "../WalletPill";
+import { WalletPill } from "@/components/WalletPill";
 import { useCurrentAccount, useDisconnectWallet } from "@mysten/dapp-kit";
 
 function SideLink({

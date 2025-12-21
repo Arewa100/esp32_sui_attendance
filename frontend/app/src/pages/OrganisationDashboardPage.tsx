@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import PhoneShell from "../components/PhoneShell";
-import { useSubscriptionStatus } from "../hooks/use-subscription-status";
+import PhoneShell from "@/components/PhoneShell";
+import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
 
 export default function OrganisationDashboardPage() {
   const navigate = useNavigate();

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import PhoneShell from "../components/PhoneShell";
+import PhoneShell from "@/components/PhoneShell";
 import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
-import { buildRegisterStudentTx } from "../services/transactions";
-import { usePreFetchObjectMetadata } from "../hooks/use-object-metadata";
+import { buildRegisterStudentTx } from "@/services/transactions";
+import { usePreFetchObjectMetadata } from "@/hooks/use-object-metadata";
 
 export default function RegisterStudentPage() {
   const navigate = useNavigate();
