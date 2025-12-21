@@ -34,7 +34,9 @@ module attendance_system::organisation {
             types::get_org_owner(&org),
         );
         
-        sui::transfer::public_transfer(org, sui::tx_context::sender(ctx));
+        // Share the organisation object so server (system owner) can sign transactions
+        // Access control is enforced via owner field checks in functions
+        sui::transfer::public_share_object(org);
 
         types::create_register_response(std::string::utf8(b"Organisation created"))
     }

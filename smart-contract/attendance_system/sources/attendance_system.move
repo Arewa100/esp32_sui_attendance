@@ -71,38 +71,60 @@ module attendance_system::attendance_system {
         student::register_student(org, name, card_id, department, ctx)
     }
 
-    public fun get_number_student_created(org: &AttendanceOrganisation): u64 {
-        student::get_number_students(org)
+    public fun get_number_student_created(
+        system: &AttendanceSystem,
+        org: &AttendanceOrganisation,
+        ctx: &mut sui::tx_context::TxContext,
+    ): u64 {
+        student::get_number_students(system, org, ctx)
     }
 
-    public fun get_student_by_card_id(org: &AttendanceOrganisation, card_id: String): std::option::Option<address> {
-        student::get_student_by_card_id(org, card_id)
+    public fun get_student_by_card_id(
+        system: &AttendanceSystem,
+        org: &AttendanceOrganisation,
+        card_id: String,
+        ctx: &mut sui::tx_context::TxContext,
+    ): std::option::Option<address> {
+        student::get_student_by_card_id(system, org, card_id, ctx)
     }
 
-    public fun is_student_registered(org: &AttendanceOrganisation, student_addr: address): bool {
-        student::is_student_registered(org, student_addr)
+    public fun is_student_registered(
+        system: &AttendanceSystem,
+        org: &AttendanceOrganisation,
+        student_addr: address,
+        ctx: &mut sui::tx_context::TxContext,
+    ): bool {
+        student::is_student_registered(system, org, student_addr, ctx)
     }
 
     // ========== ATTENDANCE RECORDING ==========
 
     public fun record_attendance(
+        system: &AttendanceSystem,
         org: &mut AttendanceOrganisation,
         student_addr: address,
         clock: &Clock,
         ctx: &mut sui::tx_context::TxContext,
     ): RegisterResponse {
-        attendance::record_attendance(org, student_addr, clock, ctx)
+        attendance::record_attendance(system, org, student_addr, clock, ctx)
     }
 
     public fun get_attendance_records_for_student(
+        system: &AttendanceSystem,
         org: &AttendanceOrganisation,
         student_addr: address,
+        ctx: &mut sui::tx_context::TxContext,
     ): &vector<address> {
-        attendance::get_attendance_records_for_student(org, student_addr)
+        attendance::get_attendance_records_for_student(system, org, student_addr, ctx)
     }
 
-    public fun get_number_attendance_records(org: &AttendanceOrganisation, student_addr: address): u64 {
-        attendance::get_number_attendance_records(org, student_addr)
+    public fun get_number_attendance_records(
+        system: &AttendanceSystem,
+        org: &AttendanceOrganisation,
+        student_addr: address,
+        ctx: &mut sui::tx_context::TxContext,
+    ): u64 {
+        attendance::get_number_attendance_records(system, org, student_addr, ctx)
     }
 
     // ========== SUBSCRIPTION MANAGEMENT ==========
@@ -119,13 +141,25 @@ module attendance_system::attendance_system {
     }
 
     /// Check if subscription is active
-    public fun check_subscription_active(org: &AttendanceOrganisation, clock: &Clock): bool {
-        subscription::check_subscription_active(org, clock)
+    /// Can be called by organisation owner or system owner (server)
+    public fun check_subscription_active(
+        system: &AttendanceSystem,
+        org: &AttendanceOrganisation,
+        clock: &Clock,
+        ctx: &mut sui::tx_context::TxContext,
+    ): bool {
+        subscription::check_subscription_active(system, org, clock, ctx)
     }
 
     /// Get subscription status (for view functions)
-    public fun get_subscription_status(org: &AttendanceOrganisation, clock: &Clock): (bool, u64, u64) {
-        subscription::get_subscription_status(org, clock)
+    /// Can be called by organisation owner or system owner (server)
+    public fun get_subscription_status(
+        system: &AttendanceSystem,
+        org: &AttendanceOrganisation,
+        clock: &Clock,
+        ctx: &mut sui::tx_context::TxContext,
+    ): (bool, u64, u64) {
+        subscription::get_subscription_status(system, org, clock, ctx)
     }
 
     // ========== SYSTEM QUERIES ==========

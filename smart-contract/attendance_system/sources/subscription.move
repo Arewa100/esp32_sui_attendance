@@ -6,6 +6,7 @@ module attendance_system::subscription {
     use sui::transfer;
     use std::option::{Self, Option};
     use attendance_system::types::{Self as types, AttendanceSystem, AttendanceOrganisation, Subscription};
+    use sui::tx_context;
     use attendance_system::constants;
     use attendance_system::events;
 
@@ -63,7 +64,16 @@ module attendance_system::subscription {
     }
 
     /// Check if subscription is active
-    public fun check_subscription_active(org: &AttendanceOrganisation, clock: &Clock): bool {
+    /// Can be called by organisation owner or system owner (server)
+    public fun check_subscription_active(
+        system: &AttendanceSystem,
+        org: &AttendanceOrganisation,
+        clock: &Clock,
+        ctx: &mut sui::tx_context::TxContext,
+    ): bool {
+        // Access control: allow organisation owner or system owner (server)
+        let caller = sui::tx_context::sender(ctx);
+        assert!(types::verify_owner_or_system(org, system, caller), constants::e_unauthorized());
         if (option::is_none(types::get_subscription(org))) {
             return false
         };
@@ -73,12 +83,22 @@ module attendance_system::subscription {
     }
 
     /// Get subscription status (for view functions)
-    public fun get_subscription_status(org: &AttendanceOrganisation, clock: &Clock): (bool, u64, u64) {
+    /// Can be called by organisation owner or system owner (server)
+    public fun get_subscription_status(
+        system: &AttendanceSystem,
+        org: &AttendanceOrganisation,
+        clock: &Clock,
+        ctx: &mut sui::tx_context::TxContext,
+    ): (bool, u64, u64) {
+        // Access control: allow organisation owner or system owner (server)
+        let caller = sui::tx_context::sender(ctx);
+        assert!(types::verify_owner_or_system(org, system, caller), constants::e_unauthorized());
         if (option::is_none(types::get_subscription(org))) {
             return (false, 0, 0)
         };
         let subscription = option::borrow(types::get_subscription(org));
-        let is_active = check_subscription_active(org, clock);
+        let current_timestamp = clock::timestamp_ms(clock);
+        let is_active = types::get_expiry_timestamp(subscription) > current_timestamp && types::get_is_active(subscription);
         (is_active, types::get_expiry_timestamp(subscription), types::get_payment_amount(subscription))
     }
 }

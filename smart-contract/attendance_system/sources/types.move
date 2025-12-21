@@ -13,7 +13,9 @@ module attendance_system::types {
         system_owner: address,
     }
 
-    public struct AttendanceOrganisation has key, store {
+    // Changed from owned to shared object so server (system owner) can sign transactions
+    // Access control is enforced via owner field checks in functions
+    public struct AttendanceOrganisation has key {
         id: UID,
         name: String,
         owner: address,
@@ -263,6 +265,22 @@ module attendance_system::types {
 
     public fun get_response_message(response: &RegisterResponse): &String {
         &response.message
+    }
+
+    // ========== ACCESS CONTROL HELPERS ==========
+
+    /// Verify that caller is the organisation owner
+    public fun verify_owner(org: &AttendanceOrganisation, caller: address): bool {
+        get_org_owner(org) == caller
+    }
+
+    /// Verify that caller is either the organisation owner or system owner
+    public fun verify_owner_or_system(
+        org: &AttendanceOrganisation,
+        system: &AttendanceSystem,
+        caller: address
+    ): bool {
+        get_org_owner(org) == caller || get_system_owner(system) == caller
     }
 }
 

@@ -5,7 +5,7 @@ module attendance_system::student {
     use std::vector;
     use std::option;
     use 0x2::table;
-    use attendance_system::types::{Self as types, AttendanceOrganisation, Student, RegisterResponse};
+    use attendance_system::types::{Self as types, AttendanceSystem, AttendanceOrganisation, Student, RegisterResponse};
     use attendance_system::events;
     use attendance_system::constants;
 
@@ -49,12 +49,29 @@ module attendance_system::student {
     }
 
     /// Get number of students created
-    public fun get_number_students(org: &AttendanceOrganisation): u64 {
+    /// Can be called by organisation owner or system owner (server)
+    public fun get_number_students(
+        system: &AttendanceSystem,
+        org: &AttendanceOrganisation,
+        ctx: &mut sui::tx_context::TxContext,
+    ): u64 {
+        // Access control: allow organisation owner or system owner (server)
+        let caller = sui::tx_context::sender(ctx);
+        assert!(types::verify_owner_or_system(org, system, caller), constants::e_unauthorized());
         vector::length(types::get_students(org))
     }
 
     /// Get student address by card_id (for RFID lookup)
-    public fun get_student_by_card_id(org: &AttendanceOrganisation, card_id: String): std::option::Option<address> {
+    /// Can be called by organisation owner or system owner (server)
+    public fun get_student_by_card_id(
+        system: &AttendanceSystem,
+        org: &AttendanceOrganisation,
+        card_id: String,
+        ctx: &mut sui::tx_context::TxContext,
+    ): std::option::Option<address> {
+        // Access control: allow organisation owner or system owner (server)
+        let caller = sui::tx_context::sender(ctx);
+        assert!(types::verify_owner_or_system(org, system, caller), constants::e_unauthorized());
         if (table::contains(types::get_card_id_to_student(org), card_id)) {
             std::option::some(*table::borrow(types::get_card_id_to_student(org), card_id))
         } else {
@@ -63,7 +80,16 @@ module attendance_system::student {
     }
 
     /// Check if student exists in organization
-    public fun is_student_registered(org: &AttendanceOrganisation, student_addr: address): bool {
+    /// Can be called by organisation owner or system owner (server)
+    public fun is_student_registered(
+        system: &AttendanceSystem,
+        org: &AttendanceOrganisation,
+        student_addr: address,
+        ctx: &mut sui::tx_context::TxContext,
+    ): bool {
+        // Access control: allow organisation owner or system owner (server)
+        let caller = sui::tx_context::sender(ctx);
+        assert!(types::verify_owner_or_system(org, system, caller), constants::e_unauthorized());
         table::contains(types::get_records_by_student(org), student_addr)
     }
 
