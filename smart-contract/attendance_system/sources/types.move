@@ -24,6 +24,7 @@ module attendance_system::types {
         records_by_student: table::Table<address, vector<address>>,
         card_id_to_student: table::Table<String, address>,
         subscription: Option<Subscription>,
+        last_checkin_day: table::Table<address, u64>, // Track last check-in day (days since epoch) for one-check-in-per-day enforcement
     }
 
     public struct Subscription has key, store {
@@ -99,6 +100,7 @@ module attendance_system::types {
         records_by_student: table::Table<address, vector<address>>,
         card_id_to_student: table::Table<String, address>,
         subscription: Option<Subscription>,
+        last_checkin_day: table::Table<address, u64>,
         ctx: &mut sui::tx_context::TxContext,
     ): AttendanceOrganisation {
         AttendanceOrganisation {
@@ -109,6 +111,7 @@ module attendance_system::types {
             records_by_student,
             card_id_to_student,
             subscription,
+            last_checkin_day,
         }
     }
 
@@ -154,6 +157,16 @@ module attendance_system::types {
 
     public fun get_subscription_mut(org: &mut AttendanceOrganisation): &mut Option<Subscription> {
         &mut org.subscription
+    }
+
+    // ========== LAST CHECK-IN DAY GETTERS/SETTERS ==========
+
+    public fun get_last_checkin_day(org: &AttendanceOrganisation): &table::Table<address, u64> {
+        &org.last_checkin_day
+    }
+
+    public fun get_last_checkin_day_mut(org: &mut AttendanceOrganisation): &mut table::Table<address, u64> {
+        &mut org.last_checkin_day
     }
 
     // ========== SUBSCRIPTION GETTERS/SETTERS ==========

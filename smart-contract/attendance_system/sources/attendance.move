@@ -31,6 +31,25 @@ module attendance_system::attendance {
 
         // Use on-chain clock timestamp to prevent manipulation
         let timestamp = sui::clock::timestamp_ms(clock);
+        
+        // Calculate current day (days since epoch) - milliseconds per day = 86400000
+        let current_day = timestamp / 86400000;
+        
+        // Check if student already checked in today
+        let last_checkin_day_table = types::get_last_checkin_day(org);
+        if (table::contains(last_checkin_day_table, student_addr)) {
+            let last_day = *table::borrow(last_checkin_day_table, student_addr);
+            assert!(last_day != current_day, constants::e_already_checked_in_today());
+        };
+        
+        // Update last check-in day
+        let last_checkin_day_table_mut = types::get_last_checkin_day_mut(org);
+        if (table::contains(last_checkin_day_table_mut, student_addr)) {
+            let last_day_ref = table::borrow_mut(last_checkin_day_table_mut, student_addr);
+            *last_day_ref = current_day;
+        } else {
+            table::add(last_checkin_day_table_mut, student_addr, current_day);
+        };
 
         let rec = types::create_attendance_record(student_addr, timestamp, ctx);
         let rec_addr: address = object::id(&rec).to_address();

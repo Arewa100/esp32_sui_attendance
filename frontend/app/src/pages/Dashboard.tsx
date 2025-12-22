@@ -24,8 +24,16 @@ function formatNumber(num: number): string {
 }
 
 export default function Dashboard() {
-  const { stats, isLoading: isLoadingStats } = useDashboardStats();
-  const { activities, isLoading: isLoadingActivities } = useRecentActivity(5);
+  const { stats, isLoading: isLoadingStats, error: statsError } = useDashboardStats();
+  const { activities, isLoading: isLoadingActivities, error: activitiesError } = useRecentActivity(5);
+
+  // Log errors for debugging
+  if (statsError) {
+    console.error("Dashboard stats error:", statsError);
+  }
+  if (activitiesError) {
+    console.error("Recent activity error:", activitiesError);
+  }
 
   return (
     <div className="space-y-8">

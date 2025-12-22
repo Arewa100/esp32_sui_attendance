@@ -1,13 +1,9 @@
 module attendance_system::organisation {
     use std::string::String;
     use sui::object::Self;
-    use sui::transfer;
-    use std::vector;
-    use std::option;
     use 0x2::table;
     use attendance_system::types::{Self as types, AttendanceSystem, AttendanceOrganisation, RegisterResponse};
     use attendance_system::events;
-    use attendance_system::constants;
 
     /// Create a new organisation
     public fun create_organisation(
@@ -22,6 +18,7 @@ module attendance_system::organisation {
             table::new<address, vector<address>>(ctx),
             table::new<String, address>(ctx),
             option::none(),
+            table::new<address, u64>(ctx),
             ctx,
         );
         

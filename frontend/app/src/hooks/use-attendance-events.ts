@@ -47,7 +47,7 @@ export function useOrganisationCreatedEvents(limit = 200) {
         limit,
         order: "descending",
       });
-      return res.data.map((e) => e.parsedJson as unknown as OrganisationCreatedEvent);
+      return (res.data || []).map((e) => e.parsedJson as unknown as OrganisationCreatedEvent);
     },
     enabled: !!CONFIG.PACKAGE_ID,
     staleTime: 30_000, // Increased cache time
@@ -67,7 +67,7 @@ export function useStudentRegisteredEvents(orgId?: string, limit = 500) {
         limit,
         order: "descending",
       });
-      const items = res.data.map((e) => e.parsedJson as unknown as StudentRegisteredEvent);
+      const items = (res.data || []).map((e) => e.parsedJson as unknown as StudentRegisteredEvent);
       return orgId ? items.filter((x) => x.organisation === orgId) : items;
     },
     enabled: !!CONFIG.PACKAGE_ID && !!orgId,
@@ -87,7 +87,7 @@ export function useAttendanceRecordedEvents(orgId?: string, limit = 500) {
         limit,
         order: "descending",
       });
-      const items = res.data.map((e) => e.parsedJson as unknown as AttendanceRecordedEvent);
+      const items = (res.data || []).map((e) => e.parsedJson as unknown as AttendanceRecordedEvent);
       return orgId ? items.filter((x) => x.organisation === orgId) : items;
     },
     enabled: !!CONFIG.PACKAGE_ID && !!orgId,
@@ -107,7 +107,7 @@ export function useSubscriptionRenewedEvents(orgId?: string, limit = 200) {
         limit,
         order: "descending",
       });
-      const items = res.data.map((e) => e.parsedJson as unknown as SubscriptionRenewedEvent);
+      const items = (res.data || []).map((e) => e.parsedJson as unknown as SubscriptionRenewedEvent);
       return orgId ? items.filter((x) => x.organisation === orgId) : items;
     },
     enabled: !!CONFIG.PACKAGE_ID && !!orgId,

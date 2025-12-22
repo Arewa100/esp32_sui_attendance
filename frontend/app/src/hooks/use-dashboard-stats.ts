@@ -1,8 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueries } from "@tanstack/react-query";
 import { useSuiClient } from "@mysten/dapp-kit";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useOrganisationCreatedEvents, useAttendanceRecordedEvents } from "./use-attendance-events";
-import { useOrganisationObject } from "./use-attendance-objects";
 import { CONFIG } from "@/config";
 
 export type DashboardStats = {
@@ -24,7 +23,7 @@ export type RecentActivity = {
 export function useDashboardStats() {
   const account = useCurrentAccount();
   const client = useSuiClient();
-  const { data: createdEvents, isLoading: isLoadingEvents } = useOrganisationCreatedEvents(200);
+  const { data: createdEvents, isLoading: isLoadingEvents, error: eventsError } = useOrganisationCreatedEvents(200);
   
   // Get organizations owned by current user
   const userOrganisations = createdEvents?.filter(
@@ -33,7 +32,7 @@ export function useDashboardStats() {
 
   // Optimized: Only fetch attendance events for user's organizations
   // Use a more reasonable limit and filter server-side when possible
-  const { data: allAttendanceEvents, isLoading: isLoadingAttendance } = useQuery({
+  const { data: allAttendanceEvents, isLoading: isLoadingAttendance, error: attendanceError } = useQuery({
     queryKey: ["events", "AttendanceRecordedEvent", "user", CONFIG.PACKAGE_ID, account?.address],
     queryFn: async () => {
       if (!CONFIG.PACKAGE_ID || !account?.address) return [];
@@ -44,7 +43,7 @@ export function useDashboardStats() {
         limit: 1000, // Reduced from 10000 for faster loading
         order: "descending",
       });
-      return res.data.map((e) => e.parsedJson as any);
+      return (res.data || []).map((e) => e.parsedJson as any);
     },
     enabled: !!CONFIG.PACKAGE_ID && !!account?.address,
     staleTime: 30_000, // Increased cache time
@@ -72,17 +71,29 @@ export function useDashboardStats() {
     .map((org) => org.organisation)
     .slice(0, 10); // Limit to first 10 active orgs for performance
 
-  // Fetch organization details in parallel (only for active orgs)
-  const orgQueries = activeOrgIds.map((orgId) => ({
-    id: orgId,
-    query: useOrganisationObject(orgId),
-  }));
+  // Fetch organization details in parallel (only for active orgs) - using useQueries to avoid Rules of Hooks violation
+  const orgQueries = useQueries({
+    queries: activeOrgIds.map((orgId) => ({
+      queryKey: ["object", "AttendanceOrganisation", orgId],
+      queryFn: async () => {
+        const res = await client.getObject({
+          id: orgId,
+          options: { showContent: true, showType: true, showOwner: true },
+        });
+        const fields = (res.data?.content as any)?.fields;
+        if (!fields) return null;
+        return { object: res, fields, orgId };
+      },
+      enabled: !!orgId,
+      staleTime: 10_000,
+    })),
+  });
 
   // Calculate stats with optimized calculations
   const stats: DashboardStats = {
     totalOrganisations: userOrganisations.length,
     // Use cached data or estimate from events
-    activeStudents: orgQueries.reduce((sum, { query }) => {
+    activeStudents: orgQueries.reduce((sum, query) => {
       return sum + (query.data?.fields?.students?.length ?? 0);
     }, 0),
     attendanceRecords: userAttendanceEvents?.length ?? 0,
@@ -98,7 +109,8 @@ export function useDashboardStats() {
 
   return {
     stats,
-    isLoading: isLoadingEvents || isLoadingAttendance || orgQueries.some(({ query }) => query.isLoading),
+    isLoading: isLoadingEvents || isLoadingAttendance || orgQueries.some((query) => query.isLoading),
+    error: eventsError || attendanceError,
     userOrganisations,
     userAttendanceEvents,
   };
@@ -110,7 +122,7 @@ export function useRecentActivity(limit = 5) {
   const { data: createdEvents } = useOrganisationCreatedEvents(200);
   
   // Optimized: Fetch only what we need (limit * 2 for filtering buffer)
-  const { data: allAttendanceEvents } = useQuery({
+  const { data: allAttendanceEvents, error: recentError } = useQuery({
     queryKey: ["events", "AttendanceRecordedEvent", "recent", CONFIG.PACKAGE_ID, limit],
     queryFn: async () => {
       if (!CONFIG.PACKAGE_ID) return [];
@@ -119,7 +131,7 @@ export function useRecentActivity(limit = 5) {
         limit: limit * 10, // Fetch more than needed for filtering, but not too much
         order: "descending",
       });
-      return res.data.map((e) => ({
+      return (res.data || []).map((e) => ({
         ...(e.parsedJson as any),
         timestamp: Number((e.parsedJson as any).timestamp),
       }));
@@ -149,7 +161,7 @@ export function useRecentActivity(limit = 5) {
         limit: 500, // Reduced from 1000
         order: "descending",
       });
-      return res.data.map((e) => e.parsedJson as any);
+      return (res.data || []).map((e) => e.parsedJson as any);
     },
     enabled: !!CONFIG.PACKAGE_ID && !!account?.address,
     staleTime: 60_000, // Longer cache for student data (changes less frequently)
@@ -200,6 +212,7 @@ export function useRecentActivity(limit = 5) {
   return {
     activities: allActivities,
     isLoading: false,
+    error: recentError,
   };
 }
 

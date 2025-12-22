@@ -180,3 +180,4 @@ module attendance_system::attendance_system {
         student::get_student_address(org, index)
     }
 }
+

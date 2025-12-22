@@ -247,4 +247,69 @@ module attendance_system::attendance_system_tests {
         ts::return_shared(attendance_organisation);
         test.end();
     }
+
+    #[test]
+    #[expected_failure(abort_code = 6)]
+    public fun test_duplicate_checkin_same_day() {
+        let mut test = ts::begin(@USER);
+        attendance_system::init_for_testing(test.ctx());
+        
+        // Create and share clock in first transaction
+        let clock = clock::create_for_testing(test.ctx());
+        let clock_id = object::id(&clock);
+        clock::share_for_testing(clock);
+        
+        test.next_tx(@USER);
+
+        let mut attendance_system = ts::take_shared<AttendanceSystem>(&mut test);
+        let clock_obj = ts::take_shared<clock::Clock>(&mut test);
+        let new_organization = attendance_system::create_organisation(&mut attendance_system, b"Test Org".to_string(), test.ctx());
+
+        test.next_tx(@USER);
+        let mut attendance_organisation = ts::take_shared<AttendanceOrganisation>(&mut test);
+
+        // Register a student
+        let register_student_response = attendance_system::register_student(
+            &mut attendance_organisation, 
+            b"Test Student".to_string(),
+            b"cardId789".to_string(),
+            b"Engineering".to_string(),
+            test.ctx(),
+        );
+
+        let student_addr = attendance_system::get_student_address(&attendance_organisation, 0);
+
+        test.next_tx(@USER);
+
+        // Pay subscription
+        let payment = coin::mint_for_testing<SUI>(10000000000, test.ctx()); // 10 SUI
+        attendance_system::pay_subscription(&attendance_system, &mut attendance_organisation, payment, &clock_obj, test.ctx());
+
+        test.next_tx(@USER);
+
+        // First check-in should succeed
+        let attendance_record_response = attendance_system::record_attendance(
+            &attendance_system,
+            &mut attendance_organisation,
+            student_addr,
+            &clock_obj,
+            test.ctx(),
+        );
+
+        // Second check-in on the same day should fail with error code 6 (e_already_checked_in_today)
+        attendance_system::record_attendance(
+            &attendance_system,
+            &mut attendance_organisation,
+            student_addr,
+            &clock_obj,
+            test.ctx(),
+        );
+
+        // Return shared objects
+        // Note: This test is expected to fail, so cleanup code below won't execute
+        ts::return_shared(attendance_system);
+        ts::return_shared(clock_obj);
+        ts::return_shared(attendance_organisation);
+        test.end();
+    }
 }

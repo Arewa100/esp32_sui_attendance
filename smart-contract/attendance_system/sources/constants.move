@@ -9,4 +9,5 @@ module attendance_system::constants {
     public fun e_student_not_found(): u64 { 3 }
     public fun e_unauthorized(): u64 { 4 }
     public fun e_duplicate_card_id(): u64 { 5 }
+    public fun e_already_checked_in_today(): u64 { 6 }
 }

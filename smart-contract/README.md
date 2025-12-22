@@ -16,6 +16,7 @@ A decentralized attendance tracking system built on Sui blockchain, designed for
 - [Access Control](#access-control)
 - [Subscription Model](#subscription-model)
 - [Security Considerations](#security-considerations)
+- [Upcoming Features](#upcoming-features)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -36,6 +37,7 @@ The system uses Sui's Move language for smart contract development, ensuring typ
 - **Organization Management**: Create and manage attendance organizations
 - **Student Registration**: Register students with unique card IDs and department information
 - **Attendance Recording**: Record attendance with on-chain timestamps (prevents manipulation)
+- **One Check-in Per Day**: Students can only check in once per day (enforced on-chain)
 - **Subscription System**: Pay-per-use model requiring 10 SUI for 30 days of service
 - **Access Control**: Role-based permissions (organization owners, system owner)
 - **Event Emission**: Comprehensive event system for frontend integration
@@ -261,6 +263,37 @@ After deployment, you'll receive:
 
 Save these IDs for frontend integration.
 
+### Upgrading the Contract
+
+Instead of republishing, you can upgrade your existing package using the `UpgradeCap` object:
+
+1. **Build the updated contract**:
+```bash
+sui move build
+```
+
+2. **Upgrade the package**:
+```bash
+sui client upgrade \
+  --upgrade-capability <UPGRADE_CAP_OBJECT_ID> \
+  --gas-budget 100000000
+```
+
+**Example** (using your UpgradeCap from deployment):
+```bash
+sui client upgrade \
+  --upgrade-capability 0x56b4a0baa8e761ce275e5bde1d04ab9b98784e80a481c33b0d8368b9cabdf0c8 \
+  --gas-budget 100000000
+```
+
+**Important Notes**:
+- The `UpgradeCap` must be owned by the address executing the upgrade
+- The package ID will remain the same after upgrade
+- Existing objects and data are preserved
+- Only the package code is updated
+- You'll receive a new `UpgradeCap` object after each upgrade (for future upgrades)
+- Test thoroughly before upgrading on mainnet
+
 ## Usage Guide
 
 ### 1. Initialize the System
@@ -343,11 +376,19 @@ let response = attendance_system::record_attendance(
 - Active subscription (checked via on-chain clock)
 - Valid student address (must be registered in organization)
 - Valid `Clock` object reference
+- Student has not already checked in today (one check-in per day enforced)
 
 **Result**:
 - New `AttendanceRecord` object created with on-chain timestamp
 - Record transferred to organization owner
+- Last check-in day updated for the student
 - `AttendanceRecordedEvent` emitted
+
+**One Check-in Per Day Enforcement**:
+- The system tracks the last check-in day for each student
+- A day is calculated as `timestamp_ms / 86400000` (milliseconds per day)
+- If a student attempts to check in multiple times on the same day, the transaction will abort with error code `6` (`e_already_checked_in_today`)
+- This prevents duplicate check-ins and ensures accurate daily attendance tracking
 
 ### Query Functions
 
@@ -463,9 +504,10 @@ Attendance recording will fail if subscription is expired or inactive.
 1. **On-Chain Clock**: Prevents timestamp manipulation
 2. **Access Control**: Role-based permissions
 3. **Duplicate Prevention**: Card ID uniqueness enforced
-4. **Subscription Enforcement**: Hard requirement for attendance recording
-5. **Type Safety**: Move's type system prevents common vulnerabilities
-6. **Resource Safety**: Sui's ownership model prevents double-spending
+4. **One Check-in Per Day**: Prevents duplicate daily check-ins
+5. **Subscription Enforcement**: Hard requirement for attendance recording
+6. **Type Safety**: Move's type system prevents common vulnerabilities
+7. **Resource Safety**: Sui's ownership model prevents double-spending
 
 ### Best Practices
 
@@ -480,6 +522,10 @@ Attendance recording will fail if subscription is expired or inactive.
 - No rate limiting on organization creation
 - No maximum limit on students per organization
 - AdminCap currently unused (reserved for future features)
+
+## Upcoming Features
+
+For a detailed list of planned features and improvements, see [UPCOMING_FEATURES.md](../../UPCOMING_FEATURES.md) in the repository root.
 
 ## Contributing
 
@@ -543,6 +589,7 @@ A decentralized attendance tracking system built on Sui blockchain, designed for
 - [Access Control](#access-control)
 - [Subscription Model](#subscription-model)
 - [Security Considerations](#security-considerations)
+- [Upcoming Features](#upcoming-features)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -563,6 +610,7 @@ The system uses Sui's Move language for smart contract development, ensuring typ
 - **Organization Management**: Create and manage attendance organizations
 - **Student Registration**: Register students with unique card IDs and department information
 - **Attendance Recording**: Record attendance with on-chain timestamps (prevents manipulation)
+- **One Check-in Per Day**: Students can only check in once per day (enforced on-chain)
 - **Subscription System**: Pay-per-use model requiring 10 SUI for 30 days of service
 - **Access Control**: Role-based permissions (organization owners, system owner)
 - **Event Emission**: Comprehensive event system for frontend integration
@@ -788,6 +836,37 @@ After deployment, you'll receive:
 
 Save these IDs for frontend integration.
 
+### Upgrading the Contract
+
+Instead of republishing, you can upgrade your existing package using the `UpgradeCap` object:
+
+1. **Build the updated contract**:
+```bash
+sui move build
+```
+
+2. **Upgrade the package**:
+```bash
+sui client upgrade \
+  --upgrade-capability <UPGRADE_CAP_OBJECT_ID> \
+  --gas-budget 100000000
+```
+
+**Example** (using your UpgradeCap from deployment):
+```bash
+sui client upgrade \
+  --upgrade-capability 0x56b4a0baa8e761ce275e5bde1d04ab9b98784e80a481c33b0d8368b9cabdf0c8 \
+  --gas-budget 100000000
+```
+
+**Important Notes**:
+- The `UpgradeCap` must be owned by the address executing the upgrade
+- The package ID will remain the same after upgrade
+- Existing objects and data are preserved
+- Only the package code is updated
+- You'll receive a new `UpgradeCap` object after each upgrade (for future upgrades)
+- Test thoroughly before upgrading on mainnet
+
 ## Usage Guide
 
 ### 1. Initialize the System
@@ -870,11 +949,19 @@ let response = attendance_system::record_attendance(
 - Active subscription (checked via on-chain clock)
 - Valid student address (must be registered in organization)
 - Valid `Clock` object reference
+- Student has not already checked in today (one check-in per day enforced)
 
 **Result**:
 - New `AttendanceRecord` object created with on-chain timestamp
 - Record transferred to organization owner
+- Last check-in day updated for the student
 - `AttendanceRecordedEvent` emitted
+
+**One Check-in Per Day Enforcement**:
+- The system tracks the last check-in day for each student
+- A day is calculated as `timestamp_ms / 86400000` (milliseconds per day)
+- If a student attempts to check in multiple times on the same day, the transaction will abort with error code `6` (`e_already_checked_in_today`)
+- This prevents duplicate check-ins and ensures accurate daily attendance tracking
 
 ### Query Functions
 
@@ -990,9 +1077,10 @@ Attendance recording will fail if subscription is expired or inactive.
 1. **On-Chain Clock**: Prevents timestamp manipulation
 2. **Access Control**: Role-based permissions
 3. **Duplicate Prevention**: Card ID uniqueness enforced
-4. **Subscription Enforcement**: Hard requirement for attendance recording
-5. **Type Safety**: Move's type system prevents common vulnerabilities
-6. **Resource Safety**: Sui's ownership model prevents double-spending
+4. **One Check-in Per Day**: Prevents duplicate daily check-ins
+5. **Subscription Enforcement**: Hard requirement for attendance recording
+6. **Type Safety**: Move's type system prevents common vulnerabilities
+7. **Resource Safety**: Sui's ownership model prevents double-spending
 
 ### Best Practices
 
@@ -1007,6 +1095,10 @@ Attendance recording will fail if subscription is expired or inactive.
 - No rate limiting on organization creation
 - No maximum limit on students per organization
 - AdminCap currently unused (reserved for future features)
+
+## Upcoming Features
+
+For a detailed list of planned features and improvements, see [UPCOMING_FEATURES.md](../../UPCOMING_FEATURES.md) in the repository root.
 
 ## Contributing
 

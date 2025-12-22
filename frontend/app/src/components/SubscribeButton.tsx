@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { CONFIG } from "@/config";
-import { buildPaySubscriptionTx } from "@/services/transactions";
+import { buildPaySubscriptionTx, SUBSCRIPTION_FEE_MIST, MIST_PER_SUI } from "@/services/transactions";
 import { useMultipleObjectMetadata } from "@/hooks/use-object-metadata";
 import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
+import { useSuiBalance } from "@/hooks/use-sui-balance";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, CreditCard, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 
@@ -64,11 +65,18 @@ export default function SubscribeButton({
 
   // Get subscription status
   const { data: subscriptionStatus, isLoading: isLoadingStatus } = useSubscriptionStatus(orgObjectId);
+  
+  // Get user's SUI balance
+  const { data: balance, isLoading: isLoadingBalance } = useSuiBalance();
 
   // Extract cached metadata
   const systemMetadata = metadataMap?.get(systemObjectId || "");
   const orgMetadata = metadataMap?.get(orgObjectId);
   const clockMetadata = metadataMap?.get(CONFIG.CLOCK_OBJECT_ID);
+
+  // Check if user has sufficient balance (10 SUI + gas)
+  const requiredAmount = SUBSCRIPTION_FEE_MIST + 2_000_000n; // 10 SUI + ~0.002 SUI for gas
+  const hasSufficientBalance = (balance?.balanceMist ?? 0n) >= requiredAmount;
 
   // Determine if button can be clicked
   const canSubscribe = !!account && 
@@ -77,6 +85,8 @@ export default function SubscribeButton({
                        !isPending && 
                        !success &&
                        isMetadataReady &&
+                       !isLoadingBalance &&
+                       hasSufficientBalance &&
                        !!systemMetadata &&
                        !!orgMetadata &&
                        !!clockMetadata;
@@ -89,9 +99,43 @@ export default function SubscribeButton({
   }, [success, onSuccess]);
 
   const handleSubscribe = async () => {
-    if (!canSubscribe) return;
+    if (!canSubscribe) {
+      // Check if it's a balance issue
+      const requiredAmount = SUBSCRIPTION_FEE_MIST + 2_000_000n;
+      const currentBalance = balance?.balanceMist ?? 0n;
+      
+      if (currentBalance < requiredAmount) {
+        const requiredSui = Number(requiredAmount) / Number(MIST_PER_SUI);
+        const currentSui = balance?.balanceSui ?? 0;
+        const shortfall = requiredSui - currentSui;
+        
+        toast({
+          title: "Insufficient Balance",
+          description: `You need ${requiredSui.toFixed(3)} SUI but only have ${currentSui.toFixed(3)} SUI. Please add ${shortfall.toFixed(3)} SUI to your wallet.`,
+          variant: "destructive",
+        });
+      }
+      return;
+    }
 
     setSuccess(false);
+
+    // Double-check balance before building transaction
+    const requiredAmount = SUBSCRIPTION_FEE_MIST + 2_000_000n;
+    const currentBalance = balance?.balanceMist ?? 0n;
+    
+    if (currentBalance < requiredAmount) {
+      const requiredSui = Number(requiredAmount) / Number(MIST_PER_SUI);
+      const currentSui = balance?.balanceSui ?? 0;
+      const shortfall = requiredSui - currentSui;
+      
+      toast({
+        title: "Insufficient Balance",
+        description: `You need ${requiredSui.toFixed(3)} SUI but only have ${currentSui.toFixed(3)} SUI. Please add ${shortfall.toFixed(3)} SUI to your wallet.`,
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       // Use cached metadata - no blocking network calls here!
@@ -206,6 +250,24 @@ export default function SubscribeButton({
         <>
           <CreditCard className="mr-2 h-4 w-4" />
           Connect Wallet
+        </>
+      );
+    }
+
+    if (isLoadingBalance) {
+      return (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Checking Balance...
+        </>
+      );
+    }
+
+    if (!hasSufficientBalance) {
+      return (
+        <>
+          <AlertCircle className="mr-2 h-4 w-4" />
+          Insufficient Balance
         </>
       );
     }

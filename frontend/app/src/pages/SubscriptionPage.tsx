@@ -3,18 +3,22 @@ import { useNavigate, useParams } from "react-router-dom";
 import PhoneShell from "@/components/PhoneShell";
 import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { CONFIG } from "@/config";
-import { buildPaySubscriptionTx } from "@/services/transactions";
+import { buildPaySubscriptionTx, SUBSCRIPTION_FEE_MIST, MIST_PER_SUI } from "@/services/transactions";
 import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
 import { useMultipleObjectMetadata } from "@/hooks/use-object-metadata";
+import { useSuiBalance } from "@/hooks/use-sui-balance";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SubscriptionPage() {
   const navigate = useNavigate();
   const { orgObjectId } = useParams();
   const account = useCurrentAccount();
   const { mutate: signAndExecute, isPending } = useSignAndExecuteTransaction();
+  const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const systemObjectId = useMemo(() => CONFIG.SYSTEM_OBJECT_ID, []);
   const { data: subscriptionStatus, isLoading: isLoadingStatus } = useSubscriptionStatus(orgObjectId);
+  const { data: balance, isLoading: isLoadingBalance } = useSuiBalance();
   
   // Pre-fetch all required object metadata in parallel
   // This eliminates blocking network calls during transaction flow
@@ -28,7 +32,17 @@ export default function SubscriptionPage() {
   const orgMetadata = metadataMap?.get(orgObjectId || "");
   const clockMetadata = metadataMap?.get(CONFIG.CLOCK_OBJECT_ID);
 
-  const canPay = !!account && !!orgObjectId && !!systemObjectId && !isPending && isMetadataReady;
+  // Check if user has sufficient balance (10 SUI + gas)
+  const requiredAmount = SUBSCRIPTION_FEE_MIST + 2_000_000n; // 10 SUI + ~0.002 SUI for gas
+  const hasSufficientBalance = (balance?.balanceMist ?? 0n) >= requiredAmount;
+  
+  const canPay = !!account && 
+                 !!orgObjectId && 
+                 !!systemObjectId && 
+                 !isPending && 
+                 isMetadataReady && 
+                 !isLoadingBalance &&
+                 hasSufficientBalance;
 
   // Update time remaining every second
   const [currentTime, setCurrentTime] = useState(Date.now());
@@ -255,7 +269,7 @@ export default function SubscriptionPage() {
           className="flex w-full items-center justify-center gap-2 rounded-xl h-14 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-60 disabled:hover:bg-primary/10 font-bold text-base transition-all shadow-lg shadow-blue-500/30 active:scale-[0.98]"
           type="button"
           disabled={!canPay}
-          onClick={() => {
+          onClick={async () => {
             setError(null);
             if (!orgObjectId) {
               setError("Missing organisation object id in route.");
@@ -265,6 +279,25 @@ export default function SubscriptionPage() {
               setError("Loading object metadata...");
               return;
             }
+            
+            // Check balance before attempting transaction
+            const requiredAmount = SUBSCRIPTION_FEE_MIST + 2_000_000n; // 10 SUI + ~0.002 SUI for gas
+            const currentBalance = balance?.balanceMist ?? 0n;
+            
+            if (currentBalance < requiredAmount) {
+              const requiredSui = Number(requiredAmount) / Number(MIST_PER_SUI);
+              const currentSui = balance?.balanceSui ?? 0;
+              const shortfall = requiredSui - currentSui;
+              
+              toast({
+                title: "Insufficient Balance",
+                description: `You need ${requiredSui.toFixed(3)} SUI but only have ${currentSui.toFixed(3)} SUI. Please add ${shortfall.toFixed(3)} SUI to your wallet.`,
+                variant: "destructive",
+              });
+              setError(`Insufficient balance. You need ${requiredSui.toFixed(3)} SUI but only have ${currentSui.toFixed(3)} SUI.`);
+              return;
+            }
+            
             try {
               // Use cached metadata - no blocking network calls here!
               const tx = buildPaySubscriptionTx({
@@ -279,19 +312,44 @@ export default function SubscriptionPage() {
                 { transaction: tx },
                 {
                   onSuccess: () => {
+                    toast({
+                      title: "Subscription Successful!",
+                      description: "Your organisation subscription is now active for 30 days.",
+                      variant: "default",
+                    });
                     // Refetch subscription status after payment
                     setTimeout(() => navigate(`/orgs/${orgObjectId}`), 2000);
                   },
-                  onError: (e) => setError(e.message ?? String(e))
+                  onError: (e) => {
+                    const errorMsg = e.message ?? String(e);
+                    setError(errorMsg);
+                    toast({
+                      title: "Subscription Failed",
+                      description: errorMsg.includes("rejected") 
+                        ? "Transaction was rejected. Please try again."
+                        : errorMsg,
+                      variant: "destructive",
+                    });
+                  }
                 }
               );
             } catch (e) {
-              setError(e instanceof Error ? e.message : String(e));
+              const errorMsg = e instanceof Error ? e.message : String(e);
+              setError(errorMsg);
+              toast({
+                title: "Subscription Error",
+                description: errorMsg,
+                variant: "destructive",
+              });
             }
           }}
         >
           <span className="material-symbols-outlined">fingerprint</span>
-          {!isMetadataReady ? "Preparing..." : isPending ? "Processing..." : "Pay 10 SUI to Renew"}
+          {!isMetadataReady ? "Preparing..." 
+           : isLoadingBalance ? "Checking Balance..." 
+           : !hasSufficientBalance ? "Insufficient Balance" 
+           : isPending ? "Processing..." 
+           : "Pay 10 SUI to Renew"}
         </button>
         <p className="text-center text-xs text-text-light dark:text-gray-500 mt-3">
           Process secured by ESP32 Sui Blockchain Protocol

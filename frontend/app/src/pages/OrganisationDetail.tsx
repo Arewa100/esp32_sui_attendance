@@ -498,9 +498,11 @@ export default function OrganisationDetail() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                Once you delete an organisation, there is no going back. Please be certain.
+                Organisation deletion functionality is coming soon. This feature will allow you to permanently remove an organisation and all its associated data.
               </p>
-              <Button variant="destructive">Delete Organisation</Button>
+              <Button variant="destructive" disabled>
+                Delete Organisation (Coming Soon)
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
