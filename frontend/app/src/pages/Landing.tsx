@@ -105,7 +105,7 @@ export default function Landing() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="w-full sm:w-auto">
-                <a href="#">View Documentation</a>
+                <a href="https://github.com/Arewa100/esp32_sui_attendance" target="_blank" rel="noopener noreferrer">View Documentation</a>
               </Button>
             </div>
           </div>
@@ -225,9 +225,8 @@ export default function Landing() {
             </div>
             
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">Documentation</a>
-              <a href="#" className="hover:text-foreground transition-colors">GitHub</a>
-              <a href="#" className="hover:text-foreground transition-colors">Twitter</a>
+              <a href="https://github.com/Arewa100/esp32_sui_attendance" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Documentation</a>
+              <a href="https://github.com/Arewa100/esp32_sui_attendance" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a>
             </div>
             
             <p className="text-sm text-muted-foreground">
