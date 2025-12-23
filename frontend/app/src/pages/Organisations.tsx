@@ -30,13 +30,26 @@ import { useMemo, useState } from "react";
 import { useOrganisationCreatedEvents } from "@/hooks/use-attendance-events";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useSuiClient } from "@mysten/dapp-kit";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueries } from "@tanstack/react-query";
 import { CONFIG } from "@/config";
+
+type StatusFilter = "all" | "active" | "inactive";
+type SortOption = 
+  | "name-asc" 
+  | "name-desc" 
+  | "created-newest" 
+  | "created-oldest" 
+  | "students-most" 
+  | "students-least" 
+  | "records-most" 
+  | "records-least";
 
 export default function Organisations() {
   const account = useCurrentAccount();
   const client = useSuiClient();
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [sortOption, setSortOption] = useState<SortOption>("name-asc");
   const { data: createdEvents, isLoading: isLoadingOrgs, error } = useOrganisationCreatedEvents(200);
 
   // Fetch all student events (without orgId filter to get all events for counting)
@@ -73,6 +86,38 @@ export default function Organisations() {
     refetchInterval: 30_000,
   });
 
+  // Filter orgs owned by connected wallet
+  const userOrgIds = useMemo(() => {
+    if (!createdEvents) return [];
+    return createdEvents
+      .filter((e) => account?.address ? e.owner === account.address : true)
+      .map((e) => e.organisation);
+  }, [createdEvents, account?.address]);
+
+  // Fetch organisation objects in parallel to get subscription status
+  const orgQueries = useQueries({
+    queries: userOrgIds.map((orgId) => ({
+      queryKey: ["object", "AttendanceOrganisation", orgId],
+      queryFn: async () => {
+        try {
+          const res = await client.getObject({
+            id: orgId,
+            options: { showContent: true },
+          });
+          const fields = (res.data?.content as any)?.fields;
+          if (!fields) return null;
+          return { orgId, fields };
+        } catch (error) {
+          console.error(`Error fetching org ${orgId}:`, error);
+          return null;
+        }
+      },
+      enabled: !!orgId,
+      staleTime: 10_000,
+      refetchInterval: 30_000,
+    })),
+  });
+
   // Compute counts per organisation using useMemo
   const organisations = useMemo(() => {
     if (!createdEvents) return [];
@@ -98,28 +143,89 @@ export default function Organisations() {
       recordCountByOrg.set(orgId, (recordCountByOrg.get(orgId) || 0) + 1);
     });
 
-    // Map organisations with counts and creation date
-    return userOrgs.map((e) => ({
-      id: e.organisation,
-      name: e.name,
-      status: "active" as const,
-      students: studentCountByOrg.get(e.organisation) || 0,
-      records: recordCountByOrg.get(e.organisation) || 0,
-      created: e.timestampMs ? new Date(e.timestampMs).toISOString() : undefined,
-    }));
-  }, [createdEvents, allStudentEvents, allAttendanceEvents, account?.address]);
+    // Create a map of orgId -> subscription status from fetched objects
+    const statusByOrg = new Map<string, "active" | "inactive">();
+    orgQueries.forEach((query) => {
+      if (query.data?.fields) {
+        const subscription = query.data.fields.subscription?.fields;
+        if (subscription) {
+          const expiry = Number(subscription.expiry_timestamp);
+          const now = Date.now();
+          const isActive = expiry > now && subscription.is_active;
+          statusByOrg.set(query.data.orgId, isActive ? "active" : "inactive");
+        } else {
+          // No subscription data means inactive
+          statusByOrg.set(query.data.orgId, "inactive");
+        }
+      }
+    });
 
-  // Filter organisations based on search query
+    // Map organisations with counts, creation date, and real subscription status
+    return userOrgs.map((e) => {
+      const orgId = e.organisation;
+      // Use real status if available, otherwise default to "inactive" (safer than assuming active)
+      const status = statusByOrg.get(orgId) ?? "inactive";
+      
+      return {
+        id: orgId,
+        name: e.name,
+        status: status as "active" | "inactive",
+        students: studentCountByOrg.get(orgId) || 0,
+        records: recordCountByOrg.get(orgId) || 0,
+        created: e.timestampMs ? new Date(e.timestampMs).toISOString() : undefined,
+      };
+    });
+  }, [createdEvents, allStudentEvents, allAttendanceEvents, account?.address, orgQueries]);
+
+  // Filter and sort organisations
   const filteredOrganisations = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return organisations;
+    let filtered = organisations;
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((org) =>
+        org.name.toLowerCase().includes(query)
+      );
     }
-    
-    const query = searchQuery.toLowerCase().trim();
-    return organisations.filter((org) =>
-      org.name.toLowerCase().includes(query)
-    );
-  }, [organisations, searchQuery]);
+
+    // Apply status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((org) => org.status === statusFilter);
+    }
+
+    // Apply sorting
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortOption) {
+        case "name-asc":
+          return a.name.localeCompare(b.name);
+        case "name-desc":
+          return b.name.localeCompare(a.name);
+        case "created-newest":
+          if (!a.created && !b.created) return 0;
+          if (!a.created) return 1;
+          if (!b.created) return -1;
+          return new Date(b.created).getTime() - new Date(a.created).getTime();
+        case "created-oldest":
+          if (!a.created && !b.created) return 0;
+          if (!a.created) return 1;
+          if (!b.created) return -1;
+          return new Date(a.created).getTime() - new Date(b.created).getTime();
+        case "students-most":
+          return b.students - a.students;
+        case "students-least":
+          return a.students - b.students;
+        case "records-most":
+          return b.records - a.records;
+        case "records-least":
+          return a.records - b.records;
+        default:
+          return 0;
+      }
+    });
+
+    return sorted;
+  }, [organisations, searchQuery, statusFilter, sortOption]);
 
   return (
     <div className="space-y-6">
@@ -166,13 +272,58 @@ export default function Organisations() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="outline" size="sm">
-              All Status
-            </Button>
-            <Button variant="outline" size="sm">
-              <ArrowUpDown className="mr-2 h-4 w-4" />
-              Sort
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  {statusFilter === "all" ? "All Status" : statusFilter === "active" ? "Active" : "Inactive"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setStatusFilter("all")}>
+                  All Status
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter("active")}>
+                  Active
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter("inactive")}>
+                  Inactive
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <ArrowUpDown className="mr-2 h-4 w-4" />
+                  Sort
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setSortOption("name-asc")}>
+                  Name (A-Z)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption("name-desc")}>
+                  Name (Z-A)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption("created-newest")}>
+                  Created (Newest)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption("created-oldest")}>
+                  Created (Oldest)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption("students-most")}>
+                  Students (Most)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption("students-least")}>
+                  Students (Least)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption("records-most")}>
+                  Records (Most)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption("records-least")}>
+                  Records (Least)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardContent>
       </Card>
@@ -191,7 +342,7 @@ export default function Organisations() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoadingOrgs ? (
+            {(isLoadingOrgs || orgQueries.some((q) => q.isLoading)) ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-muted-foreground">
                   Loading organisations...
@@ -228,13 +379,11 @@ export default function Organisations() {
                 <TableCell>
                   <Badge 
                     variant={
-                      org.status === "active" ? "default" : 
-                      org.status === "expired" ? "destructive" : 
-                      "secondary"
+                      org.status === "active" ? "default" : "destructive"
                     }
                     className={org.status === "active" ? "bg-primary" : ""}
                   >
-                    {org.status}
+                    {org.status === "active" ? "active" : "inactive"}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">

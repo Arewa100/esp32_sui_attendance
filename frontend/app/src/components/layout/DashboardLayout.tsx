@@ -4,7 +4,6 @@ import {
   Building2, 
   Users, 
   Bell,
-  Search,
   Wallet,
   ChevronLeft,
   Shield,
@@ -12,7 +11,6 @@ import {
   LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { ConnectButton, useCurrentAccount, useDisconnectWallet } from "@mysten/dapp-kit";
@@ -104,17 +102,7 @@ export default function DashboardLayout() {
         collapsed ? "ml-16" : "ml-64"
       )}>
         {/* Top bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-6">
-          <div className="flex items-center gap-4 flex-1 max-w-md">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input 
-                placeholder="Search..." 
-                className="pl-9 bg-muted border-0"
-              />
-            </div>
-          </div>
-
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-end border-b border-border bg-background px-6">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
