@@ -34,6 +34,7 @@ import { useQuery, useQueries } from "@tanstack/react-query";
 import { CONFIG } from "@/config";
 
 type StatusFilter = "all" | "active" | "inactive";
+type OrgStatus = "active" | "inactive" | "checking" | "unknown";
 type SortOption = 
   | "name-asc" 
   | "name-desc" 
@@ -113,8 +114,12 @@ export default function Organisations() {
         }
       },
       enabled: !!orgId,
-      staleTime: 10_000,
+      staleTime: 60_000, // Keep data fresh for 1 minute
+      gcTime: 300_000, // Keep in cache for 5 minutes (formerly cacheTime)
       refetchInterval: 30_000,
+      retry: 3, // Retry 3 times on failure
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+      refetchOnWindowFocus: false, // Don't refetch on window focus to avoid unnecessary requests
     })),
   });
 
@@ -144,32 +149,70 @@ export default function Organisations() {
     });
 
     // Create a map of orgId -> subscription status from fetched objects
-    const statusByOrg = new Map<string, "active" | "inactive">();
-    orgQueries.forEach((query) => {
+    // Track loading and error states per organisation
+    const statusByOrg = new Map<string, OrgStatus>();
+    const queryMap = new Map<string, typeof orgQueries[0]>();
+    
+    // Map queries by orgId for easy lookup
+    orgQueries.forEach((query, index) => {
+      if (userOrgIds[index]) {
+        queryMap.set(userOrgIds[index], query);
+      }
+    });
+
+    // Determine status for each organisation
+    userOrgs.forEach((e) => {
+      const orgId = e.organisation;
+      const query = queryMap.get(orgId);
+      
+      if (!query) {
+        statusByOrg.set(orgId, "unknown");
+        return;
+      }
+
+      // If query is loading and we have no cached data, show "checking"
+      if (query.isLoading && !query.data) {
+        statusByOrg.set(orgId, "checking");
+        return;
+      }
+
+      // If query has error and no cached data, show "unknown"
+      if (query.isError && !query.data) {
+        statusByOrg.set(orgId, "unknown");
+        return;
+      }
+
+      // If we have data (even if stale), use it
       if (query.data?.fields) {
         const subscription = query.data.fields.subscription?.fields;
         if (subscription) {
           const expiry = Number(subscription.expiry_timestamp);
           const now = Date.now();
           const isActive = expiry > now && subscription.is_active;
-          statusByOrg.set(query.data.orgId, isActive ? "active" : "inactive");
+          statusByOrg.set(orgId, isActive ? "active" : "inactive");
         } else {
           // No subscription data means inactive
-          statusByOrg.set(query.data.orgId, "inactive");
+          statusByOrg.set(orgId, "inactive");
         }
+      } else if (query.isLoading) {
+        // Still loading but might have stale data
+        statusByOrg.set(orgId, "checking");
+      } else {
+        // No data and not loading - unknown state
+        statusByOrg.set(orgId, "unknown");
       }
     });
 
     // Map organisations with counts, creation date, and real subscription status
     return userOrgs.map((e) => {
       const orgId = e.organisation;
-      // Use real status if available, otherwise default to "inactive" (safer than assuming active)
-      const status = statusByOrg.get(orgId) ?? "inactive";
+      // Get status from map, default to "unknown" if not found
+      const status = statusByOrg.get(orgId) ?? "unknown";
       
       return {
         id: orgId,
         name: e.name,
-        status: status as "active" | "inactive",
+        status: status as OrgStatus,
         students: studentCountByOrg.get(orgId) || 0,
         records: recordCountByOrg.get(orgId) || 0,
         created: e.timestampMs ? new Date(e.timestampMs).toISOString() : undefined,
@@ -189,9 +232,15 @@ export default function Organisations() {
       );
     }
 
-    // Apply status filter
+    // Apply status filter (exclude "checking" and "unknown" from filter)
     if (statusFilter !== "all") {
-      filtered = filtered.filter((org) => org.status === statusFilter);
+      filtered = filtered.filter((org) => {
+        // Only filter by active/inactive, show checking/unknown in all views
+        if (org.status === "checking" || org.status === "unknown") {
+          return true;
+        }
+        return org.status === statusFilter;
+      });
     }
 
     // Apply sorting
@@ -377,14 +426,25 @@ export default function Organisations() {
                   </Link>
                 </TableCell>
                 <TableCell>
-                  <Badge 
-                    variant={
-                      org.status === "active" ? "default" : "destructive"
-                    }
-                    className={org.status === "active" ? "bg-primary" : ""}
-                  >
-                    {org.status === "active" ? "active" : "inactive"}
-                  </Badge>
+                  {org.status === "checking" ? (
+                    <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/30">
+                      <span className="inline-block w-2 h-2 rounded-full bg-yellow-500 animate-pulse mr-1.5" />
+                      Checking...
+                    </Badge>
+                  ) : org.status === "unknown" ? (
+                    <Badge variant="secondary" className="bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30">
+                      Unknown
+                    </Badge>
+                  ) : (
+                    <Badge 
+                      variant={
+                        org.status === "active" ? "default" : "destructive"
+                      }
+                      className={org.status === "active" ? "bg-primary" : ""}
+                    >
+                      {org.status === "active" ? "active" : "inactive"}
+                    </Badge>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">

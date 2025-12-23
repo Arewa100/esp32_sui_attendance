@@ -43,7 +43,11 @@ export function useDashboardStats() {
         limit: 1000, // Reduced from 10000 for faster loading
         order: "descending",
       });
-      return (res.data || []).map((e) => e.parsedJson as any);
+      // Normalize timestamps to numbers for consistent handling
+      return (res.data || []).map((e) => ({
+        ...(e.parsedJson as any),
+        timestamp: Number((e.parsedJson as any).timestamp),
+      }));
     },
     enabled: !!CONFIG.PACKAGE_ID && !!account?.address,
     staleTime: 30_000, // Increased cache time
@@ -64,7 +68,7 @@ export function useDashboardStats() {
       // Only fetch details for orgs with recent activity (last 7 days)
       const recentActivity = userAttendanceEvents?.some(
         (event) => event.organisation === org.organisation && 
-        (Date.now() - Number(event.timestamp)) < 7 * 24 * 60 * 60 * 1000
+        (Date.now() - event.timestamp) < 7 * 24 * 60 * 60 * 1000
       );
       return recentActivity;
     })
@@ -101,7 +105,7 @@ export function useDashboardStats() {
       // An active session is an organization with recent activity (within last 24 hours)
       const recentActivity = userAttendanceEvents?.some(
         (event) => event.organisation === org.organisation && 
-        (Date.now() - Number(event.timestamp)) < 24 * 60 * 60 * 1000
+        (Date.now() - event.timestamp) < 24 * 60 * 60 * 1000
       );
       return recentActivity;
     }).length,
