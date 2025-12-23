@@ -6,6 +6,7 @@ export type OrganisationCreatedEvent = {
   organisation: string;
   name: string;
   owner: string;
+  timestampMs?: number; // Event creation timestamp from blockchain
 };
 
 export type StudentRegisteredEvent = {
@@ -47,7 +48,10 @@ export function useOrganisationCreatedEvents(limit = 200) {
         limit,
         order: "descending",
       });
-      return (res.data || []).map((e) => e.parsedJson as unknown as OrganisationCreatedEvent);
+      return (res.data || []).map((e) => ({
+        ...(e.parsedJson as unknown as OrganisationCreatedEvent),
+        timestampMs: Number(e.timestampMs),
+      }));
     },
     enabled: !!CONFIG.PACKAGE_ID,
     staleTime: 30_000, // Increased cache time

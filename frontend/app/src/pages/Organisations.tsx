@@ -26,26 +26,87 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useMemo } from "react";
 import { useOrganisationCreatedEvents } from "@/hooks/use-attendance-events";
 import { useCurrentAccount } from "@mysten/dapp-kit";
+import { useSuiClient } from "@mysten/dapp-kit";
+import { useQuery } from "@tanstack/react-query";
+import { CONFIG } from "@/config";
 
 export default function Organisations() {
   const account = useCurrentAccount();
-  const { data: createdEvents, isLoading, error } = useOrganisationCreatedEvents(200);
+  const client = useSuiClient();
+  const { data: createdEvents, isLoading: isLoadingOrgs, error } = useOrganisationCreatedEvents(200);
 
-  // Use events as the canonical list source (matches contract flow).
-  // Only show orgs owned by connected wallet (owner = tx sender).
-  const organisations =
-    createdEvents
-      ?.filter((e) => (account?.address ? e.owner === account.address : true))
-      .map((e) => ({
-        id: e.organisation,
-        name: e.name,
-        status: "active" as const,
-        students: 0,
-        records: 0,
-        created: undefined as string | undefined,
-      })) ?? [];
+  // Fetch all student events (without orgId filter to get all events for counting)
+  const { data: allStudentEvents } = useQuery({
+    queryKey: ["events", "StudentRegisteredEvent", "all", CONFIG.PACKAGE_ID],
+    queryFn: async () => {
+      if (!CONFIG.PACKAGE_ID) return [];
+      const res = await client.queryEvents({
+        query: { MoveEventType: `${CONFIG.PACKAGE_ID}::events::StudentRegisteredEvent` },
+        limit: 1000,
+        order: "descending",
+      });
+      return (res.data || []).map((e) => e.parsedJson as any);
+    },
+    enabled: !!CONFIG.PACKAGE_ID,
+    staleTime: 30_000,
+    refetchInterval: 30_000,
+  });
+
+  // Fetch all attendance events (without orgId filter to get all events for counting)
+  const { data: allAttendanceEvents } = useQuery({
+    queryKey: ["events", "AttendanceRecordedEvent", "all", CONFIG.PACKAGE_ID],
+    queryFn: async () => {
+      if (!CONFIG.PACKAGE_ID) return [];
+      const res = await client.queryEvents({
+        query: { MoveEventType: `${CONFIG.PACKAGE_ID}::events::AttendanceRecordedEvent` },
+        limit: 1000,
+        order: "descending",
+      });
+      return (res.data || []).map((e) => e.parsedJson as any);
+    },
+    enabled: !!CONFIG.PACKAGE_ID,
+    staleTime: 30_000,
+    refetchInterval: 30_000,
+  });
+
+  // Compute counts per organisation using useMemo
+  const organisations = useMemo(() => {
+    if (!createdEvents) return [];
+
+    // Filter orgs owned by connected wallet
+    const userOrgs = createdEvents.filter((e) => 
+      account?.address ? e.owner === account.address : true
+    );
+
+    // Create maps for efficient counting
+    const studentCountByOrg = new Map<string, number>();
+    const recordCountByOrg = new Map<string, number>();
+
+    // Count students per organisation
+    (allStudentEvents || []).forEach((event) => {
+      const orgId = event.organisation;
+      studentCountByOrg.set(orgId, (studentCountByOrg.get(orgId) || 0) + 1);
+    });
+
+    // Count records per organisation
+    (allAttendanceEvents || []).forEach((event) => {
+      const orgId = event.organisation;
+      recordCountByOrg.set(orgId, (recordCountByOrg.get(orgId) || 0) + 1);
+    });
+
+    // Map organisations with counts and creation date
+    return userOrgs.map((e) => ({
+      id: e.organisation,
+      name: e.name,
+      status: "active" as const,
+      students: studentCountByOrg.get(e.organisation) || 0,
+      records: recordCountByOrg.get(e.organisation) || 0,
+      created: e.timestampMs ? new Date(e.timestampMs).toISOString() : undefined,
+    }));
+  }, [createdEvents, allStudentEvents, allAttendanceEvents, account?.address]);
 
   return (
     <div className="space-y-6">
@@ -115,7 +176,7 @@ export default function Organisations() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading ? (
+            {isLoadingOrgs ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-muted-foreground">
                   Loading organisations...
@@ -123,7 +184,7 @@ export default function Organisations() {
               </TableRow>
             ) : null}
 
-            {!isLoading && organisations.length === 0 ? (
+            {!isLoadingOrgs && organisations.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-muted-foreground">
                   No organisations found. Create one to get started.
@@ -166,7 +227,11 @@ export default function Organisations() {
                   </div>
                 </TableCell>
                 <TableCell className="text-right text-muted-foreground">
-                  {org.created ? new Date(org.created).toLocaleDateString() : "—"}
+                  {org.created ? new Date(org.created).toLocaleDateString(undefined, { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                  }) : "—"}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
