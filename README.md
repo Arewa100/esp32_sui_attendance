@@ -332,6 +332,7 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 ## Acknowledgments
 
+- **TechMasterEvent** for recognizing key contributors to innovative tech projects
 - **Sui Foundation** for the excellent blockchain infrastructure
 - **Mysten Labs** for the Sui SDK and developer tools
 - **ESP32 Community** for hardware support and libraries
