@@ -26,7 +26,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useOrganisationCreatedEvents } from "@/hooks/use-attendance-events";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useSuiClient } from "@mysten/dapp-kit";
@@ -36,6 +36,7 @@ import { CONFIG } from "@/config";
 export default function Organisations() {
   const account = useCurrentAccount();
   const client = useSuiClient();
+  const [searchQuery, setSearchQuery] = useState("");
   const { data: createdEvents, isLoading: isLoadingOrgs, error } = useOrganisationCreatedEvents(200);
 
   // Fetch all student events (without orgId filter to get all events for counting)
@@ -108,6 +109,18 @@ export default function Organisations() {
     }));
   }, [createdEvents, allStudentEvents, allAttendanceEvents, account?.address]);
 
+  // Filter organisations based on search query
+  const filteredOrganisations = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return organisations;
+    }
+    
+    const query = searchQuery.toLowerCase().trim();
+    return organisations.filter((org) =>
+      org.name.toLowerCase().includes(query)
+    );
+  }, [organisations, searchQuery]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -149,6 +162,8 @@ export default function Organisations() {
               <Input 
                 placeholder="Search organisations..." 
                 className="pl-9"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <Button variant="outline" size="sm">
@@ -192,7 +207,15 @@ export default function Organisations() {
               </TableRow>
             ) : null}
 
-            {organisations.map((org) => (
+            {!isLoadingOrgs && organisations.length > 0 && filteredOrganisations.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-muted-foreground">
+                  No organisations found matching "{searchQuery}". Try a different search term.
+                </TableCell>
+              </TableRow>
+            ) : null}
+
+            {filteredOrganisations.map((org) => (
               <TableRow key={org.id} className="cursor-pointer hover:bg-muted/50">
                 <TableCell>
                   <Link to={`/organisations/${org.id}`} className="flex items-center gap-3">
