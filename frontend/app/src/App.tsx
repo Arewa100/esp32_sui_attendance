@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
+import Settings from "./pages/Settings";
 
 // Lazy load pages for code splitting
 const Landing = lazy(() => import("./pages/Landing"));
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/organisations/new" element={<CreateOrganisation />} />
             <Route path="/organisations/:id" element={<OrganisationDetail />} />
             <Route path="/organisations/:id/register" element={<RegisterStudent />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
 
           {/* Legacy routes (so existing deep links still work) */}

@@ -483,11 +483,16 @@ export default function OrganisationDetail() {
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-foreground">Organisation Name</label>
-                <Input defaultValue={organisation.name} className="mt-1.5" />
-              </div>
-              <div className="flex gap-4">
-                <Button>Save Changes</Button>
-                <Button variant="outline">Cancel</Button>
+                <Input 
+                  value={organisation.name} 
+                  className="mt-1.5 bg-muted" 
+                  disabled
+                  readOnly
+                />
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  Organisation names are stored on-chain and cannot be modified after creation. 
+                  This ensures data integrity on the Sui blockchain.
+                </p>
               </div>
             </CardContent>
           </Card>

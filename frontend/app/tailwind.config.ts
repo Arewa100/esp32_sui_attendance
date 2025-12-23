@@ -16,6 +16,11 @@ export default {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
+        inter: ["Inter", "system-ui", "sans-serif"],
+        roboto: ["Roboto", "system-ui", "sans-serif"],
+        "open-sans": ["Open Sans", "system-ui", "sans-serif"],
+        lato: ["Lato", "system-ui", "sans-serif"],
+        montserrat: ["Montserrat", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
