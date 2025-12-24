@@ -24,7 +24,9 @@ import {
   TrendingUp,
   Clock,
   MoreHorizontal,
-  BarChart3
+  BarChart3,
+  Copy,
+  Check
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -37,11 +39,14 @@ import { useAttendanceRecordedEvents, useStudentRegisteredEvents, useSubscriptio
 import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
 import SubscribeButton from "@/components/SubscribeButton";
 import OrganisationAnalytics from "@/components/OrganisationAnalytics";
+import { useToast } from "@/hooks/use-toast";
 
 export default function OrganisationDetail() {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState("overview");
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const { toast } = useToast();
+  const [copiedHash, setCopiedHash] = useState<string | null>(null);
 
   const orgId = id;
   const { data: orgData, isLoading: orgLoading, error: orgError } = useOrganisationObject(orgId);
@@ -150,6 +155,25 @@ export default function OrganisationDetail() {
 
     return (studentsWithRecords / totalStudents) * 100;
   }, [organisation.students, attendanceEvents]);
+
+  // Copy transaction hash to clipboard
+  const handleCopyHash = async (hash: string) => {
+    try {
+      await navigator.clipboard.writeText(hash);
+      setCopiedHash(hash);
+      toast({
+        title: "Copied!",
+        description: "Transaction hash copied to clipboard",
+      });
+      setTimeout(() => setCopiedHash(null), 2000);
+    } catch (error) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy transaction hash",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -327,18 +351,29 @@ export default function OrganisationDetail() {
                             {record.type}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{record.timestampFormatted}</TableCell>
-                        <TableCell>
-                          <code className="text-xs bg-muted px-2 py-1 rounded font-mono">{record.txHash.slice(0, 8)}...</code>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                      <TableCell className="text-muted-foreground">{record.timestampFormatted}</TableCell>
+                      <TableCell>
+                        <button
+                          onClick={() => handleCopyHash(record.txHash)}
+                          className="group relative inline-flex items-center gap-1.5 text-xs bg-muted hover:bg-muted/80 px-2 py-1 rounded font-mono transition-colors cursor-pointer"
+                          title="Click to copy full hash"
+                        >
+                          {record.txHash.slice(0, 8)}...
+                          {copiedHash === record.txHash ? (
+                            <Check className="h-3 w-3 text-green-500" />
+                          ) : (
+                            <Copy className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          )}
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </TabsContent>
 
         {/* Students Tab */}
         <TabsContent value="students" className="space-y-6 mt-6">
@@ -441,7 +476,18 @@ export default function OrganisationDetail() {
                       </TableCell>
                       <TableCell className="text-muted-foreground">{record.timestampFormatted}</TableCell>
                       <TableCell>
-                        <code className="text-xs bg-muted px-2 py-1 rounded font-mono">{record.txHash.slice(0, 8)}...</code>
+                        <button
+                          onClick={() => handleCopyHash(record.txHash)}
+                          className="group relative inline-flex items-center gap-1.5 text-xs bg-muted hover:bg-muted/80 px-2 py-1 rounded font-mono transition-colors cursor-pointer"
+                          title="Click to copy full hash"
+                        >
+                          {record.txHash.slice(0, 8)}...
+                          {copiedHash === record.txHash ? (
+                            <Check className="h-3 w-3 text-green-500" />
+                          ) : (
+                            <Copy className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          )}
+                        </button>
                       </TableCell>
                     </TableRow>
                   ))
