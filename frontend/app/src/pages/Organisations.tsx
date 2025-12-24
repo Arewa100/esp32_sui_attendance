@@ -88,10 +88,11 @@ export default function Organisations() {
   });
 
   // Filter orgs owned by connected wallet
+  // Only show organisations if wallet is connected
   const userOrgIds = useMemo(() => {
-    if (!createdEvents) return [];
+    if (!createdEvents || !account?.address) return [];
     return createdEvents
-      .filter((e) => account?.address ? e.owner === account.address : true)
+      .filter((e) => e.owner === account.address)
       .map((e) => e.organisation);
   }, [createdEvents, account?.address]);
 

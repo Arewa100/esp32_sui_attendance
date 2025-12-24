@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 import { useGlobalStats } from "@/hooks/use-global-stats";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCurrentAccount, ConnectButton, useDisconnectWallet } from "@mysten/dapp-kit";
+import { useRef, useState, useEffect } from "react";
+import AnalyticsChart from "@/components/AnalyticsChart";
 
 const features = [
   {
@@ -47,6 +50,34 @@ const benefits = [
 
 export default function Landing() {
   const { formattedStats, isLoading } = useGlobalStats();
+  const account = useCurrentAccount();
+  const navigate = useNavigate();
+  const { mutate: disconnectWallet, isPending: isDisconnecting } = useDisconnectWallet();
+  const connectButtonRef = useRef<HTMLDivElement>(null);
+  const [shouldRedirectAfterConnect, setShouldRedirectAfterConnect] = useState(false);
+
+  const handleButtonClick = () => {
+    if (account) {
+      // Wallet already connected, navigate immediately
+      navigate("/dashboard");
+    } else {
+      // Wallet not connected, mark that we should redirect after connection
+      setShouldRedirectAfterConnect(true);
+      // Trigger the hidden ConnectButton
+      const button = connectButtonRef.current?.querySelector('button');
+      if (button) {
+        button.click();
+      }
+    }
+  };
+
+  // Only redirect after connection if user clicked a button
+  useEffect(() => {
+    if (account && shouldRedirectAfterConnect) {
+      navigate("/dashboard");
+      setShouldRedirectAfterConnect(false); // Reset flag
+    }
+  }, [account, shouldRedirectAfterConnect, navigate]);
   
   return (
     <div className="min-h-screen bg-background">
@@ -67,12 +98,33 @@ export default function Landing() {
               <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Docs</a>
             </div>
             
-            <Button asChild>
-              <Link to="/dashboard">
-                <Wallet className="mr-2 h-4 w-4" />
-                Connect Wallet
-              </Link>
-            </Button>
+            {/* Hidden ConnectButton for programmatic triggering */}
+            <div ref={connectButtonRef} className="hidden">
+              <ConnectButton />
+            </div>
+            {/* Wallet button - shows Connect or Disconnect based on state */}
+            {account ? (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="font-mono text-xs text-foreground hover:bg-orange-500 hover:text-white transition-colors relative group"
+                onClick={() => {
+                  if (account && !isDisconnecting) {
+                    disconnectWallet();
+                  }
+                }}
+                disabled={isDisconnecting}
+              >
+                <span className="group-hover:hidden inline">
+                  {account.address.slice(0, 6)}...{account.address.slice(-4)}
+                </span>
+                <span className="hidden group-hover:inline">Disconnect</span>
+              </Button>
+            ) : (
+              <div className="[&>button]:!inline-flex [&>button]:!items-center [&>button]:!justify-center [&>button]:!gap-2 [&>button]:!rounded-md [&>button]:!bg-primary [&>button]:!px-4 [&>button]:!py-2 [&>button]:!text-sm [&>button]:!font-medium [&>button]:!text-white [&>button]:!shadow [&>button]:!transition-colors [&>button]:hover:!bg-primary/90 [&>button]:!h-10 [&>button]:!border-0 [&>button]:!cursor-pointer [&>button]:!font-sans">
+                <ConnectButton />
+              </div>
+            )}
           </div>
         </div>
       </nav>
@@ -98,11 +150,9 @@ export default function Landing() {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" asChild className="w-full sm:w-auto">
-                <Link to="/dashboard">
-                  Get Started
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+              <Button size="lg" onClick={handleButtonClick} className="w-full sm:w-auto">
+                Get Started
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button size="lg" variant="outline" asChild className="w-full sm:w-auto">
                 <a href="https://github.com/Arewa100/esp32_sui_attendance" target="_blank" rel="noopener noreferrer">View Documentation</a>
@@ -159,38 +209,20 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Benefits Section */}
+      {/* Analytics Section */}
       <section id="benefits" className="py-20 px-6">
         <div className="mx-auto max-w-7xl">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-                Why choose SuiAttend?
-              </h2>
-              <p className="text-lg text-muted-foreground mb-8">
-                Leverage the power of blockchain technology for transparent, 
-                secure, and efficient attendance management.
-              </p>
-              
-              <div className="grid sm:grid-cols-2 gap-4">
-                {benefits.map((benefit) => (
-                  <div key={benefit} className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
-                    <span className="text-foreground">{benefit}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="relative">
-              <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-border p-8 flex items-center justify-center">
-                <div className="text-center">
-                  <Shield className="h-24 w-24 text-primary mx-auto mb-4" />
-                  <p className="text-lg font-medium text-foreground">Secured by Sui</p>
-                  <p className="text-sm text-muted-foreground">Blockchain Technology</p>
-                </div>
-              </div>
-            </div>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Real-Time System Analytics
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Track system growth and activity in real-time. See how organisations, students, and attendance records are growing on the Sui blockchain.
+            </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto">
+            <AnalyticsChart />
           </div>
         </div>
       </section>
@@ -204,11 +236,9 @@ export default function Landing() {
           <p className="text-lg text-muted-foreground mb-8">
             Connect your wallet and create your first organisation today.
           </p>
-          <Button size="lg" variant="default" asChild>
-            <Link to="/dashboard">
-              Launch Dashboard
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
+          <Button size="lg" variant="default" onClick={handleButtonClick}>
+            Launch Dashboard
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </section>
@@ -230,7 +260,7 @@ export default function Landing() {
             </div>
             
             <p className="text-sm text-muted-foreground">
-              © 2024 SuiAttend. All rights reserved.
+              © 2025 SuiAttend. All rights reserved.
             </p>
           </div>
         </div>

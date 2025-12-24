@@ -12,7 +12,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Settings as SettingsIcon, Palette, Type, Moon, Sun, Monitor } from "lucide-react";
 
-type FontFamily = "inter" | "roboto" | "open-sans" | "lato" | "montserrat" | "system";
+type FontFamily = "inter" | "roboto" | "open-sans" | "lato" | "montserrat" | "poppins" | "nunito" | "raleway" | "work-sans" | "system";
 type Theme = "light" | "dark" | "system";
 
 const FONT_OPTIONS: { value: FontFamily; label: string; css: string }[] = [
@@ -21,6 +21,10 @@ const FONT_OPTIONS: { value: FontFamily; label: string; css: string }[] = [
   { value: "open-sans", label: "Open Sans", css: "font-open-sans" },
   { value: "lato", label: "Lato", css: "font-lato" },
   { value: "montserrat", label: "Montserrat", css: "font-montserrat" },
+  { value: "poppins", label: "Poppins", css: "font-poppins" },
+  { value: "nunito", label: "Nunito", css: "font-nunito" },
+  { value: "raleway", label: "Raleway", css: "font-raleway" },
+  { value: "work-sans", label: "Work Sans", css: "font-work-sans" },
   { value: "system", label: "System Default", css: "font-sans" },
 ];
 
@@ -187,13 +191,23 @@ export default function Settings() {
             <p className="text-xs text-muted-foreground">
               Select your preferred font family for the application
             </p>
-            <div className="mt-2 p-3 rounded-lg bg-muted border border-border">
-              <p className="text-sm">
-                <span className="font-semibold">Preview:</span>{" "}
-                <span className={fontFamily === "system" ? "font-sans" : `font-${fontFamily}`}>
-                  The quick brown fox jumps over the lazy dog
-                </span>
-              </p>
+            <div className="mt-3 p-4 rounded-lg bg-muted/50 border border-border">
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Preview
+                </p>
+                <div className="space-y-1">
+                  <p className={`text-base leading-relaxed ${fontFamily === "system" ? "font-sans" : `font-${fontFamily}`}`}>
+                    Every attendance counts towards success
+                  </p>
+                  <p className={`text-sm text-muted-foreground ${fontFamily === "system" ? "font-sans" : `font-${fontFamily}`}`}>
+                    Track student attendance with blockchain technology
+                  </p>
+                  <p className={`text-sm text-muted-foreground ${fontFamily === "system" ? "font-sans" : `font-${fontFamily}`}`}>
+                    SuiAttend - Secure, Transparent, Reliable
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>

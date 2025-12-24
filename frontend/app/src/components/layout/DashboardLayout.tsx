@@ -1,4 +1,4 @@
-import { Link, useLocation, Outlet } from "react-router-dom";
+import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
   Building2, 
@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { ConnectButton, useCurrentAccount, useDisconnectWallet } from "@mysten/dapp-kit";
+import { useState, useEffect } from "react";
+import { useCurrentAccount, useDisconnectWallet } from "@mysten/dapp-kit";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -23,9 +23,17 @@ const navigation = [
 
 export default function DashboardLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const account = useCurrentAccount();
   const { mutate: disconnectWallet, isPending: isDisconnecting } = useDisconnectWallet();
+
+  // Redirect to landing page if wallet is not connected
+  useEffect(() => {
+    if (!account) {
+      navigate("/");
+    }
+  }, [account, navigate]);
 
   return (
     <div className="flex min-h-screen w-full bg-background">
@@ -112,14 +120,32 @@ export default function DashboardLayout() {
             </Button>
             
             {account ? (
-              <Button variant="outline" size="sm" className="gap-2">
-                <Wallet className="h-4 w-4" />
-                <span className="font-mono text-xs">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="font-mono text-xs text-foreground hover:bg-orange-500 hover:text-white transition-colors relative group"
+                onClick={() => {
+                  if (account && !isDisconnecting) {
+                    disconnectWallet();
+                  }
+                }}
+                disabled={isDisconnecting}
+              >
+                <span className="group-hover:hidden inline">
                   {account.address.slice(0, 6)}...{account.address.slice(-4)}
                 </span>
+                <span className="hidden group-hover:inline">Disconnect</span>
               </Button>
             ) : (
-              <ConnectButton />
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="gap-2 text-white"
+                onClick={() => navigate("/")}
+              >
+                <Wallet className="h-4 w-4" />
+                Connect Wallet
+              </Button>
             )}
           </div>
         </header>

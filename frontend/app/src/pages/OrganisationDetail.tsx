@@ -23,7 +23,8 @@ import {
   Search,
   TrendingUp,
   Clock,
-  MoreHorizontal
+  MoreHorizontal,
+  BarChart3
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -35,10 +36,12 @@ import { useOrganisationObject, useStudentsByIds } from "@/hooks/use-attendance-
 import { useAttendanceRecordedEvents, useStudentRegisteredEvents, useSubscriptionRenewedEvents } from "@/hooks/use-attendance-events";
 import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
 import SubscribeButton from "@/components/SubscribeButton";
+import OrganisationAnalytics from "@/components/OrganisationAnalytics";
 
 export default function OrganisationDetail() {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState("overview");
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
 
   const orgId = id;
   const { data: orgData, isLoading: orgLoading, error: orgError } = useOrganisationObject(orgId);
@@ -74,15 +77,40 @@ export default function OrganisationDetail() {
     };
   }, [attendanceEvents?.length, orgData?.fields, orgId, subscriptionEvents, subscriptionStatus?.isActive]);
 
+  // Calculate last seen timestamp for each student
+  const studentLastSeen = useMemo(() => {
+    const lastSeenMap = new Map<string, number>();
+    
+    // Find the most recent attendance timestamp for each student
+    (attendanceEvents ?? []).forEach((event) => {
+      const studentId = event.student;
+      const timestamp = Number(event.timestamp);
+      const currentLastSeen = lastSeenMap.get(studentId);
+      
+      if (!currentLastSeen || timestamp > currentLastSeen) {
+        lastSeenMap.set(studentId, timestamp);
+      }
+    });
+    
+    return lastSeenMap;
+  }, [attendanceEvents]);
+
   const students = useMemo(() => {
-    return (studentsFromObjects ?? []).map((s) => ({
-      id: s.id,
-      name: s.fields.name,
-      cardId: s.fields.card_id,
-      department: s.fields.department,
-      lastSeen: "—",
-    }));
-  }, [studentsFromObjects]);
+    return (studentsFromObjects ?? []).map((s) => {
+      const lastSeenTimestamp = studentLastSeen.get(s.id);
+      const lastSeen = lastSeenTimestamp 
+        ? new Date(lastSeenTimestamp).toLocaleString()
+        : "—";
+      
+      return {
+        id: s.id,
+        name: s.fields.name,
+        cardId: s.fields.card_id,
+        department: s.fields.department,
+        lastSeen,
+      };
+    });
+  }, [studentsFromObjects, studentLastSeen]);
 
   const attendanceRecords = useMemo(() => {
     return (attendanceEvents ?? [])
@@ -354,8 +382,6 @@ export default function OrganisationDetail() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem>View Profile</DropdownMenuItem>
-                          <DropdownMenuItem>Edit</DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">Remove</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -375,9 +401,13 @@ export default function OrganisationDetail() {
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input placeholder="Search records..." className="pl-9" />
                 </div>
-                <Button variant="outline" size="sm">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Filter by Date
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={() => setAnalyticsOpen(true)}
+                >
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  View Analytics
                 </Button>
               </div>
             </CardContent>
@@ -476,27 +506,6 @@ export default function OrganisationDetail() {
             </CardContent>
           </Card>
 
-          <Card className="border-border">
-            <CardHeader>
-              <CardTitle>Organisation Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-foreground">Organisation Name</label>
-                <Input 
-                  value={organisation.name} 
-                  className="mt-1.5 bg-muted" 
-                  disabled
-                  readOnly
-                />
-                <p className="text-xs text-muted-foreground mt-1.5">
-                  Organisation names are stored on-chain and cannot be modified after creation. 
-                  This ensures data integrity on the Sui blockchain.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          
           <Card className="border-border border-destructive/50">
             <CardHeader>
               <CardTitle className="text-destructive">Danger Zone</CardTitle>
@@ -512,6 +521,16 @@ export default function OrganisationDetail() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Analytics Dialog */}
+      {orgId && (
+        <OrganisationAnalytics
+          orgId={orgId}
+          orgName={organisation.name}
+          open={analyticsOpen}
+          onOpenChange={setAnalyticsOpen}
+        />
+      )}
     </div>
   );
 }
