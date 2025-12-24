@@ -12,6 +12,7 @@ const Organisations = lazy(() => import("./pages/Organisations"));
 const OrganisationDetail = lazy(() => import("./pages/OrganisationDetail"));
 const CreateOrganisation = lazy(() => import("./pages/CreateOrganisation"));
 const RegisterStudent = lazy(() => import("./pages/RegisterStudent"));
+const StudentProfile = lazy(() => import("./pages/StudentProfile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const DashboardLayout = lazy(() => import("./components/layout/DashboardLayout"));
 
@@ -52,6 +53,7 @@ export default function App() {
             <Route path="/organisations/new" element={<CreateOrganisation />} />
             <Route path="/organisations/:id" element={<OrganisationDetail />} />
             <Route path="/organisations/:id/register" element={<RegisterStudent />} />
+            <Route path="/organisations/:orgId/students/:studentId" element={<StudentProfile />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
 

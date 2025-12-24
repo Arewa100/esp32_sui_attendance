@@ -389,7 +389,6 @@ export default function Organisations() {
               <TableHead className="text-right">Students</TableHead>
               <TableHead className="text-right">Records</TableHead>
               <TableHead className="text-right">Created</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -417,16 +416,13 @@ export default function Organisations() {
                   <TableCell className="text-right">
                     <Skeleton className="h-4 w-20 ml-auto" />
                   </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-8 w-8 rounded" />
-                  </TableCell>
                 </TableRow>
               ))
             ) : null}
 
             {!isLoadingOrgs && organisations.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground">
+                <TableCell colSpan={5} className="text-muted-foreground">
                   No organisations found. Create one to get started.
                 </TableCell>
               </TableRow>
@@ -434,7 +430,7 @@ export default function Organisations() {
 
             {!isLoadingOrgs && organisations.length > 0 && filteredOrganisations.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground">
+                <TableCell colSpan={5} className="text-muted-foreground">
                   No organisations found matching "{searchQuery}". Try a different search term.
                 </TableCell>
               </TableRow>
@@ -489,22 +485,6 @@ export default function Organisations() {
                     month: 'short', 
                     day: 'numeric' 
                   }) : "—"}
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                        <Link to={`/organisations/${org.id}`}>View Details</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem disabled>Edit</DropdownMenuItem>
-                      <DropdownMenuItem disabled className="text-destructive">Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}

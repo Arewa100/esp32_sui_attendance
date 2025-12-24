@@ -73,11 +73,27 @@ export default function Settings() {
   useEffect(() => {
     const root = document.documentElement;
     
+    const applyTheme = () => {
+      if (theme === "system") {
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        root.classList.toggle("dark", prefersDark);
+      } else {
+        root.classList.toggle("dark", theme === "dark");
+      }
+    };
+    
+    // Apply theme immediately
+    applyTheme();
+    
+    // Listen for system preference changes if theme is set to "system"
     if (theme === "system") {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      root.classList.toggle("dark", prefersDark);
-    } else {
-      root.classList.toggle("dark", theme === "dark");
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const handleChange = () => applyTheme();
+      mediaQuery.addEventListener("change", handleChange);
+      
+      return () => {
+        mediaQuery.removeEventListener("change", handleChange);
+      };
     }
   }, [theme]);
 

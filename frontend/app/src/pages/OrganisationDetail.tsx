@@ -23,17 +23,11 @@ import {
   Search,
   TrendingUp,
   Clock,
-  MoreHorizontal,
+  User,
   BarChart3,
   Copy,
   Check
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useOrganisationObject, useStudentsByIds } from "@/hooks/use-attendance-objects";
 import { useAttendanceRecordedEvents, useStudentRegisteredEvents, useSubscriptionRenewedEvents } from "@/hooks/use-attendance-events";
 import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
@@ -48,6 +42,8 @@ export default function OrganisationDetail() {
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const { toast } = useToast();
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+  const [studentSearchQuery, setStudentSearchQuery] = useState("");
+  const [attendanceSearchQuery, setAttendanceSearchQuery] = useState("");
 
   const orgId = id;
   const { data: orgData, isLoading: orgLoading, error: orgError } = useOrganisationObject(orgId);
@@ -118,6 +114,22 @@ export default function OrganisationDetail() {
     });
   }, [studentsFromObjects, studentLastSeen]);
 
+  // Filter students based on search query
+  const filteredStudents = useMemo(() => {
+    if (!studentSearchQuery.trim()) {
+      return students;
+    }
+    
+    const query = studentSearchQuery.toLowerCase().trim();
+    return students.filter((student) => {
+      return (
+        student.name.toLowerCase().includes(query) ||
+        student.cardId.toLowerCase().includes(query) ||
+        student.department.toLowerCase().includes(query)
+      );
+    });
+  }, [students, studentSearchQuery]);
+
   const attendanceRecords = useMemo(() => {
     return (attendanceEvents ?? [])
       .map((e, idx) => ({
@@ -130,6 +142,23 @@ export default function OrganisationDetail() {
       }))
       .sort((a, b) => b.timestamp - a.timestamp); // Sort by most recent first
   }, [attendanceEvents, studentNameById]);
+
+  // Filter attendance records based on search query
+  const filteredAttendanceRecords = useMemo(() => {
+    if (!attendanceSearchQuery.trim()) {
+      return attendanceRecords;
+    }
+    
+    const query = attendanceSearchQuery.toLowerCase().trim();
+    return attendanceRecords.filter((record) => {
+      return (
+        record.student.toLowerCase().includes(query) ||
+        record.type.toLowerCase().includes(query) ||
+        record.timestampFormatted.toLowerCase().includes(query) ||
+        record.txHash.toLowerCase().includes(query)
+      );
+    });
+  }, [attendanceRecords, attendanceSearchQuery]);
 
   // Calculate today's check-ins
   const todayCheckIns = useMemo(() => {
@@ -397,7 +426,12 @@ export default function OrganisationDetail() {
               <div className="flex items-center gap-4">
                 <div className="relative flex-1 max-w-sm">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input placeholder="Search students..." className="pl-9" />
+                  <Input 
+                    placeholder="Search students..." 
+                    className="pl-9" 
+                    value={studentSearchQuery}
+                    onChange={(e) => setStudentSearchQuery(e.target.value)}
+                  />
                 </div>
               </div>
             </CardContent>
@@ -435,14 +469,16 @@ export default function OrganisationDetail() {
                       </TableCell>
                     </TableRow>
                   ))
-                ) : students.length === 0 ? (
+                ) : filteredStudents.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                      No students registered yet
+                      {students.length === 0 
+                        ? "No students registered yet" 
+                        : `No students found matching "${studentSearchQuery}"`}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  students.map((student) => (
+                  filteredStudents.map((student) => (
                     <TableRow key={student.id}>
                       <TableCell className="font-medium">{student.name}</TableCell>
                       <TableCell>
@@ -451,16 +487,16 @@ export default function OrganisationDetail() {
                       <TableCell>{student.department}</TableCell>
                       <TableCell className="text-muted-foreground">{student.lastSeen}</TableCell>
                       <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>View Profile</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          asChild
+                        >
+                          <Link to={`/organisations/${orgId}/students/${student.id}`}>
+                            <User className="h-4 w-4" />
+                          </Link>
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))
@@ -477,7 +513,12 @@ export default function OrganisationDetail() {
               <div className="flex items-center gap-4">
                 <div className="relative flex-1 max-w-sm">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input placeholder="Search records..." className="pl-9" />
+                  <Input 
+                    placeholder="Search records..." 
+                    className="pl-9" 
+                    value={attendanceSearchQuery}
+                    onChange={(e) => setAttendanceSearchQuery(e.target.value)}
+                  />
                 </div>
                 <Button 
                   variant="default" 
@@ -519,14 +560,16 @@ export default function OrganisationDetail() {
                       </TableCell>
                     </TableRow>
                   ))
-                ) : attendanceRecords.length === 0 ? (
+                ) : filteredAttendanceRecords.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                      No attendance records found
+                      {attendanceRecords.length === 0 
+                        ? "No attendance records found" 
+                        : `No records found matching "${attendanceSearchQuery}"`}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  attendanceRecords.map((record) => (
+                  filteredAttendanceRecords.map((record) => (
                     <TableRow key={record.id}>
                       <TableCell className="font-medium">{record.student}</TableCell>
                       <TableCell>
