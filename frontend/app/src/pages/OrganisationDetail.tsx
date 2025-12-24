@@ -39,6 +39,7 @@ import { useAttendanceRecordedEvents, useStudentRegisteredEvents, useSubscriptio
 import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
 import SubscribeButton from "@/components/SubscribeButton";
 import OrganisationAnalytics from "@/components/OrganisationAnalytics";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
 export default function OrganisationDetail() {
@@ -51,9 +52,9 @@ export default function OrganisationDetail() {
   const orgId = id;
   const { data: orgData, isLoading: orgLoading, error: orgError } = useOrganisationObject(orgId);
   const studentIds = orgData?.fields?.students ?? [];
-  const { data: studentsFromObjects } = useStudentsByIds(studentIds);
+  const { data: studentsFromObjects, isLoading: isLoadingStudents } = useStudentsByIds(studentIds);
   const { data: studentsFromEvents } = useStudentRegisteredEvents(orgId, 500);
-  const { data: attendanceEvents } = useAttendanceRecordedEvents(orgId, 500);
+  const { data: attendanceEvents, isLoading: isLoadingAttendance } = useAttendanceRecordedEvents(orgId, 500);
   const { data: subscriptionEvents } = useSubscriptionRenewedEvents(orgId, 100);
   const { data: subscriptionStatus } = useSubscriptionStatus(orgId);
 
@@ -216,14 +217,20 @@ export default function OrganisationDetail() {
               )}
             </div>
             <p className="text-muted-foreground">
-              {orgLoading ? "Loading on-chain data..." : "On-chain organisation"}{" "}
-              {subscriptionStatus?.isActive ? (
-                <>• Subscription active until {subscriptionStatus.expiryTimestamp ? new Date(subscriptionStatus.expiryTimestamp).toLocaleDateString() : ""}</>
-              ) : subscriptionStatus?.expiryTimestamp ? (
-                <>• Subscription expired on {new Date(subscriptionStatus.expiryTimestamp).toLocaleDateString()}</>
-              ) : subscriptionStatus !== undefined ? (
-                <>• No active subscription</>
-              ) : null}
+              {orgLoading ? (
+                <Skeleton className="h-4 w-48 inline-block" />
+              ) : (
+                <>
+                  On-chain organisation{" "}
+                  {subscriptionStatus?.isActive ? (
+                    <>• Subscription active until {subscriptionStatus.expiryTimestamp ? new Date(subscriptionStatus.expiryTimestamp).toLocaleDateString() : ""}</>
+                  ) : subscriptionStatus?.expiryTimestamp ? (
+                    <>• Subscription expired on {new Date(subscriptionStatus.expiryTimestamp).toLocaleDateString()}</>
+                  ) : subscriptionStatus !== undefined ? (
+                    <>• No active subscription</>
+                  ) : null}
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -296,7 +303,11 @@ export default function OrganisationDetail() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">
-                      {orgLoading ? "—" : `${avgAttendance.toFixed(1)}%`}
+                      {orgLoading ? (
+                        <Skeleton className="h-8 w-16" />
+                      ) : (
+                        `${avgAttendance.toFixed(1)}%`
+                      )}
                     </p>
                     <p className="text-sm text-muted-foreground">Avg Attendance</p>
                   </div>
@@ -311,7 +322,11 @@ export default function OrganisationDetail() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">
-                      {orgLoading ? "—" : todayCheckIns.toLocaleString()}
+                      {orgLoading ? (
+                        <Skeleton className="h-8 w-16" />
+                      ) : (
+                        todayCheckIns.toLocaleString()
+                      )}
                     </p>
                     <p className="text-sm text-muted-foreground">Today's Check-ins</p>
                   </div>
@@ -400,28 +415,56 @@ export default function OrganisationDetail() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {students.map((student) => (
-                  <TableRow key={student.id}>
-                    <TableCell className="font-medium">{student.name}</TableCell>
-                    <TableCell>
-                      <code className="text-xs bg-muted px-2 py-1 rounded font-mono">{student.cardId}</code>
-                    </TableCell>
-                    <TableCell>{student.department}</TableCell>
-                    <TableCell className="text-muted-foreground">{student.lastSeen}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>View Profile</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                {(orgLoading || isLoadingStudents) ? (
+                  Array.from({ length: 5 }).map((_, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-32" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-5 w-24" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-20" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-28" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-8 w-8 rounded" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : students.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                      No students registered yet
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  students.map((student) => (
+                    <TableRow key={student.id}>
+                      <TableCell className="font-medium">{student.name}</TableCell>
+                      <TableCell>
+                        <code className="text-xs bg-muted px-2 py-1 rounded font-mono">{student.cardId}</code>
+                      </TableCell>
+                      <TableCell>{student.department}</TableCell>
+                      <TableCell className="text-muted-foreground">{student.lastSeen}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>View Profile</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </Card>
@@ -459,7 +502,24 @@ export default function OrganisationDetail() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {attendanceRecords.length === 0 ? (
+                {(orgLoading || isLoadingAttendance) ? (
+                  Array.from({ length: 5 }).map((_, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-32" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-36" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-5 w-24" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : attendanceRecords.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                       No attendance records found

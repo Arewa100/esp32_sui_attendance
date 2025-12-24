@@ -173,4 +173,18 @@
   .shadow-glow-orange {
     box-shadow: 0 0 40px hsl(25 95% 53% / 0.15);
   }
+
+  /* Shimmer animation for skeleton loaders */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
 }

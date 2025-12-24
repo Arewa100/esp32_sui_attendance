@@ -17,6 +17,7 @@ import { useOrganisationCreatedEvents, useAttendanceRecordedEvents } from "@/hoo
 import { useQuery } from "@tanstack/react-query";
 import { useSuiClient } from "@mysten/dapp-kit";
 import { CONFIG } from "@/config";
+import { Skeleton } from "@/components/ui/skeleton";
 
 ChartJS.register(
   CategoryScale,
@@ -319,11 +320,12 @@ export default function AnalyticsChart() {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg bg-[#171717] p-4 flex items-center justify-center" style={{ height: '400px' }}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6B8DE3] mx-auto mb-4"></div>
-          <p className="text-sm text-gray-400">Loading analytics...</p>
+      <div className="rounded-lg bg-[#171717] p-4" style={{ height: '400px' }}>
+        <div className="mb-4 space-y-2">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-4 w-32" />
         </div>
+        <Skeleton className="h-[calc(100%-80px)] w-full" />
       </div>
     );
   }

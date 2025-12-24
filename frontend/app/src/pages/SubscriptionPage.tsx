@@ -8,6 +8,7 @@ import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
 import { useMultipleObjectMetadata } from "@/hooks/use-object-metadata";
 import { useSuiBalance } from "@/hooks/use-sui-balance";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SubscriptionPage() {
   const navigate = useNavigate();
@@ -95,7 +96,7 @@ export default function SubscriptionPage() {
             <div className="flex flex-col justify-center gap-2 flex-[2_2_0px]">
               {isLoadingStatus ? (
                 <div className="inline-flex items-center gap-2">
-                  <span className="text-text-light dark:text-gray-400 text-sm">Loading...</span>
+                  <Skeleton className="h-4 w-24" />
                 </div>
               ) : subscriptionStatus?.isActive ? (
                 <div className="inline-flex items-center gap-2">

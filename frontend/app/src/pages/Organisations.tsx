@@ -32,6 +32,7 @@ import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useSuiClient } from "@mysten/dapp-kit";
 import { useQuery, useQueries } from "@tanstack/react-query";
 import { CONFIG } from "@/config";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type StatusFilter = "all" | "active" | "inactive";
 type OrgStatus = "active" | "inactive" | "checking" | "unknown";
@@ -393,11 +394,34 @@ export default function Organisations() {
           </TableHeader>
           <TableBody>
             {(isLoadingOrgs || orgQueries.some((q) => q.isLoading)) ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground">
-                  Loading organisations...
-                </TableCell>
-              </TableRow>
+              Array.from({ length: 5 }).map((_, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-10 w-10 rounded-lg" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Skeleton className="h-4 w-12 ml-auto" />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Skeleton className="h-4 w-12 ml-auto" />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Skeleton className="h-4 w-20 ml-auto" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-8 w-8 rounded" />
+                  </TableCell>
+                </TableRow>
+              ))
             ) : null}
 
             {!isLoadingOrgs && organisations.length === 0 ? (

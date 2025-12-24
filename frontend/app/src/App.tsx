@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
+import { Skeleton } from "@/components/ui/skeleton";
 import Settings from "./pages/Settings";
 
 // Lazy load pages for code splitting
@@ -24,8 +25,16 @@ const SubscriptionPage = lazy(() => import("./pages/SubscriptionPage"));
 
 // Loading fallback component
 const LoadingFallback = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-8">
+    <div className="w-full max-w-4xl space-y-4">
+      <Skeleton className="h-12 w-64" />
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-32" />
+        ))}
+      </div>
+      <Skeleton className="h-64 w-full" />
+    </div>
   </div>
 );
 
