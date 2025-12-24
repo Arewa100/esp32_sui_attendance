@@ -24,7 +24,12 @@ const root = ReactDOM.createRoot(document.getElementById("root")!);
 
 // Only use StrictMode in production builds to avoid double renders in dev
 const AppWrapper = () => (
-  <BrowserRouter>
+  <BrowserRouter
+    future={{
+      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+    }}
+  >
     <QueryClientProvider client={queryClient}>
       <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
         <WalletProvider autoConnect>

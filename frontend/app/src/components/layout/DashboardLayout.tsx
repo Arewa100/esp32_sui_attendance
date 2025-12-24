@@ -36,7 +36,7 @@ export default function DashboardLayout() {
   }, [account, navigate]);
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
+    <div className="flex min-h-screen w-full bg-background overflow-x-hidden">
       {/* Sidebar */}
       <aside className={cn(
         "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300",
@@ -106,11 +106,11 @@ export default function DashboardLayout() {
 
       {/* Main content */}
       <div className={cn(
-        "flex flex-1 flex-col transition-all duration-300",
+        "flex flex-1 flex-col transition-all duration-300 min-w-0 overflow-x-hidden",
         collapsed ? "ml-16" : "ml-64"
       )}>
         {/* Top bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-end border-b border-border bg-background px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-end border-b border-border bg-background px-6 shrink-0">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
@@ -151,7 +151,7 @@ export default function DashboardLayout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 min-w-0 overflow-x-hidden">
           <Outlet />
         </main>
       </div>

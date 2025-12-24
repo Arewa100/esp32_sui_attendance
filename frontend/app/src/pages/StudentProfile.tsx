@@ -371,25 +371,25 @@ export default function StudentProfile() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 max-w-full">
       {/* Header */}
-      <div className="flex items-center gap-4 no-print">
-        <Button variant="ghost" onClick={() => navigate(-1)}>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 no-print">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="shrink-0">
           <ChevronLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 shrink-0">
               <User className="h-6 w-6 text-primary" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">{student.fields.name}</h1>
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold text-foreground truncate">{student.fields.name}</h1>
               <p className="text-sm text-muted-foreground">Student Profile</p>
             </div>
           </div>
         </div>
-        <Button variant="outline" onClick={handlePrint}>
+        <Button variant="outline" onClick={handlePrint} className="shrink-0">
           <Printer className="mr-2 h-4 w-4" />
           Print
         </Button>
@@ -409,10 +409,10 @@ export default function StudentProfile() {
         </p>
       </div>
 
-      <div ref={printRef} className="space-y-6">
+      <div ref={printRef} className="space-y-6 min-w-0">
         {/* Student Details Card */}
         <Card className="border-border print-section overflow-hidden no-print">
-          <div className="bg-primary/10 dark:bg-primary/5 animate-shimmer bg-gradient-to-r from-primary/10 via-primary/20 to-primary/10 bg-[length:200%_100%] h-full w-full">
+          <div className="bg-primary/10 dark:bg-primary/5 animate-shimmer bg-gradient-to-r from-primary/10 via-primary/20 to-primary/10 bg-[length:200%_100%] min-w-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-primary dark:text-primary">
                 <User className="h-5 w-5" />
@@ -420,7 +420,7 @@ export default function StudentProfile() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-col md:flex-row justify-between gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Full Name</p>
@@ -431,7 +431,7 @@ export default function StudentProfile() {
                     <p className="text-base text-foreground">{student.fields.department}</p>
                   </div>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-4 md:text-right">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Card ID</p>
                     <code className="text-sm bg-muted px-2 py-1 rounded font-mono">
@@ -444,6 +444,7 @@ export default function StudentProfile() {
                       onClick={() => handleCopyHash(student.id)}
                       className="group relative inline-flex items-center gap-1.5 text-xs bg-muted hover:bg-muted/80 px-2 py-1 rounded font-mono transition-colors cursor-pointer"
                       title="Click to copy full Student ID"
+                      data-hash={student.id}
                     >
                       {student.id.slice(0, 8)}...
                       {copiedHash === student.id ? (
@@ -505,14 +506,14 @@ export default function StudentProfile() {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid gap-4 md:grid-cols-5 print-section no-print">
-        <Card className="border-border">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 print-section no-print min-w-0">
+        <Card className="border-border min-w-0">
           <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
                 <Calendar className="h-5 w-5 text-primary" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-2xl font-bold text-foreground">{stats.totalCheckIns}</p>
                 <p className="text-sm text-muted-foreground">Total Check-ins</p>
               </div>
@@ -520,13 +521,13 @@ export default function StudentProfile() {
           </CardContent>
         </Card>
 
-        <Card className="border-border">
+        <Card className="border-border min-w-0">
           <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
                 <Clock className="h-5 w-5 text-primary" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-2xl font-bold text-foreground">{stats.todayCheckIns}</p>
                 <p className="text-sm text-muted-foreground">Today's Check-ins</p>
               </div>
@@ -534,13 +535,13 @@ export default function StudentProfile() {
           </CardContent>
         </Card>
 
-        <Card className="border-border">
+        <Card className="border-border min-w-0">
           <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
                 <Calendar className="h-5 w-5 text-primary" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-2xl font-bold text-foreground">{stats.uniqueDates}</p>
                 <p className="text-sm text-muted-foreground">Days Attended</p>
               </div>
@@ -548,13 +549,13 @@ export default function StudentProfile() {
           </CardContent>
         </Card>
 
-        <Card className="border-border">
+        <Card className="border-border min-w-0">
           <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
                 <TrendingUp className="h-5 w-5 text-primary" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-2xl font-bold text-foreground">{stats.attendanceRate}%</p>
                 <p className="text-sm text-muted-foreground">Attendance Rate</p>
               </div>
@@ -562,15 +563,15 @@ export default function StudentProfile() {
           </CardContent>
         </Card>
 
-        <Card className="border-border">
+        <Card className="border-border min-w-0">
           <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
                 <Clock className="h-5 w-5 text-primary" />
               </div>
-              <div>
-                <p className="text-sm font-bold text-foreground">{stats.lastSeen}</p>
-                <p className="text-sm text-muted-foreground">Last Seen</p>
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <p className="text-sm font-bold text-foreground truncate">{stats.lastSeen}</p>
+                <p className="text-sm text-muted-foreground truncate">Last Seen</p>
               </div>
             </div>
           </CardContent>
@@ -579,15 +580,15 @@ export default function StudentProfile() {
 
         {/* Attendance Trend Chart */}
         {studentAttendanceRecords.length > 0 && (
-          <Card className="border-border print-section no-print">
+          <Card className="border-border print-section no-print min-w-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
               Attendance Trend
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div style={{ height: '300px' }}>
+          <CardContent className="min-w-0">
+            <div style={{ height: '300px' }} className="min-w-0">
               <Line data={chartData} options={chartOptions} />
             </div>
           </CardContent>
@@ -595,15 +596,15 @@ export default function StudentProfile() {
       )}
 
         {/* Date Range Filter */}
-        <Card className="border-border no-print">
+        <Card className="border-border no-print min-w-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5" />
             Filter Attendance History
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row items-end gap-4">
+        <CardContent className="min-w-0">
+          <div className="flex flex-col sm:flex-row items-end gap-4 min-w-0">
             <div className="flex-1">
               <Label htmlFor="start-date" className="mb-2 block">Start Date</Label>
               <Popover>
@@ -670,14 +671,14 @@ export default function StudentProfile() {
       </Card>
 
         {/* Attendance History */}
-        <Card className="border-border print-section">
+        <Card className="border-border print-section min-w-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
               Attendance History
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-w-0">
             {isLoadingAttendance ? (
               <div className="space-y-2">
                 {Array.from({ length: 5 }).map((_, idx) => (
@@ -689,7 +690,8 @@ export default function StudentProfile() {
                 No attendance records found for this student.
               </p>
             ) : (
-              <Table className="print-table">
+              <div className="overflow-x-auto min-w-0">
+                <Table className="print-table">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Date</TableHead>
@@ -727,6 +729,7 @@ export default function StudentProfile() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>
