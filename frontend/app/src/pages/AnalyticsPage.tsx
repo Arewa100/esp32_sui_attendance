@@ -537,10 +537,10 @@ export default function AnalyticsPage() {
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ marginTop: "60px" }}>
-                    <div className="text-xl font-bold" style={{ color: getGaugeColor(overallAttendancePercentage) }}>
+                    <div className="text-lg font-bold" style={{ color: getGaugeColor(overallAttendancePercentage) }}>
                       {overallAttendancePercentage}%
                     </div>
-                    <div className={`text-sm font-medium mt-1 ${attendanceStatus.color}`}>
+                    <div className={`text-xs font-medium mt-2 ${attendanceStatus.color}`}>
                       {attendanceStatus.text}
                     </div>
                   </div>

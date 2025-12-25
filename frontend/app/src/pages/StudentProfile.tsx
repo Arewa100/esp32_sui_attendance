@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import PageBackground from "@/components/PageBackground";
 import {
   Table,
   TableBody,
@@ -166,24 +167,39 @@ export default function StudentProfile() {
       };
     }
 
-    // Group by date
-    const dateMap = new Map<string, number>();
+    // Group by date using timestamp for accurate sorting
+    const dateMap = new Map<number, { count: number; dateFormatted: string }>();
     studentAttendanceRecords.forEach((record) => {
-      const date = record.dateFormatted;
-      dateMap.set(date, (dateMap.get(date) || 0) + 1);
+      // Get the date at midnight for grouping
+      const recordDate = new Date(record.timestamp);
+      recordDate.setHours(0, 0, 0, 0);
+      const dateKey = recordDate.getTime();
+      
+      if (dateMap.has(dateKey)) {
+        dateMap.get(dateKey)!.count++;
+      } else {
+        dateMap.set(dateKey, {
+          count: 1,
+          dateFormatted: record.dateFormatted,
+        });
+      }
     });
 
-    // Sort dates chronologically
-    const sortedDates = Array.from(dateMap.keys()).sort((a, b) => {
-      return new Date(a).getTime() - new Date(b).getTime();
-    });
+    // Sort dates chronologically by timestamp
+    const sortedEntries = Array.from(dateMap.entries()).sort((a, b) => a[0] - b[0]);
+
+    // Format dates for labels (shorter format)
+    const formatDateLabel = (timestamp: number) => {
+      const date = new Date(timestamp);
+      return format(date, "MMM dd"); // e.g., "Dec 22"
+    };
 
     return {
-      labels: sortedDates,
+      labels: sortedEntries.map(([timestamp]) => formatDateLabel(timestamp)),
       datasets: [
         {
           label: "Check-ins",
-          data: sortedDates.map((date) => dateMap.get(date) || 0),
+          data: sortedEntries.map(([, data]) => data.count),
           borderColor: "rgba(107, 141, 227, 1)",
           backgroundColor: "rgba(107, 141, 227, 0.1)",
           fill: true,
@@ -198,6 +214,7 @@ export default function StudentProfile() {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    backgroundColor: "transparent",
     plugins: {
       legend: {
         display: false,
@@ -357,9 +374,8 @@ export default function StudentProfile() {
   if (!student) {
     return (
       <div className="space-y-6">
-        <Button variant="ghost" onClick={() => navigate(-1)}>
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Back
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <ChevronLeft className="h-5 w-5" />
         </Button>
         <Card>
           <CardContent className="p-8 text-center">
@@ -371,32 +387,28 @@ export default function StudentProfile() {
   }
 
   return (
-    <div className="space-y-6 min-w-0 max-w-full">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 no-print">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="shrink-0">
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 shrink-0">
-              <User className="h-6 w-6 text-primary" />
-            </div>
+    <>
+      <PageBackground />
+      <div className="space-y-6 min-w-0 max-w-full">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 no-print">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="shrink-0">
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex-1 min-w-0">
             <div className="min-w-0">
               <h1 className="text-2xl font-bold text-foreground truncate">{student.fields.name}</h1>
               <p className="text-sm text-muted-foreground">Student Profile</p>
             </div>
           </div>
+          <Button variant="outline" onClick={handlePrint} className="shrink-0">
+            <Printer className="mr-2 h-4 w-4" />
+            Print
+          </Button>
         </div>
-        <Button variant="outline" onClick={handlePrint} className="shrink-0">
-          <Printer className="mr-2 h-4 w-4" />
-          Print
-        </Button>
-      </div>
 
-      {/* Print Header - Hidden on screen, shown in print */}
-      <div className="print-header print-only" style={{ display: "none" }}>
+        {/* Print Header - Hidden on screen, shown in print */}
+        <div className="print-header print-only" style={{ display: "none" }}>
         <h1>Student Profile Report</h1>
         <p style={{ fontSize: "14px", color: "#666", marginTop: "5px" }}>
           Student: {student.fields.name} • Generated on {new Date().toLocaleString()}
@@ -407,9 +419,9 @@ export default function StudentProfile() {
             </span>
           ) : null}
         </p>
-      </div>
+        </div>
 
-      <div ref={printRef} className="space-y-6 min-w-0">
+        <div ref={printRef} className="space-y-6 min-w-0">
         {/* Student Details Card */}
         <Card className="border-border print-section overflow-hidden no-print">
           <div className="bg-primary/10 dark:bg-primary/5 animate-shimmer bg-gradient-to-r from-primary/10 via-primary/20 to-primary/10 bg-[length:200%_100%] min-w-0">
@@ -579,8 +591,7 @@ export default function StudentProfile() {
       </div>
 
         {/* Attendance Trend Chart */}
-        {studentAttendanceRecords.length > 0 && (
-          <Card className="border-border print-section no-print min-w-0">
+        <Card className="border-border print-section no-print min-w-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
@@ -588,12 +599,27 @@ export default function StudentProfile() {
             </CardTitle>
           </CardHeader>
           <CardContent className="min-w-0">
-            <div style={{ height: '300px' }} className="min-w-0">
-              <Line data={chartData} options={chartOptions} />
-            </div>
+            {chartData.labels.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <TrendingUp className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                <p className="text-muted-foreground">
+                  {studentAttendanceRecords.length === 0
+                    ? "No attendance records available for this student."
+                    : "No attendance data available for the selected date range."}
+                </p>
+                {studentAttendanceRecords.length === 0 && (
+                  <p className="text-sm text-muted-foreground/70 mt-2">
+                    Attendance records will appear here once the student checks in.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div style={{ height: '300px', minHeight: '250px', backgroundColor: "transparent" }} className="min-w-0">
+                <Line data={chartData} options={chartOptions} />
+              </div>
+            )}
           </CardContent>
         </Card>
-      )}
 
         {/* Date Range Filter */}
         <Card className="border-border no-print min-w-0">
@@ -740,7 +766,8 @@ export default function StudentProfile() {
           <p>Student ID: {student.id}</p>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
