@@ -187,4 +187,57 @@
   .animate-shimmer {
     animation: shimmer 2s infinite;
   }
+
+  /* Fade in up animation for hero section */
+  @keyframes fade-in-up {
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.8s ease-out;
+  }
+
+  /* Infinite slide animation for features carousel with 3D effect */
+  @keyframes slide-infinite {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    100% {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  .animate-slide-infinite {
+    animation: slide-infinite 30s linear infinite;
+    will-change: transform;
+  }
+
+  /* 3D perspective container for depth effect */
+  .slider-perspective {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+  }
+
+  /* Gradient masks for fade effect on edges */
+  .slider-fade-left {
+    background: linear-gradient(to right, hsl(var(--muted)) 0%, transparent 15%);
+    opacity: 0.5;
+  }
+
+  .slider-fade-right {
+    background: linear-gradient(to left, hsl(var(--muted)) 0%, transparent 15%);
+    opacity: 0.5;
+  }
+  
+  .dark .slider-fade-left,
+  .dark .slider-fade-right {
+    opacity: 0.3;
+  }
 }
