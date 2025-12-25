@@ -22,6 +22,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { Printer, Download, Calendar as CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import { useAttendanceRecordedEvents, useStudentRegisteredEvents } from "@/hooks/use-attendance-events";
@@ -127,6 +128,51 @@ export default function OrganisationAnalytics({
     };
   }, [studentAttendanceCounts]);
 
+  // Calculate overall attendance percentage for gauge chart
+  const overallAttendancePercentage = useMemo(() => {
+    if (studentAttendanceCounts.length === 0 || filteredAttendanceEvents.length === 0) return 0;
+    
+    // Calculate average attendance per student
+    const totalAttendance = studentAttendanceCounts.reduce((sum, s) => sum + s.count, 0);
+    const averageAttendance = totalAttendance / studentAttendanceCounts.length;
+    
+    // Find the maximum attendance count to use as baseline (100%)
+    const maxAttendance = Math.max(...studentAttendanceCounts.map(s => s.count), 1);
+    
+    // Calculate percentage: (average / max) * 100
+    // This shows how close the average is to the best-performing student
+    // Cap at 100% and ensure minimum of 0%
+    const percentage = Math.min(100, Math.max(0, Math.round((averageAttendance / maxAttendance) * 100)));
+    
+    return percentage;
+  }, [studentAttendanceCounts, filteredAttendanceEvents]);
+
+  // Helper function to get gauge color based on percentage
+  function getGaugeColor(percentage: number): string {
+    if (percentage >= 80) return "#22c55e"; // green
+    if (percentage >= 60) return "#eab308"; // yellow
+    if (percentage >= 40) return "#f97316"; // orange
+    return "#ef4444"; // red
+  }
+
+  // Get status text and color
+  const attendanceStatus = useMemo(() => {
+    const percentage = overallAttendancePercentage;
+    if (percentage >= 80) return { text: "Excellent", color: "text-green-500" };
+    if (percentage >= 60) return { text: "Good", color: "text-yellow-500" };
+    if (percentage >= 40) return { text: "Fair", color: "text-orange-500" };
+    return { text: "Needs Improvement", color: "text-red-500" };
+  }, [overallAttendancePercentage]);
+
+  // Gauge chart data (semi-circular gauge)
+  const gaugeData = useMemo(() => {
+    const percentage = overallAttendancePercentage;
+    return [
+      { name: "Attendance", value: percentage, fill: getGaugeColor(percentage) },
+      { name: "Remaining", value: 100 - percentage, fill: "transparent" }
+    ];
+  }, [overallAttendancePercentage]);
+
   const chartData = {
     labels: topStudents.map((s) => s.name.length > 15 ? s.name.slice(0, 15) + "..." : s.name),
     datasets: [
@@ -170,6 +216,8 @@ export default function OrganisationAnalytics({
         cornerRadius: 8,
       },
     },
+    // Make chart canvas background transparent
+    backgroundColor: "transparent",
     scales: {
       x: {
         grid: {
@@ -202,6 +250,8 @@ export default function OrganisationAnalytics({
         },
       },
     },
+    // Make chart background transparent
+    backgroundColor: "transparent",
   };
 
   const handlePrint = () => {
@@ -318,9 +368,37 @@ export default function OrganisationAnalytics({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+    <>
+      <style>{`
+        .analytics-table {
+          border-collapse: collapse;
+          width: 100%;
+        }
+        .analytics-table th,
+        .analytics-table td {
+          padding: 12px;
+          text-align: left;
+          border-bottom: 1px solid hsl(var(--border));
+        }
+        .analytics-table th {
+          font-weight: 600;
+          color: hsl(var(--foreground));
+          background-color: transparent;
+        }
+        .analytics-table td {
+          color: hsl(var(--foreground));
+          background-color: transparent;
+        }
+        .analytics-table tbody tr:hover {
+          background-color: hsl(var(--muted) / 0.3);
+        }
+        .analytics-table thead th {
+          border-bottom: 2px solid hsl(var(--border));
+        }
+      `}</style>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="text-left">
           <DialogTitle>Analytics Report - {orgName}</DialogTitle>
           <DialogDescription>
             View attendance statistics and student performance metrics
@@ -344,7 +422,7 @@ export default function OrganisationAnalytics({
 
           {/* Date Filter Section */}
           <Card className="border-border no-print">
-            <CardContent className="p-4">
+            <CardContent className="p-6">
               <div className="flex items-end gap-4">
                 <div className="flex-1">
                   <Label htmlFor="start-date" className="mb-2 block">Start Date</Label>
@@ -412,7 +490,7 @@ export default function OrganisationAnalytics({
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex gap-2 no-print">
+          <div className="flex gap-2 no-print mb-2">
             <Button onClick={handlePrint} variant="outline" size="sm">
               <Printer className="mr-2 h-4 w-4" />
               Print Report
@@ -423,16 +501,79 @@ export default function OrganisationAnalytics({
             </Button>
           </div>
 
+          {/* Overall Attendance Health Gauge */}
+          <div className="print-section no-print">
+            <Card className="border-border">
+              <CardHeader className="p-6 pb-4">
+                <CardTitle>Overall Attendance Health</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 pt-0">
+                <div className="flex flex-col items-center justify-center">
+                  <div className="relative" style={{ width: "400px", height: "200px" }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={gaugeData}
+                          cx="50%"
+                          cy="90%"
+                          startAngle={180}
+                          endAngle={0}
+                          innerRadius={80}
+                          outerRadius={120}
+                          paddingAngle={0}
+                          dataKey="value"
+                        >
+                          {gaugeData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ marginTop: "60px" }}>
+                      <div className="text-xl font-bold" style={{ color: getGaugeColor(overallAttendancePercentage) }}>
+                        {overallAttendancePercentage}%
+                      </div>
+                      <div className={`text-sm font-medium mt-1 ${attendanceStatus.color}`}>
+                        {attendanceStatus.text}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid grid-cols-3 gap-4 w-full max-w-md">
+                    <div className="text-center">
+                      <div className="text-xl font-bold">{studentAttendanceCounts.length}</div>
+                      <div className="text-xs text-muted-foreground">Total Students</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xl font-bold">{filteredAttendanceEvents.length}</div>
+                      <div className="text-xs text-muted-foreground">Total Records</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xl font-bold">
+                        {studentAttendanceCounts.length > 0
+                          ? Math.round(
+                              studentAttendanceCounts.reduce((sum, s) => sum + s.count, 0) /
+                                studentAttendanceCounts.length
+                            )
+                          : 0}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Avg per Student</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Summary Stats */}
           <div className="print-section">
             <Card className="border-border">
-              <CardContent className="p-4">
-                <table className="print-table w-full">
+              <CardContent className="p-6">
+                <table className="print-table analytics-table w-full border-collapse">
                   <thead>
                     <tr>
-                      <th>Total Students</th>
-                      <th>Total Records</th>
-                      <th>Average Attendance</th>
+                      <th className="text-center">Total Students</th>
+                      <th className="text-center">Total Records</th>
+                      <th className="text-center">Average Attendance</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -457,28 +598,28 @@ export default function OrganisationAnalytics({
           {/* Top Students Chart */}
           <div className="print-section">
             <Card className="border-border">
-              <CardHeader>
+              <CardHeader className="p-6 pb-4">
                 <CardTitle>Top 10 Students (Highest Attendance)</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div style={{ height: "300px" }} className="no-print">
+              <CardContent className="p-6 pt-0">
+                <div style={{ height: "200px", backgroundColor: "transparent" }} className="no-print">
                   <Bar data={chartData} options={chartOptions} />
                 </div>
                 <div className="mt-4">
-                  <table className="print-table w-full">
+                  <table className="print-table analytics-table w-full border-collapse">
                     <thead>
                       <tr>
-                        <th>Rank</th>
+                        <th style={{ width: "80px" }}>Rank</th>
                         <th>Student Name</th>
-                        <th>Attendance Count</th>
+                        <th style={{ width: "150px" }} className="text-right">Attendance Count</th>
                       </tr>
                     </thead>
                     <tbody>
                       {topStudents.map((student, idx) => (
                         <tr key={idx}>
-                          <td>{idx + 1}</td>
+                          <td className="text-center">{idx + 1}</td>
                           <td>{student.name}</td>
-                          <td>{student.count}</td>
+                          <td className="text-right">{student.count}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -491,28 +632,28 @@ export default function OrganisationAnalytics({
           {/* Bottom Students Chart - Hidden in print */}
           <div className="print-section no-print">
             <Card className="border-border">
-              <CardHeader>
+              <CardHeader className="p-6 pb-4">
                 <CardTitle>Bottom 10 Students (Lowest Attendance)</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div style={{ height: "300px" }}>
+              <CardContent className="p-6 pt-0">
+                <div style={{ height: "200px", backgroundColor: "transparent" }}>
                   <Bar data={bottomChartData} options={chartOptions} />
                 </div>
                 <div className="mt-4">
-                  <table className="print-table w-full">
+                  <table className="print-table analytics-table w-full border-collapse">
                     <thead>
                       <tr>
-                        <th>Rank</th>
+                        <th style={{ width: "80px" }}>Rank</th>
                         <th>Student Name</th>
-                        <th>Attendance Count</th>
+                        <th style={{ width: "150px" }} className="text-right">Attendance Count</th>
                       </tr>
                     </thead>
                     <tbody>
                       {bottomStudents.map((student, idx) => (
                         <tr key={idx}>
-                          <td>{studentAttendanceCounts.length - bottomStudents.length + idx + 1}</td>
+                          <td className="text-center">{studentAttendanceCounts.length - bottomStudents.length + idx + 1}</td>
                           <td>{student.name}</td>
-                          <td>{student.count}</td>
+                          <td className="text-right">{student.count}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -582,6 +723,7 @@ export default function OrganisationAnalytics({
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
 

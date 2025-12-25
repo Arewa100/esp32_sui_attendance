@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,14 +32,13 @@ import { useOrganisationObject, useStudentsByIds } from "@/hooks/use-attendance-
 import { useAttendanceRecordedEvents, useStudentRegisteredEvents, useSubscriptionRenewedEvents } from "@/hooks/use-attendance-events";
 import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
 import SubscribeButton from "@/components/SubscribeButton";
-import OrganisationAnalytics from "@/components/OrganisationAnalytics";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
 export default function OrganisationDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
-  const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const { toast } = useToast();
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const [studentSearchQuery, setStudentSearchQuery] = useState("");
@@ -523,7 +522,7 @@ export default function OrganisationDetail() {
                 <Button 
                   variant="default" 
                   size="sm"
-                  onClick={() => setAnalyticsOpen(true)}
+                  onClick={() => navigate(`/organisations/${id}/analytics`)}
                 >
                   <BarChart3 className="mr-2 h-4 w-4" />
                   View Analytics
@@ -670,16 +669,6 @@ export default function OrganisationDetail() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* Analytics Dialog */}
-      {orgId && (
-        <OrganisationAnalytics
-          orgId={orgId}
-          orgName={organisation.name}
-          open={analyticsOpen}
-          onOpenChange={setAnalyticsOpen}
-        />
-      )}
     </div>
   );
 }
