@@ -9,6 +9,7 @@ import { useMultipleObjectMetadata } from "@/hooks/use-object-metadata";
 import { useSuiBalance } from "@/hooks/use-sui-balance";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import PageBackground from "@/components/PageBackground";
 
 export default function SubscriptionPage() {
   const navigate = useNavigate();
@@ -73,7 +74,8 @@ export default function SubscriptionPage() {
   }, [subscriptionStatus?.expiryTimestamp, currentTime]);
 
   return (
-    <PhoneShell>
+    <PhoneShell className="relative">
+      <PageBackground />
       <div className="sticky top-0 z-50 flex items-center bg-surface-light dark:bg-[#1c2633] px-4 py-3 justify-between border-b border-gray-200 dark:border-gray-800 shadow-sm">
         <button
           className="text-text-main dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"

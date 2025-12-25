@@ -1,13 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import PhoneShell from "@/components/PhoneShell";
 import { WalletPill } from "@/components/WalletPill";
+import PageBackground from "@/components/PageBackground";
 
 export default function MyOrganisationsPage() {
   const navigate = useNavigate();
 
   // Note: UI is from Stitch. Real org listing will be wired to chain in the next step.
   return (
-    <PhoneShell className="pb-20">
+    <PhoneShell className="pb-20 relative">
+      <PageBackground />
       <header className="sticky top-0 z-20 bg-white/90 dark:bg-[#101822]/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-xl font-bold leading-tight tracking-tight flex-1 truncate">

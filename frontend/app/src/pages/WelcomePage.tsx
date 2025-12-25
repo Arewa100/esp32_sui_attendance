@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import PhoneShell from "@/components/PhoneShell";
+import PageBackground from "@/components/PageBackground";
 
 export default function WelcomePage() {
   const navigate = useNavigate();
@@ -8,6 +9,7 @@ export default function WelcomePage() {
 
   return (
     <PhoneShell withFrame={false} maxWidthClass="max-w-none">
+      <PageBackground />
       <div className="relative flex min-h-screen w-full flex-col">
         <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/80 dark:bg-[#101822]/80 border-b border-gray-200 dark:border-gray-800 transition-colors">
           <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">

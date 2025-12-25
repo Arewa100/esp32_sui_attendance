@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 import { useCurrentAccount, useDisconnectWallet } from "@mysten/dapp-kit";
+import PageBackground from "@/components/PageBackground";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -73,10 +74,11 @@ export default function DashboardLayout() {
   }, [account, navigate, location.pathname]);
 
   return (
-    <div className="flex min-h-screen w-full bg-background overflow-x-hidden">
+    <div className="flex min-h-screen w-full overflow-x-hidden relative">
+      <PageBackground />
       {/* Sidebar */}
       <aside className={cn(
-        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300",
+        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border bg-sidebar/70 backdrop-blur-md transition-all duration-300",
         collapsed ? "w-16" : "w-64"
       )}>
         {/* Logo */}
@@ -147,7 +149,7 @@ export default function DashboardLayout() {
         collapsed ? "ml-16" : "ml-64"
       )}>
         {/* Top bar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-end border-b border-border bg-background px-6 shrink-0">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-end border-b border-border bg-background/80 backdrop-blur-sm px-6 shrink-0">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
@@ -188,7 +190,7 @@ export default function DashboardLayout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-6 min-w-0 overflow-x-hidden">
+        <main className="flex-1 p-6 min-w-0 overflow-x-hidden relative">
           <Outlet />
         </main>
       </div>

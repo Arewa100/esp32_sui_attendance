@@ -17,7 +17,7 @@ export default function PhoneShell({
         "relative flex h-full min-h-screen w-full flex-col overflow-x-hidden mx-auto",
         maxWidthClass,
         withFrame ? "shadow-xl" : "shadow-none",
-        "bg-background-light dark:bg-background-dark text-text-main dark:text-white transition-colors duration-200",
+        "bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm text-text-main dark:text-white transition-colors duration-200",
         className ?? ""
       ].join(" ")}
     >

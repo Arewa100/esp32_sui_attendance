@@ -4,6 +4,7 @@ import PhoneShell from "@/components/PhoneShell";
 import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { buildRegisterStudentTx } from "@/services/transactions";
 import { usePreFetchObjectMetadata } from "@/hooks/use-object-metadata";
+import PageBackground from "@/components/PageBackground";
 
 export default function RegisterStudentPage() {
   const navigate = useNavigate();
@@ -28,7 +29,8 @@ export default function RegisterStudentPage() {
     isMetadataReady;
 
   return (
-    <PhoneShell>
+    <PhoneShell className="relative">
+      <PageBackground />
       <div className="sticky top-0 z-20 flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between border-b border-gray-200 dark:border-gray-800">
         <button
           className="text-text-main dark:text-white flex size-12 shrink-0 items-center justify-center rounded-full active:bg-gray-200 dark:active:bg-gray-800 transition-colors cursor-pointer"

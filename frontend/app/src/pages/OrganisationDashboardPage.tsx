@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PhoneShell from "@/components/PhoneShell";
 import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
+import PageBackground from "@/components/PageBackground";
 
 export default function OrganisationDashboardPage() {
   const navigate = useNavigate();
@@ -22,7 +23,8 @@ export default function OrganisationDashboardPage() {
   }, [subscriptionStatus, isLoadingSubscription]);
 
   return (
-    <PhoneShell withFrame={false} maxWidthClass="max-w-none" className="pb-24">
+    <PhoneShell withFrame={false} maxWidthClass="max-w-none" className="pb-24 relative">
+      <PageBackground />
       {/* Top App Bar (Stitch structure) */}
       <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between shadow-sm transition-colors duration-300">
         <button

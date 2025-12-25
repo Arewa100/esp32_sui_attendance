@@ -6,6 +6,7 @@ import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-ki
 import { CONFIG } from "@/config";
 import { buildCreateOrganisationTx } from "@/services/transactions";
 import { usePreFetchObjectMetadata } from "@/hooks/use-object-metadata";
+import PageBackground from "@/components/PageBackground";
 
 export default function CreateOrganisationPage() {
   const navigate = useNavigate();
@@ -22,7 +23,8 @@ export default function CreateOrganisationPage() {
   const canSubmit = !!account && !!systemObjectId && name.trim().length > 0 && !isPending && isMetadataReady;
 
   return (
-    <PhoneShell className="bg-white dark:bg-background-dark min-w-[320px]">
+    <PhoneShell className="bg-white dark:bg-background-dark min-w-[320px] relative">
+      <PageBackground />
       <div className="sticky top-0 z-30 flex items-center bg-white/90 dark:bg-background-dark/90 backdrop-blur-md p-4 border-b border-gray-100 dark:border-gray-800">
         <button
           className="text-text-main dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
