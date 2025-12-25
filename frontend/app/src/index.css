@@ -120,15 +120,15 @@
     cursor: none !important;
   }
   
-  /* Custom animated cursor element */
+  /* Custom cursor element - simple dot */
   .custom-cursor {
     position: fixed;
-    width: 14px;
-    height: 14px;
+    width: 8px;
+    height: 8px;
     pointer-events: none;
     z-index: 9999;
     transform: translate(-50%, -50%);
-    transition: transform 0.05s ease-out;
+    transition: transform 0.01s linear;
   }
   
   .custom-cursor-dot {
@@ -136,104 +136,16 @@
     height: 100%;
     border-radius: 50%;
     background-color: hsl(var(--foreground));
-    animation: cursor-pulse 2s ease-in-out infinite;
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
   }
   
   .dark .custom-cursor-dot {
     background-color: hsl(var(--foreground));
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-  }
-  
-  /* Breathing/pulsing animation - like a map pointer */
-  @keyframes cursor-pulse {
-    0% {
-      transform: scale(1);
-      opacity: 1;
-      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.4);
-    }
-    50% {
-      transform: scale(1.5);
-      opacity: 0.7;
-      box-shadow: 0 0 0 8px rgba(0, 0, 0, 0);
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
-    }
-  }
-  
-  .dark .custom-cursor-dot {
-    animation: cursor-pulse-dark 2s ease-in-out infinite;
-  }
-  
-  @keyframes cursor-pulse-dark {
-    0% {
-      transform: scale(1);
-      opacity: 1;
-      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
-    }
-    50% {
-      transform: scale(1.5);
-      opacity: 0.7;
-      box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-    }
   }
   
   /* Larger cursor for clickable elements */
   .custom-cursor.clickable {
-    width: 18px;
-    height: 18px;
-  }
-  
-  .custom-cursor.clickable .custom-cursor-dot {
-    animation: cursor-pulse-clickable 2s ease-in-out infinite;
-  }
-  
-  @keyframes cursor-pulse-clickable {
-    0% {
-      transform: scale(1);
-      opacity: 1;
-      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.4);
-    }
-    50% {
-      transform: scale(1.6);
-      opacity: 0.6;
-      box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
-    }
-  }
-  
-  .dark .custom-cursor.clickable .custom-cursor-dot {
-    animation: cursor-pulse-clickable-dark 2s ease-in-out infinite;
-  }
-  
-  @keyframes cursor-pulse-clickable-dark {
-    0% {
-      transform: scale(1);
-      opacity: 1;
-      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
-    }
-    50% {
-      transform: scale(1.6);
-      opacity: 0.6;
-      box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-    }
+    width: 12px;
+    height: 12px;
   }
   
   /* Text cursor for input fields */
