@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { WalletPill } from "@/components/WalletPill";
 import { useCurrentAccount, useDisconnectWallet } from "@mysten/dapp-kit";
+import AnimatedLogo from "@/components/AnimatedLogo";
 
 function SideLink({
   to,
@@ -54,16 +55,16 @@ export function AppLayout({
               type="button"
               onClick={() => navigate("/")}
             >
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                <span className="material-symbols-outlined text-[22px]">
-                  security
-                </span>
-              </div>
-              <div className="flex flex-col items-start leading-tight">
-                <span className="text-xl font-bold text-gray-900">
-                  SuiAttend
-                </span>
-                <span className="text-xs text-gray-500">Attendance System</span>
+              <div className="flex items-center gap-2">
+                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                  <SignalIcon className="text-primary" size={22} />
+                </div>
+                <div className="flex flex-col items-start leading-tight">
+                  <span className="text-xl font-bold text-gray-900 logo-text logo-text-swap">
+                    SuiAttend
+                  </span>
+                  <span className="text-xs text-gray-500">Attendance System</span>
+                </div>
               </div>
             </button>
 

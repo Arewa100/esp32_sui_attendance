@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import PhoneShell from "@/components/PhoneShell";
 import PageBackground from "@/components/PageBackground";
+import AnimatedLogo from "@/components/AnimatedLogo";
+import SignalIcon from "@/components/SignalIcon";
 
 export default function WelcomePage() {
   const navigate = useNavigate();
@@ -13,13 +15,13 @@ export default function WelcomePage() {
       <div className="relative flex min-h-screen w-full flex-col">
         <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/80 dark:bg-[#101822]/80 border-b border-gray-200 dark:border-gray-800 transition-colors">
           <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
-            <div className="flex items-center gap-2 text-primary">
+            <div className="hidden min-[360px]:block">
+              <AnimatedLogo variant="welcome" />
+            </div>
+            <div className="flex min-[360px]:hidden items-center gap-2 text-primary">
               <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <span className="material-symbols-outlined text-[24px]">nfc</span>
+                <SignalIcon className="text-primary" size={24} />
               </div>
-              <span className="text-lg font-bold tracking-tight text-gray-900 dark:text-white hidden min-[360px]:block">
-                SuiAttend
-              </span>
             </div>
 
             <div className="flex items-center gap-3">

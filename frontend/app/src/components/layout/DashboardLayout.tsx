@@ -3,10 +3,8 @@ import {
   LayoutDashboard, 
   Building2, 
   Users, 
-  Bell,
   Wallet,
   ChevronLeft,
-  Shield,
   Settings,
   LogOut
 } from "lucide-react";
@@ -15,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 import { useCurrentAccount, useDisconnectWallet } from "@mysten/dapp-kit";
 import PageBackground from "@/components/PageBackground";
+import AnimatedLogo from "@/components/AnimatedLogo";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -84,16 +83,11 @@ export default function DashboardLayout() {
         {/* Logo */}
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
           {!collapsed ? (
-            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <Shield className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <span className="font-semibold text-sidebar-foreground">SuiAttend</span>
-            </Link>
+            <AnimatedLogo variant="sidebar" collapsed={false} />
           ) : (
             <Link to="/" className="flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <Shield className="h-4 w-4 text-primary-foreground" />
+                <SignalIcon className="h-4 w-4 text-primary-foreground" size={16} />
               </div>
             </Link>
           )}
@@ -157,13 +151,6 @@ export default function DashboardLayout() {
         {/* Top bar */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-end border-b border-border bg-background/80 backdrop-blur-sm px-6 shrink-0">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
-                3
-              </span>
-            </Button>
-            
             {account ? (
               <Button 
                 variant="ghost" 

@@ -196,17 +196,28 @@ export function useRecentActivity(limit = 5) {
       };
     });
 
-  // Add organization creation events
+  // Add organization creation events with real timestamps
   const orgActivities: RecentActivity[] = userOrganisations
     .slice(0, Math.max(0, limit - activities.length))
-    .map((org, idx) => ({
-      id: `org-${idx}-${org.organisation}`,
-      type: "organisation" as const,
-      message: "New organisation created",
-      org: org.name,
-      time: "Recently",
-      timestamp: 0,
-    }));
+    .map((org, idx) => {
+      // Use timestampMs from the event if available (check for undefined/null, not just falsy)
+      // timestampMs comes from Sui event metadata (e.timestampMs)
+      const timestamp = (org.timestampMs !== undefined && org.timestampMs !== null && org.timestampMs > 0) 
+        ? org.timestampMs 
+        : Date.now() - (idx * 24 * 60 * 60 * 1000); // Fallback: spread over days if no timestamp
+      const timeAgo = (org.timestampMs !== undefined && org.timestampMs !== null && org.timestampMs > 0)
+        ? getTimeAgo(timestamp)
+        : "Recently";
+      
+      return {
+        id: `org-${idx}-${org.organisation}`,
+        type: "organisation" as const,
+        message: "New organisation created",
+        org: org.name,
+        time: timeAgo,
+        timestamp,
+      };
+    });
 
   // Combine and sort by timestamp (most recent first)
   const allActivities = [...activities, ...orgActivities]

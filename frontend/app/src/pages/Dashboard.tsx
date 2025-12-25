@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -24,6 +24,7 @@ function formatNumber(num: number): string {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { stats, isLoading: isLoadingStats, error: statsError } = useDashboardStats();
   const { activities, isLoading: isLoadingActivities, error: activitiesError } = useRecentActivity(5);
 
@@ -140,7 +141,12 @@ export default function Dashboard() {
       <Card className="border-border">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
-          <Button variant="ghost" size="sm" className="text-primary">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-primary"
+            onClick={() => navigate("/activity")}
+          >
             View all
             <ArrowUpRight className="ml-1 h-4 w-4" />
           </Button>

@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { 
   Building2, 
   Users, 
-  Shield, 
   Zap, 
   ArrowRight,
   CheckCircle2,
@@ -15,6 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentAccount, ConnectButton, useDisconnectWallet } from "@mysten/dapp-kit";
 import { useRef, useState, useEffect } from "react";
 import AnalyticsChart from "@/components/AnalyticsChart";
+import SignalIcon from "@/components/SignalIcon";
+import AnimatedLogo from "@/components/AnimatedLogo";
 
 const features = [
   {
@@ -28,7 +29,7 @@ const features = [
     description: "Register students with RFID card IDs for seamless attendance tracking."
   },
   {
-    icon: Shield,
+    icon: SignalIcon,
     title: "Blockchain Security",
     description: "All records are immutably stored on the Sui blockchain for transparency."
   },
@@ -137,12 +138,7 @@ export default function Landing() {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                <Shield className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-lg font-semibold text-foreground">SuiAttend</span>
-            </div>
+            <AnimatedLogo variant="default" />
             
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
@@ -365,12 +361,7 @@ export default function Landing() {
       <footer className="py-12 px-6 border-t border-border">
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <Shield className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <span className="font-semibold text-foreground">SuiAttend</span>
-            </div>
+            <AnimatedLogo variant="footer" />
             
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <a href="https://github.com/Arewa100/esp32_sui_attendance" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Documentation</a>

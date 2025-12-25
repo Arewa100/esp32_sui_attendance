@@ -15,6 +15,7 @@ const CreateOrganisation = lazy(() => import("./pages/CreateOrganisation"));
 const RegisterStudent = lazy(() => import("./pages/RegisterStudent"));
 const StudentProfile = lazy(() => import("./pages/StudentProfile"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
+const ActivityPage = lazy(() => import("./pages/ActivityPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const DashboardLayout = lazy(() => import("./components/layout/DashboardLayout"));
 
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route element={<DashboardLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/activity" element={<ActivityPage />} />
             <Route path="/organisations" element={<Organisations />} />
             <Route path="/organisations/new" element={<CreateOrganisation />} />
             <Route path="/organisations/:id" element={<OrganisationDetail />} />
