@@ -16,7 +16,7 @@ import {
   Legend,
 } from "chart.js";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
-import { ChevronLeft, Printer, Download, Calendar as CalendarIcon, X } from "lucide-react";
+import { ChevronLeft, Printer, Download, Calendar as CalendarIcon, X, TrendingUp, TrendingDown } from "lucide-react";
 import { format } from "date-fns";
 import { useAttendanceRecordedEvents, useStudentRegisteredEvents } from "@/hooks/use-attendance-events";
 import { useOrganisationObject } from "@/hooks/use-attendance-objects";
@@ -163,33 +163,69 @@ export default function AnalyticsPage() {
     ];
   }, [overallAttendancePercentage]);
 
-  const chartData = {
-    labels: topStudents.map((s) => s.name.length > 15 ? s.name.slice(0, 15) + "..." : s.name),
-    datasets: [
-      {
-        label: "Attendance Count",
-        data: topStudents.map((s) => s.count),
-        backgroundColor: "rgba(107, 141, 227, 0.8)", // #6B8DE3
-        borderColor: "rgba(107, 141, 227, 1)",
-        borderWidth: 1,
-      },
-    ],
+  // Helper function for better name truncation (middle truncation for long names)
+  const truncateName = (name: string, maxLength: number = 20): string => {
+    if (name.length <= maxLength) return name;
+    const start = Math.floor((maxLength - 3) / 2);
+    const end = name.length - Math.ceil((maxLength - 3) / 2);
+    return `${name.slice(0, start)}...${name.slice(end)}`;
   };
 
-  const bottomChartData = {
-    labels: bottomStudents.map((s) => s.name.length > 15 ? s.name.slice(0, 15) + "..." : s.name),
-    datasets: [
-      {
-        label: "Attendance Count",
-        data: bottomStudents.map((s) => s.count),
-        backgroundColor: "rgba(251, 146, 60, 0.8)", // orange
-        borderColor: "rgba(251, 146, 60, 1)",
-        borderWidth: 1,
-      },
-    ],
-  };
+  // Chart data with improved labels and tooltip support
+  const chartData = useMemo(() => {
+    if (topStudents.length === 0) {
+      return {
+        labels: [],
+        datasets: [],
+      };
+    }
 
-  const chartOptions = {
+    return {
+      labels: topStudents.map((s) => truncateName(s.name, 18)),
+      datasets: [
+        {
+          label: "Attendance Count",
+          data: topStudents.map((s) => s.count),
+          backgroundColor: "rgba(107, 141, 227, 0.8)", // #6B8DE3
+          borderColor: "rgba(107, 141, 227, 1)",
+          borderWidth: 1,
+          barThickness: 'flex' as const,
+          maxBarThickness: 50,
+          categoryPercentage: 0.7,
+          barPercentage: 0.8,
+        },
+      ],
+    };
+  }, [topStudents]);
+
+  const bottomChartData = useMemo(() => {
+    if (bottomStudents.length === 0) {
+      return {
+        labels: [],
+        datasets: [],
+      };
+    }
+
+    return {
+      labels: bottomStudents.map((s) => truncateName(s.name, 18)),
+      datasets: [
+        {
+          label: "Attendance Count",
+          data: bottomStudents.map((s) => s.count),
+          backgroundColor: "rgba(251, 146, 60, 0.8)", // orange
+          borderColor: "rgba(251, 146, 60, 1)",
+          borderWidth: 1,
+          barThickness: 'flex' as const,
+          maxBarThickness: 50,
+          categoryPercentage: 0.7,
+          barPercentage: 0.8,
+        },
+      ],
+    };
+  }, [bottomStudents]);
+
+  // Chart options for top students chart
+  const topChartOptions = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -204,6 +240,16 @@ export default function AnalyticsPage() {
         borderWidth: 1,
         padding: 12,
         cornerRadius: 8,
+        callbacks: {
+          title: (context: any) => {
+            // Show full student name in tooltip
+            const index = context[0].dataIndex;
+            return topStudents[index]?.name || context[0].label;
+          },
+          label: (context: any) => {
+            return `Attendance: ${context.parsed.y}`;
+          },
+        },
       },
     },
     backgroundColor: "transparent",
@@ -211,7 +257,7 @@ export default function AnalyticsPage() {
       x: {
         grid: {
           color: "rgba(37, 37, 37, 1)",
-          lineWidth: 6,
+          lineWidth: 1,
           drawBorder: false,
         },
         ticks: {
@@ -227,7 +273,7 @@ export default function AnalyticsPage() {
         beginAtZero: true,
         grid: {
           color: "rgba(37, 37, 37, 1)",
-          lineWidth: 6,
+          lineWidth: 1,
           drawBorder: false,
         },
         ticks: {
@@ -239,7 +285,70 @@ export default function AnalyticsPage() {
         },
       },
     },
-  };
+  }), [topStudents]);
+
+  // Chart options for bottom students chart
+  const bottomChartOptions = useMemo(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: "rgba(29, 29, 29, 0.95)",
+        titleColor: "rgb(255, 255, 255)",
+        bodyColor: "rgb(255, 255, 255)",
+        borderColor: "rgba(37, 37, 37, 0.5)",
+        borderWidth: 1,
+        padding: 12,
+        cornerRadius: 8,
+        callbacks: {
+          title: (context: any) => {
+            // Show full student name in tooltip
+            const index = context[0].dataIndex;
+            return bottomStudents[index]?.name || context[0].label;
+          },
+          label: (context: any) => {
+            return `Attendance: ${context.parsed.y}`;
+          },
+        },
+      },
+    },
+    backgroundColor: "transparent",
+    scales: {
+      x: {
+        grid: {
+          color: "rgba(37, 37, 37, 1)",
+          lineWidth: 1,
+          drawBorder: false,
+        },
+        ticks: {
+          color: "rgba(156, 163, 175, 0.6)",
+          font: {
+            size: 11,
+          },
+          maxRotation: 45,
+          minRotation: 45,
+        },
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: "rgba(37, 37, 37, 1)",
+          lineWidth: 1,
+          drawBorder: false,
+        },
+        ticks: {
+          color: "rgba(156, 163, 175, 0.6)",
+          font: {
+            size: 11,
+          },
+          stepSize: 1,
+        },
+      },
+    },
+  }), [bottomStudents]);
 
   const handlePrint = () => {
     if (!printRef.current) return;
@@ -609,9 +718,25 @@ export default function AnalyticsPage() {
               <CardTitle>Top 10 Students (Highest Attendance)</CardTitle>
             </CardHeader>
             <CardContent className="p-6 pt-0">
-              <div style={{ height: "200px", backgroundColor: "transparent" }} className="no-print">
-                <Bar data={chartData} options={chartOptions} />
-              </div>
+              {topStudents.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center no-print">
+                  <TrendingUp className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                  <p className="text-muted-foreground">
+                    {studentAttendanceCounts.length === 0
+                      ? "No attendance records available for this organisation."
+                      : "No attendance data available for the selected date range."}
+                  </p>
+                  {studentAttendanceCounts.length === 0 && (
+                    <p className="text-sm text-muted-foreground/70 mt-2">
+                      Attendance records will appear here once students check in.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div style={{ height: "200px", minHeight: "180px", backgroundColor: "transparent" }} className="no-print" role="img" aria-label="Top 10 students attendance bar chart">
+                  <Bar data={chartData} options={topChartOptions} />
+                </div>
+              )}
               <div className="mt-4">
                 <table className="print-table analytics-table w-full border-collapse">
                   <thead>
@@ -622,13 +747,23 @@ export default function AnalyticsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {topStudents.map((student, idx) => (
-                      <tr key={idx}>
-                        <td className="text-center">{idx + 1}</td>
-                        <td>{student.name}</td>
-                        <td className="text-right">{student.count}</td>
+                    {topStudents.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="text-center text-muted-foreground py-8">
+                          {studentAttendanceCounts.length === 0
+                            ? "No attendance records available."
+                            : "No data available for the selected date range."}
+                        </td>
                       </tr>
-                    ))}
+                    ) : (
+                      topStudents.map((student, idx) => (
+                        <tr key={idx}>
+                          <td className="text-center">{idx + 1}</td>
+                          <td>{student.name}</td>
+                          <td className="text-right">{student.count}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -643,9 +778,25 @@ export default function AnalyticsPage() {
               <CardTitle>Bottom 10 Students (Lowest Attendance)</CardTitle>
             </CardHeader>
             <CardContent className="p-6 pt-0">
-              <div style={{ height: "200px", backgroundColor: "transparent" }}>
-                <Bar data={bottomChartData} options={chartOptions} />
-              </div>
+              {bottomStudents.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <TrendingDown className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                  <p className="text-muted-foreground">
+                    {studentAttendanceCounts.length === 0
+                      ? "No attendance records available for this organisation."
+                      : "No attendance data available for the selected date range."}
+                  </p>
+                  {studentAttendanceCounts.length === 0 && (
+                    <p className="text-sm text-muted-foreground/70 mt-2">
+                      Attendance records will appear here once students check in.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div style={{ height: "200px", minHeight: "180px", backgroundColor: "transparent" }} role="img" aria-label="Bottom 10 students attendance bar chart">
+                  <Bar data={bottomChartData} options={bottomChartOptions} />
+                </div>
+              )}
               <div className="mt-4">
                 <table className="print-table analytics-table w-full border-collapse">
                   <thead>
@@ -656,13 +807,23 @@ export default function AnalyticsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {bottomStudents.map((student, idx) => (
-                      <tr key={idx}>
-                        <td className="text-center">{studentAttendanceCounts.length - bottomStudents.length + idx + 1}</td>
-                        <td>{student.name}</td>
-                        <td className="text-right">{student.count}</td>
+                    {bottomStudents.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="text-center text-muted-foreground py-8">
+                          {studentAttendanceCounts.length === 0
+                            ? "No attendance records available."
+                            : "No data available for the selected date range."}
+                        </td>
                       </tr>
-                    ))}
+                    ) : (
+                      bottomStudents.map((student, idx) => (
+                        <tr key={idx}>
+                          <td className="text-center">{studentAttendanceCounts.length - bottomStudents.length + idx + 1}</td>
+                          <td>{student.name}</td>
+                          <td className="text-right">{student.count}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
