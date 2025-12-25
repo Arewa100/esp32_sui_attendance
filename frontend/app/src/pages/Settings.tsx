@@ -33,6 +33,37 @@ export default function Settings() {
   const [fontFamily, setFontFamily] = useState<FontFamily>("system");
   const [theme, setTheme] = useState<Theme>("system");
 
+  // Font loading map for dynamic font loading
+  const fontLoadMap: Record<string, string> = {
+    "roboto": "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap",
+    "open-sans": "https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap",
+    "lato": "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",
+    "montserrat": "https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap",
+    "poppins": "https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap",
+    "nunito": "https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap",
+    "raleway": "https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap",
+    "work-sans": "https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap",
+  };
+
+  // Dynamically load font when selected
+  const loadFont = (fontValue: string) => {
+    if (fontValue === "system" || fontValue === "inter") return; // Inter is already loaded
+    
+    const fontUrl = fontLoadMap[fontValue];
+    if (!fontUrl) return;
+
+    // Check if font is already loaded
+    const existingLink = document.querySelector(`link[data-font="${fontValue}"]`);
+    if (existingLink) return;
+
+    // Create and append link element
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = fontUrl;
+    link.setAttribute("data-font", fontValue);
+    document.head.appendChild(link);
+  };
+
   // Load saved preferences on mount
   useEffect(() => {
     try {
@@ -41,6 +72,10 @@ export default function Settings() {
       
       if (savedFont && FONT_OPTIONS.some(f => f.value === savedFont)) {
         setFontFamily(savedFont);
+        // Load font if it's not Inter or system
+        if (savedFont !== "system" && savedFont !== "inter") {
+          loadFont(savedFont);
+        }
       }
       if (savedTheme && ["light", "dark", "system"].includes(savedTheme)) {
         setTheme(savedTheme);
@@ -54,6 +89,11 @@ export default function Settings() {
   useEffect(() => {
     const body = document.body;
     const selectedFont = FONT_OPTIONS.find((f) => f.value === fontFamily);
+    
+    // Load font dynamically if needed
+    if (fontFamily !== "system" && fontFamily !== "inter") {
+      loadFont(fontFamily);
+    }
     
     // Remove all font classes
     FONT_OPTIONS.forEach((font) => {

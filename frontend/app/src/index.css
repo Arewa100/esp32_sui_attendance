@@ -1,12 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap');
+/* Primary font: Inter - Optimized for UI and data-heavy applications */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* Monospace font: JetBrains Mono - For code and technical content */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -120,32 +115,152 @@
     @apply bg-background text-foreground font-sans antialiased;
   }
   
-  /* Custom dot cursor - Light mode */
+  /* Hide default cursor */
   * {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='%23222'/%3E%3C/svg%3E") 4 4, auto;
+    cursor: none !important;
   }
   
-  /* Dark mode dot cursor */
-  .dark * {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Ccircle cx='4' cy='4' r='3' fill='%23fff'/%3E%3C/svg%3E") 4 4, auto;
+  /* Custom animated cursor element */
+  .custom-cursor {
+    position: fixed;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.05s ease-out;
   }
   
-  /* Slightly larger dot for clickable elements */
-  button, a, [role="button"], [onclick], input[type="button"], input[type="submit"], .cursor-pointer, label {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='4' fill='%23222'/%3E%3C/svg%3E") 5 5, pointer;
+  .custom-cursor-dot {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: hsl(var(--foreground));
+    animation: cursor-pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
   }
   
-  .dark button, .dark a, .dark [role="button"], .dark [onclick], .dark input[type="button"], .dark input[type="submit"], .dark .cursor-pointer, .dark label {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='4' fill='%23fff'/%3E%3C/svg%3E") 5 5, pointer;
+  .dark .custom-cursor-dot {
+    background-color: hsl(var(--foreground));
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
   }
   
-  /* Text cursor (vertical line) for input fields */
+  /* Breathing/pulsing animation - like a map pointer */
+  @keyframes cursor-pulse {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.4);
+    }
+    50% {
+      transform: scale(1.5);
+      opacity: 0.7;
+      box-shadow: 0 0 0 8px rgba(0, 0, 0, 0);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+  }
+  
+  .dark .custom-cursor-dot {
+    animation: cursor-pulse-dark 2s ease-in-out infinite;
+  }
+  
+  @keyframes cursor-pulse-dark {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+    }
+    50% {
+      transform: scale(1.5);
+      opacity: 0.7;
+      box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+  }
+  
+  /* Larger cursor for clickable elements */
+  .custom-cursor.clickable {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .custom-cursor.clickable .custom-cursor-dot {
+    animation: cursor-pulse-clickable 2s ease-in-out infinite;
+  }
+  
+  @keyframes cursor-pulse-clickable {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.4);
+    }
+    50% {
+      transform: scale(1.6);
+      opacity: 0.6;
+      box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+  }
+  
+  .dark .custom-cursor.clickable .custom-cursor-dot {
+    animation: cursor-pulse-clickable-dark 2s ease-in-out infinite;
+  }
+  
+  @keyframes cursor-pulse-clickable-dark {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+    }
+    50% {
+      transform: scale(1.6);
+      opacity: 0.6;
+      box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+  }
+  
+  /* Text cursor for input fields */
   input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="search"], textarea, [contenteditable="true"] {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='16' viewBox='0 0 2 16'%3E%3Crect x='0' y='0' width='2' height='16' fill='%23222'/%3E%3C/svg%3E") 1 8, text;
+    cursor: text !important;
   }
   
-  .dark input[type="text"], .dark input[type="email"], .dark input[type="password"], .dark input[type="number"], .dark input[type="search"], .dark textarea, .dark [contenteditable="true"] {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='16' viewBox='0 0 2 16'%3E%3Crect x='0' y='0' width='2' height='16' fill='%23fff'/%3E%3C/svg%3E") 1 8, text;
+  .custom-cursor.text-cursor {
+    width: 2px;
+    height: 20px;
+  }
+  
+  .custom-cursor.text-cursor .custom-cursor-dot {
+    width: 2px;
+    height: 20px;
+    border-radius: 0;
+    animation: cursor-blink 1s step-end infinite;
+    box-shadow: none;
+  }
+  
+  @keyframes cursor-blink {
+    0%, 50% {
+      opacity: 1;
+    }
+    51%, 100% {
+      opacity: 0;
+    }
   }
 }
 

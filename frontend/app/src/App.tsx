@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Skeleton } from "@/components/ui/skeleton";
 import Settings from "./pages/Settings";
+import CustomCursor from "./components/CustomCursor";
 
 // Lazy load pages for code splitting
 const Landing = lazy(() => import("./pages/Landing"));
@@ -43,6 +44,7 @@ const LoadingFallback = () => (
 export default function App() {
   return (
     <TooltipProvider>
+      <CustomCursor />
       <Toaster />
       <Suspense fallback={<LoadingFallback />}>
         <Routes>

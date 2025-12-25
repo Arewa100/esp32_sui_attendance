@@ -83,12 +83,18 @@ export default function DashboardLayout() {
       )}>
         {/* Logo */}
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
-          {!collapsed && (
-            <Link to="/dashboard" className="flex items-center gap-2">
+          {!collapsed ? (
+            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                 <Shield className="h-4 w-4 text-primary-foreground" />
               </div>
               <span className="font-semibold text-sidebar-foreground">SuiAttend</span>
+            </Link>
+          ) : (
+            <Link to="/" className="flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                <Shield className="h-4 w-4 text-primary-foreground" />
+              </div>
             </Link>
           )}
           <Button 
