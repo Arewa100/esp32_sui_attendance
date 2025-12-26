@@ -449,7 +449,7 @@ export default function Landing() {
           </div>
 
           <div className="relative">
-            <div className="relative overflow-hidden">
+            <div className="relative">
               <div
                 ref={carouselRef}
                 className="flex items-center will-change-transform"
