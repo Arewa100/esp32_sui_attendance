@@ -208,6 +208,7 @@ export default function Landing() {
               // Card 0: bottom, Card 1: top, Card 2: bottom, Card 3: top
               const topGridClass = index === 1 ? 'card-1-top' : index === 3 ? 'card-3-top' : '';
               const bottomGridClass = index === 0 ? 'card-0-bottom' : index === 2 ? 'card-2-bottom' : '';
+              const descriptionClass = `card-${index}-description`;
               
               return (
                 <div 
@@ -235,9 +236,9 @@ export default function Landing() {
                       </h3>
                     </div>
 
-                    {/* Description between grids */}
+                    {/* Description between grids - NOW WITH ANIMATION */}
                     <div className="mb-4">
-                      <p className="text-base text-muted-foreground leading-relaxed">
+                      <p className={`text-base text-muted-foreground leading-relaxed ${descriptionClass}`}>
                         {feature.description}
                       </p>
                     </div>

@@ -294,10 +294,37 @@
     }
   }
 
+  /* Keyframe animation: Description text turns blue when card is active */
+  @keyframes text-glow-blue {
+    0% {
+      color: hsl(var(--muted-foreground));
+    }
+    15% {
+      color: #3b82f6; /* Turn blue */
+    }
+    35% {
+      color: #3b82f6; /* Stay blue */
+    }
+    50% {
+      color: hsl(var(--muted-foreground)); /* Fade back */
+    }
+    100% {
+      color: hsl(var(--muted-foreground));
+    }
+  }
+
   /* Base class for animated grid boxes - sets initial gray color */
   .grid-box-animated {
     background-color: hsl(var(--foreground) / 0.05);
     min-height: 16px;
+  }
+
+  /* Base animated description text class */
+  .card-description-animated {
+    animation-duration: 6s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-name: text-glow-blue;
   }
 
   /* CARD 0 - BOTTOM GRID (Organisation Management)
@@ -504,6 +531,40 @@
     animation-delay: 3.88s; 
   }
 
+}
+
+/* ============================================
+   DESCRIPTION TEXT ANIMATIONS - OUTSIDE UTILITIES LAYER
+   Must be outside @layer to have proper specificity
+   ============================================ */
+
+/* IMPORTANT: These must be outside @layer utilities to override Tailwind classes */
+.card-0-description,
+.card-1-description,
+.card-2-description,
+.card-3-description {
+  animation-fill-mode: both !important;
+  color: hsl(var(--muted-foreground));
+}
+
+.card-0-description {
+  animation: text-glow-blue 6s ease-in-out infinite !important;
+  animation-delay: 0s !important;
+}
+
+.card-1-description {
+  animation: text-glow-blue 6s ease-in-out infinite !important;
+  animation-delay: 1.0s !important;
+}
+
+.card-2-description {
+  animation: text-glow-blue 6s ease-in-out infinite !important;
+  animation-delay: 2.0s !important;
+}
+
+.card-3-description {
+  animation: text-glow-blue 6s ease-in-out infinite !important;
+  animation-delay: 3.0s !important;
 }
 
 /* Logo Container - No Animation */
