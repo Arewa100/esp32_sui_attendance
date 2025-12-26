@@ -470,7 +470,7 @@ export default function Landing() {
                   return (
                     <div
                       key={`first-${index}`}
-                      className={`flex-shrink-0 bg-white border-t border-b border-l ${isLast ? 'border-r border-gray-300' : 'border-r border-gray-300'} px-6 py-4 flex items-center justify-center grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300 h-20 min-w-[240px]`}
+                      className={`flex-shrink-0 bg-white border-t border-b border-l ${isLast ? 'border-r border-gray-300' : 'border-r border-gray-300'} px-6 py-5 flex items-center justify-center grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300 h-24 min-w-[240px]`}
                     >
                       <div className="flex items-center gap-4">
                         <Icon as={IconComponent} boxSize={10} color="gray.700" />
@@ -498,7 +498,7 @@ export default function Landing() {
                   return (
                     <div
                       key={`second-${index}`}
-                      className={`flex-shrink-0 bg-white border-t border-b border-l ${isLast ? 'border-r border-gray-300' : 'border-r border-gray-300'} px-6 py-4 flex items-center justify-center grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300 h-20 min-w-[240px]`}
+                      className={`flex-shrink-0 bg-white border-t border-b border-l ${isLast ? 'border-r border-gray-300' : 'border-r border-gray-300'} px-6 py-5 flex items-center justify-center grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300 h-24 min-w-[240px]`}
                       aria-hidden="true"
                     >
                       <div className="flex items-center gap-4">
@@ -657,11 +657,11 @@ export default function Landing() {
         </div>
 
         <div className="mx-auto max-w-7xl relative z-10">
-          <div className="text-center mb-16">
+          <div className="mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-[hsl(220,14%,96%)] mb-4">
               Everything you need
             </h2>
-            <p className="text-base text-[hsl(220,9%,55%)] max-w-2xl mx-auto">
+            <p className="text-base text-[hsl(220,9%,55%)] max-w-2xl">
               A complete solution for managing attendance with blockchain
               technology
             </p>
