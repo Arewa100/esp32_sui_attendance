@@ -278,7 +278,7 @@
   /* Keyframe animation: Snake effect - lights up, stays lit briefly, then fades back to gray */
   @keyframes snake-light {
     0% {
-      background-color: hsl(var(--foreground) / 0.05);
+      background-color: rgba(255, 255, 255, 0.05);
     }
     10% {
       background-color: #3b82f6; /* Light up blue */
@@ -287,17 +287,17 @@
       background-color: #3b82f6; /* Stay lit */
     }
     40% {
-      background-color: hsl(var(--foreground) / 0.05); /* Fade back */
+      background-color: rgba(255, 255, 255, 0.05); /* Fade back */
     }
     100% {
-      background-color: hsl(var(--foreground) / 0.05);
+      background-color: rgba(255, 255, 255, 0.05);
     }
   }
 
   /* Keyframe animation: Description text turns blue when card is active */
   @keyframes text-glow-blue {
     0% {
-      color: hsl(var(--muted-foreground));
+      color: rgb(156, 163, 175);
     }
     15% {
       color: #3b82f6; /* Turn blue */
@@ -306,16 +306,16 @@
       color: #3b82f6; /* Stay blue */
     }
     50% {
-      color: hsl(var(--muted-foreground)); /* Fade back */
+      color: rgb(156, 163, 175); /* Fade back */
     }
     100% {
-      color: hsl(var(--muted-foreground));
+      color: rgb(156, 163, 175);
     }
   }
 
   /* Base class for animated grid boxes - sets initial gray color */
   .grid-box-animated {
-    background-color: hsl(var(--foreground) / 0.05);
+    background-color: rgba(255, 255, 255, 0.05);
     min-height: 16px;
   }
 
