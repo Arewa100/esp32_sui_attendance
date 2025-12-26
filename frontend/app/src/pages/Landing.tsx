@@ -4,8 +4,17 @@ import {
   Building2,
   Users,
   Zap,
-  ArrowRight
+  ArrowRight,
+  School,
+  Landmark,
+  Factory,
+  GraduationCap,
+  Hospital,
+  Building,
+  Scale,
+  HeartHandshake
 } from "lucide-react";
+import { Icon } from "@chakra-ui/react";
 import { useGlobalStats } from "@/hooks/use-global-stats";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -443,56 +452,64 @@ export default function Landing() {
             <div className="relative overflow-hidden">
               <div
                 ref={carouselRef}
-                className="flex gap-4 items-center will-change-transform"
+                className="flex items-center will-change-transform"
               >
                 {/* First set of logos */}
                 {[
-                  { name: "Schools", icon: "🏫" },
-                  { name: "Banks", icon: "🏦" },
-                  { name: "Industries", icon: "🏭" },
-                  { name: "Universities", icon: "🎓" },
-                  { name: "Hospitals", icon: "🏥" },
-                  { name: "Corporations", icon: "🏢" },
-                  { name: "Government", icon: "🏛️" },
-                  { name: "NGOs", icon: "🤝" }
-                ].map((org, index) => (
-                  <div
-                    key={`first-${index}`}
-                    className="flex-shrink-0 bg-white border border-gray-300 rounded-lg px-10 py-6 flex items-center justify-center grayscale h-28 min-w-[240px]"
-                  >
-                    <div className="flex items-center gap-4">
-                      <span className="text-4xl">{org.icon}</span>
-                      <span className="text-base font-semibold text-gray-900 whitespace-nowrap">
-                        {org.name}
-                      </span>
+                  { name: "Schools", icon: School },
+                  { name: "Banks", icon: Landmark },
+                  { name: "Industries", icon: Factory },
+                  { name: "Universities", icon: GraduationCap },
+                  { name: "Hospitals", icon: Hospital },
+                  { name: "Corporations", icon: Building },
+                  { name: "Government", icon: Scale },
+                  { name: "NGOs", icon: HeartHandshake }
+                ].map((org, index, array) => {
+                  const IconComponent = org.icon;
+                  const isLast = index === array.length - 1;
+                  return (
+                    <div
+                      key={`first-${index}`}
+                      className={`flex-shrink-0 bg-white border-t border-b border-l ${isLast ? 'border-r border-gray-300' : 'border-r border-gray-300'} px-6 py-4 flex items-center justify-center grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300 h-20 min-w-[240px]`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <Icon as={IconComponent} boxSize={10} color="gray.700" />
+                        <span className="text-base font-semibold text-gray-900 whitespace-nowrap">
+                          {org.name}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {/* Duplicate set for seamless loop */}
                 {[
-                  { name: "Schools", icon: "🏫" },
-                  { name: "Banks", icon: "🏦" },
-                  { name: "Industries", icon: "🏭" },
-                  { name: "Universities", icon: "🎓" },
-                  { name: "Hospitals", icon: "🏥" },
-                  { name: "Corporations", icon: "🏢" },
-                  { name: "Government", icon: "🏛️" },
-                  { name: "NGOs", icon: "🤝" }
-                ].map((org, index) => (
-                  <div
-                    key={`second-${index}`}
-                    className="flex-shrink-0 bg-white border border-gray-300 rounded-lg px-10 py-6 flex items-center justify-center grayscale h-28 min-w-[240px]"
-                    aria-hidden="true"
-                  >
-                    <div className="flex items-center gap-4">
-                      <span className="text-4xl">{org.icon}</span>
-                      <span className="text-base font-semibold text-gray-900 whitespace-nowrap">
-                        {org.name}
-                      </span>
+                  { name: "Schools", icon: School },
+                  { name: "Banks", icon: Landmark },
+                  { name: "Industries", icon: Factory },
+                  { name: "Universities", icon: GraduationCap },
+                  { name: "Hospitals", icon: Hospital },
+                  { name: "Corporations", icon: Building },
+                  { name: "Government", icon: Scale },
+                  { name: "NGOs", icon: HeartHandshake }
+                ].map((org, index, array) => {
+                  const IconComponent = org.icon;
+                  const isLast = index === array.length - 1;
+                  return (
+                    <div
+                      key={`second-${index}`}
+                      className={`flex-shrink-0 bg-white border-t border-b border-l ${isLast ? 'border-r border-gray-300' : 'border-r border-gray-300'} px-6 py-4 flex items-center justify-center grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300 h-20 min-w-[240px]`}
+                      aria-hidden="true"
+                    >
+                      <div className="flex items-center gap-4">
+                        <Icon as={IconComponent} boxSize={10} color="gray.700" />
+                        <span className="text-base font-semibold text-gray-900 whitespace-nowrap">
+                          {org.name}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

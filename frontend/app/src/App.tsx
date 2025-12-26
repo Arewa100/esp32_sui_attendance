@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
 import Settings from "./pages/Settings";
 import CustomCursor from "./components/CustomCursor";
 
@@ -44,38 +45,40 @@ const LoadingFallback = () => (
 
 export default function App() {
   return (
-    <TooltipProvider>
-      <CustomCursor />
-      <Toaster />
-      <Suspense fallback={<LoadingFallback />}>
-        <Routes>
-          {/* Lovable routes */}
-          <Route path="/" element={<Landing />} />
-          <Route element={<DashboardLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/activity" element={<ActivityPage />} />
-            <Route path="/organisations" element={<Organisations />} />
-            <Route path="/organisations/new" element={<CreateOrganisation />} />
-            <Route path="/organisations/:id" element={<OrganisationDetail />} />
-            <Route path="/organisations/:id/register" element={<RegisterStudent />} />
-            <Route path="/organisations/:id/analytics" element={<AnalyticsPage />} />
-            <Route path="/organisations/:orgId/students/:studentId" element={<StudentProfile />} />
-            <Route path="/settings" element={<Settings />} />
-          </Route>
+    <ChakraProvider value={defaultSystem}>
+      <TooltipProvider>
+        <CustomCursor />
+        <Toaster />
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            {/* Lovable routes */}
+            <Route path="/" element={<Landing />} />
+            <Route element={<DashboardLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/activity" element={<ActivityPage />} />
+              <Route path="/organisations" element={<Organisations />} />
+              <Route path="/organisations/new" element={<CreateOrganisation />} />
+              <Route path="/organisations/:id" element={<OrganisationDetail />} />
+              <Route path="/organisations/:id/register" element={<RegisterStudent />} />
+              <Route path="/organisations/:id/analytics" element={<AnalyticsPage />} />
+              <Route path="/organisations/:orgId/students/:studentId" element={<StudentProfile />} />
+              <Route path="/settings" element={<Settings />} />
+            </Route>
 
-          {/* Legacy routes (so existing deep links still work) */}
-          <Route path="/welcome" element={<WelcomePage />} />
-          <Route path="/orgs" element={<MyOrganisationsPage />} />
-          <Route path="/orgs/new" element={<CreateOrganisationPage />} />
-          <Route path="/orgs/:orgObjectId" element={<OrganisationDashboardPage />} />
-          <Route path="/orgs/:orgObjectId/students/new" element={<RegisterStudentPage />} />
-          <Route path="/orgs/:orgObjectId/subscription" element={<SubscriptionPage />} />
+            {/* Legacy routes (so existing deep links still work) */}
+            <Route path="/welcome" element={<WelcomePage />} />
+            <Route path="/orgs" element={<MyOrganisationsPage />} />
+            <Route path="/orgs/new" element={<CreateOrganisationPage />} />
+            <Route path="/orgs/:orgObjectId" element={<OrganisationDashboardPage />} />
+            <Route path="/orgs/:orgObjectId/students/new" element={<RegisterStudentPage />} />
+            <Route path="/orgs/:orgObjectId/subscription" element={<SubscriptionPage />} />
 
-          <Route path="/404" element={<NotFound />} />
-          <Route path="*" element={<Navigate to="/404" replace />} />
-        </Routes>
-      </Suspense>
-    </TooltipProvider>
+            <Route path="/404" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/404" replace />} />
+          </Routes>
+        </Suspense>
+      </TooltipProvider>
+    </ChakraProvider>
   );
 }
 
