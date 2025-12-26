@@ -46,14 +46,14 @@ export function useObjectMetadata(objectId: string | undefined) {
         }
 
         const owner = res.data.owner;
-        const isShared = owner === "Shared";
-        const sharedVersion = isShared && "initialSharedVersion" in owner
-          ? owner.initialSharedVersion
+        const isShared = !!(owner && typeof owner === 'object' && 'Shared' in owner);
+        const sharedVersion = isShared && typeof owner === 'object' && 'Shared' in owner
+          ? (owner as { Shared: { initial_shared_version: string } }).Shared.initial_shared_version
           : undefined;
-        const ownerAddress = owner !== "Shared" && "AddressOwner" in owner
-          ? owner.AddressOwner
-          : owner !== "Shared" && "ObjectOwner" in owner
-          ? owner.ObjectOwner
+        const ownerAddress = owner && typeof owner === 'object' && 'AddressOwner' in owner
+          ? (owner as { AddressOwner: string }).AddressOwner
+          : owner && typeof owner === 'object' && 'ObjectOwner' in owner
+          ? (owner as { ObjectOwner: string }).ObjectOwner
           : undefined;
 
         const metadata: ObjectMetadata = {
@@ -133,14 +133,14 @@ export function useMultipleObjectMetadata(objectIds: (string | undefined)[]) {
             }
 
             const owner = res.data.owner;
-            const isShared = owner === "Shared";
-            const sharedVersion = isShared && "initialSharedVersion" in owner
-              ? owner.initialSharedVersion
+            const isShared = !!(owner && typeof owner === 'object' && 'Shared' in owner);
+            const sharedVersion = isShared && typeof owner === 'object' && 'Shared' in owner
+              ? (owner as { Shared: { initial_shared_version: string } }).Shared.initial_shared_version
               : undefined;
-            const ownerAddress = owner !== "Shared" && "AddressOwner" in owner
-              ? owner.AddressOwner
-              : owner !== "Shared" && "ObjectOwner" in owner
-              ? owner.ObjectOwner
+            const ownerAddress = owner && typeof owner === 'object' && 'AddressOwner' in owner
+              ? (owner as { AddressOwner: string }).AddressOwner
+              : owner && typeof owner === 'object' && 'ObjectOwner' in owner
+              ? (owner as { ObjectOwner: string }).ObjectOwner
               : undefined;
 
             return {

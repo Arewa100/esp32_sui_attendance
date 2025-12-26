@@ -13,7 +13,7 @@ export default function CustomCursor() {
 
       // Check if hovering over clickable elements
       const target = e.target as HTMLElement;
-      const isClickableElement =
+      const isClickableElement = !!(
         target.tagName === "BUTTON" ||
         target.tagName === "A" ||
         target.closest("button") ||
@@ -21,16 +21,18 @@ export default function CustomCursor() {
         target.closest("[role='button']") ||
         target.closest(".cursor-pointer") ||
         target.closest("label") ||
-        window.getComputedStyle(target).cursor === "pointer";
+        window.getComputedStyle(target).cursor === "pointer"
+      );
 
       // Check if hovering over text input elements
-      const isTextElement =
+      const isTextElement = !!(
         target.tagName === "INPUT" ||
         target.tagName === "TEXTAREA" ||
         target.closest("input") ||
         target.closest("textarea") ||
         target.hasAttribute("contenteditable") ||
-        window.getComputedStyle(target).cursor === "text";
+        window.getComputedStyle(target).cursor === "text"
+      );
 
       setIsClickable(isClickableElement);
       setIsTextInput(isTextElement);

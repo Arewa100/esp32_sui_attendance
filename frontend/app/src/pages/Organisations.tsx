@@ -120,7 +120,7 @@ export default function Organisations() {
       gcTime: 300_000, // Keep in cache for 5 minutes (formerly cacheTime)
       refetchInterval: 30_000,
       retry: 3, // Retry 3 times on failure
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+      retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
       refetchOnWindowFocus: false, // Don't refetch on window focus to avoid unnecessary requests
     })),
   });

@@ -216,8 +216,6 @@ export default function OrganisationAnalytics({
         cornerRadius: 8,
       },
     },
-    // Make chart canvas background transparent
-    backgroundColor: "transparent",
     scales: {
       x: {
         grid: {

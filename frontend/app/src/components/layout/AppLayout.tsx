@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { WalletPill } from "@/components/WalletPill";
 import { useCurrentAccount, useDisconnectWallet } from "@mysten/dapp-kit";
 import AnimatedLogo from "@/components/AnimatedLogo";
+import SignalIcon from "@/components/SignalIcon";
 
 function SideLink({
   to,

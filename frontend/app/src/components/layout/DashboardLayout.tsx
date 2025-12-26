@@ -14,6 +14,7 @@ import { useState, useEffect, useRef } from "react";
 import { useCurrentAccount, useDisconnectWallet } from "@mysten/dapp-kit";
 import PageBackground from "@/components/PageBackground";
 import AnimatedLogo from "@/components/AnimatedLogo";
+import SignalIcon from "@/components/SignalIcon";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
