@@ -267,6 +267,243 @@
   .dark .slider-fade-right {
     opacity: 0.3;
   }
+
+  /* ============================================
+     CONTINUOUS SNAKE ANIMATION - INFINITE LOOP
+     Snake moves across all 4 cards continuously
+     Card 0: Bottom Grid → Card 1: Top Grid → Card 2: Bottom Grid → Card 3: Top Grid → REPEAT
+     Total cycle: 6s (allows snake to complete and reset)
+     ============================================ */
+  
+  /* Keyframe animation: Snake effect - lights up, stays lit briefly, then fades back to gray */
+  @keyframes snake-light {
+    0% {
+      background-color: hsl(var(--foreground) / 0.05);
+    }
+    10% {
+      background-color: #3b82f6; /* Light up blue */
+    }
+    30% {
+      background-color: #3b82f6; /* Stay lit */
+    }
+    40% {
+      background-color: hsl(var(--foreground) / 0.05); /* Fade back */
+    }
+    100% {
+      background-color: hsl(var(--foreground) / 0.05);
+    }
+  }
+
+  /* Base class for animated grid boxes - sets initial gray color */
+  .grid-box-animated {
+    background-color: hsl(var(--foreground) / 0.05);
+    min-height: 16px;
+  }
+
+  /* CARD 0 - BOTTOM GRID (Organisation Management)
+     Starts at 0% of cycle (0s in 6s cycle) */
+  .card-0-bottom .grid-box-0 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 0s; 
+  }
+  .card-0-bottom .grid-box-1 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 0.08s; 
+  }
+  .card-0-bottom .grid-box-2 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 0.16s; 
+  }
+  .card-0-bottom .grid-box-3 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 0.24s; 
+  }
+  .card-0-bottom .grid-box-4 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 0.32s; 
+  }
+  .card-0-bottom .grid-box-5 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 0.40s; 
+  }
+  .card-0-bottom .grid-box-6 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 0.48s; 
+  }
+  .card-0-bottom .grid-box-7 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 0.56s; 
+  }
+  .card-0-bottom .grid-box-8 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 0.64s; 
+  }
+  .card-0-bottom .grid-box-9 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 0.72s; 
+  }
+  .card-0-bottom .grid-box-10 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 0.80s; 
+  }
+  .card-0-bottom .grid-box-11 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 0.88s; 
+  }
+
+  /* CARD 1 - TOP GRID (Student Registration)
+     Starts at ~1s mark */
+  .card-1-top .grid-box-0 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 1.0s; 
+  }
+  .card-1-top .grid-box-1 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 1.08s; 
+  }
+  .card-1-top .grid-box-2 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 1.16s; 
+  }
+  .card-1-top .grid-box-3 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 1.24s; 
+  }
+  .card-1-top .grid-box-4 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 1.32s; 
+  }
+  .card-1-top .grid-box-5 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 1.40s; 
+  }
+  .card-1-top .grid-box-6 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 1.48s; 
+  }
+  .card-1-top .grid-box-7 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 1.56s; 
+  }
+  .card-1-top .grid-box-8 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 1.64s; 
+  }
+  .card-1-top .grid-box-9 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 1.72s; 
+  }
+  .card-1-top .grid-box-10 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 1.80s; 
+  }
+  .card-1-top .grid-box-11 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 1.88s; 
+  }
+
+  /* CARD 2 - BOTTOM GRID (Blockchain Security)
+     Starts at ~2s mark */
+  .card-2-bottom .grid-box-0 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 2.0s; 
+  }
+  .card-2-bottom .grid-box-1 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 2.08s; 
+  }
+  .card-2-bottom .grid-box-2 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 2.16s; 
+  }
+  .card-2-bottom .grid-box-3 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 2.24s; 
+  }
+  .card-2-bottom .grid-box-4 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 2.32s; 
+  }
+  .card-2-bottom .grid-box-5 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 2.40s; 
+  }
+  .card-2-bottom .grid-box-6 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 2.48s; 
+  }
+  .card-2-bottom .grid-box-7 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 2.56s; 
+  }
+  .card-2-bottom .grid-box-8 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 2.64s; 
+  }
+  .card-2-bottom .grid-box-9 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 2.72s; 
+  }
+  .card-2-bottom .grid-box-10 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 2.80s; 
+  }
+  .card-2-bottom .grid-box-11 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 2.88s; 
+  }
+
+  /* CARD 3 - TOP GRID (Real-time Tracking)
+     Starts at ~3s mark */
+  .card-3-top .grid-box-0 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 3.0s; 
+  }
+  .card-3-top .grid-box-1 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 3.08s; 
+  }
+  .card-3-top .grid-box-2 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 3.16s; 
+  }
+  .card-3-top .grid-box-3 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 3.24s; 
+  }
+  .card-3-top .grid-box-4 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 3.32s; 
+  }
+  .card-3-top .grid-box-5 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 3.40s; 
+  }
+  .card-3-top .grid-box-6 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 3.48s; 
+  }
+  .card-3-top .grid-box-7 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 3.56s; 
+  }
+  .card-3-top .grid-box-8 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 3.64s; 
+  }
+  .card-3-top .grid-box-9 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 3.72s; 
+  }
+  .card-3-top .grid-box-10 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 3.80s; 
+  }
+  .card-3-top .grid-box-11 { 
+    animation: snake-light 6s ease-in-out infinite; 
+    animation-delay: 3.88s; 
+  }
+
 }
 
 /* Logo Container - No Animation */

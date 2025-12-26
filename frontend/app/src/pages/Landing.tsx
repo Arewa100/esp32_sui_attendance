@@ -1,13 +1,10 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { 
   Building2, 
   Users, 
   Zap, 
-  ArrowRight,
-  CheckCircle2,
-  Wallet
+  ArrowRight
 } from "lucide-react";
 import { useGlobalStats } from "@/hooks/use-global-stats";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -57,10 +54,6 @@ export default function Landing() {
   const connectButtonRef = useRef<HTMLDivElement>(null);
   const [shouldRedirectAfterConnect, setShouldRedirectAfterConnect] = useState(false);
   
-  // Refs for slider
-  const sliderTrackRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-
   const handleButtonClick = () => {
     if (account) {
       // Wallet already connected, navigate immediately
@@ -84,54 +77,6 @@ export default function Landing() {
     }
   }, [account, shouldRedirectAfterConnect, navigate]);
 
-  // Rolling depth effect for feature cards
-  useEffect(() => {
-    const updateCardScales = () => {
-      if (!sliderTrackRef.current) return;
-      
-      const container = sliderTrackRef.current.parentElement;
-      if (!container) return;
-      
-      const containerRect = container.getBoundingClientRect();
-      const containerCenter = containerRect.left + containerRect.width / 2;
-      
-      // Get all card elements from the track
-      const allCards = Array.from(sliderTrackRef.current.children) as HTMLElement[];
-      
-      allCards.forEach((card) => {
-        if (!card) return;
-        
-        const cardRect = card.getBoundingClientRect();
-        const cardCenter = cardRect.left + cardRect.width / 2;
-        const distanceFromCenter = Math.abs(cardCenter - containerCenter);
-        const maxDistance = containerRect.width / 2;
-        const normalizedDistance = Math.min(distanceFromCenter / maxDistance, 1);
-        
-        // Scale: 1.0 at edges (distance = 1), 0.8 at center (distance = 0)
-        // This creates the rolling effect where outer cards are bigger and inner cards are smaller
-        const scale = 0.8 + (normalizedDistance * 0.2);
-        
-        // Apply transform with scale and maintain 3D
-        card.style.transform = `translateZ(0) scale(${scale})`;
-        card.style.transition = 'transform 0.15s ease-out';
-      });
-    };
-
-    // Update scales on animation frame for smooth updates
-    let animationFrameId: number;
-    const animate = () => {
-      updateCardScales();
-      animationFrameId = requestAnimationFrame(animate);
-    };
-    animate();
-
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-    };
-  }, []);
-  
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -251,74 +196,65 @@ export default function Landing() {
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Everything you need
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base text-muted-foreground max-w-2xl mx-auto">
               A complete solution for managing attendance with blockchain technology
             </p>
           </div>
           
-          {/* Sliding Carousel Container with 3D Perspective */}
-          <div className="relative w-full overflow-hidden slider-perspective">
-            {/* Gradient fade masks on edges */}
-            <div className="absolute left-0 top-0 bottom-0 w-32 z-10 pointer-events-none slider-fade-left" />
-            <div className="absolute right-0 top-0 bottom-0 w-32 z-10 pointer-events-none slider-fade-right" />
-            
-            {/* Sliding Track with 3D transforms and rolling effect */}
-            <div 
-              ref={sliderTrackRef}
-              className="flex animate-slide-infinite gap-6" 
-              style={{ transformStyle: 'preserve-3d' }}
-            >
-              {/* First Set */}
-              {features.map((feature, index) => (
-                <Card 
-                  key={`first-${index}`}
-                  ref={(el) => {
-                    const cardIndex = index;
-                    if (cardRefs.current[cardIndex] !== el) {
-                      cardRefs.current[cardIndex] = el;
-                    }
-                  }}
-                  className="border-border bg-card hover:shadow-lg transition-all duration-300 flex-shrink-0 w-[280px] md:w-[320px]"
-                  style={{ 
-                    backfaceVisibility: 'hidden',
-                    willChange: 'transform',
-                  }}
+          {/* Grid Layout with Chain Animation */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature, index) => {
+              // Define animation class based on card index
+              // Card 0: bottom, Card 1: top, Card 2: bottom, Card 3: top
+              const topGridClass = index === 1 ? 'card-1-top' : index === 3 ? 'card-3-top' : '';
+              const bottomGridClass = index === 0 ? 'card-0-bottom' : index === 2 ? 'card-2-bottom' : '';
+              
+              return (
+                <div 
+                  key={index}
+                  className="relative bg-card border border-border rounded-lg overflow-hidden group hover:border-primary/50 transition-all duration-300 flex flex-col"
+                  style={{ minHeight: '20em' }}
                 >
-                  <CardContent className="p-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-4">
-                      <feature.icon className="h-6 w-6 text-primary" />
+                  {/* Content Container */}
+                  <div className="relative p-6 flex flex-col h-full">
+                    {/* Top Section - Grid Blocks Row */}
+                    <div className={`grid grid-cols-12 gap-px mb-3 ${topGridClass}`}>
+                      {Array.from({ length: 12 }).map((_, i) => (
+                        <div 
+                          key={`top-${i}`}
+                          className={topGridClass ? `grid-box-animated grid-box-${i}` : 'h-4 bg-foreground/5 group-hover:bg-foreground/10 transition-colors'}
+                        />
+                      ))}
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
-              {/* Duplicate Set for Seamless Loop */}
-              {features.map((feature, index) => (
-                <Card 
-                  key={`second-${index}`}
-                  ref={(el) => {
-                    const cardIndex = features.length + index;
-                    if (cardRefs.current[cardIndex] !== el) {
-                      cardRefs.current[cardIndex] = el;
-                    }
-                  }}
-                  className="border-border bg-card hover:shadow-lg transition-all duration-300 flex-shrink-0 w-[280px] md:w-[320px]"
-                  style={{ 
-                    backfaceVisibility: 'hidden',
-                    willChange: 'transform',
-                  }}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-4">
-                      <feature.icon className="h-6 w-6 text-primary" />
+
+                    {/* Middle Section - Icon and Heading */}
+                    <div className="flex items-center gap-3 mb-3 min-h-[60px]">
+                      <div className="h-4 w-4 bg-blue-500 flex-shrink-0" />
+                      <h3 className="text-base font-semibold text-foreground whitespace-nowrap">
+                        {feature.title}
+                      </h3>
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+
+                    {/* Description between grids */}
+                    <div className="mb-4">
+                      <p className="text-base text-muted-foreground leading-relaxed">
+                        {feature.description}
+                      </p>
+                    </div>
+                    
+                    {/* Bottom Section - Grid Blocks Row */}
+                    <div className={`grid grid-cols-12 gap-px mt-auto ${bottomGridClass}`}>
+                      {Array.from({ length: 12 }).map((_, i) => (
+                        <div 
+                          key={`bottom-${i}`}
+                          className={bottomGridClass ? `grid-box-animated grid-box-${i}` : 'h-4 bg-foreground/5 group-hover:bg-foreground/10 transition-colors'}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
