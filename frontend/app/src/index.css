@@ -231,6 +231,27 @@
     animation: fade-in-up 0.8s ease-out;
   }
 
+  /* Infinite scroll animation for logo carousel */
+  @keyframes infinite-scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-infinite-scroll {
+    animation: infinite-scroll var(--animation-duration, 30s) linear infinite;
+    will-change: transform;
+  }
+
+  /* Reverse animation for scroll up */
+  .animate-infinite-scroll-reverse {
+    animation: infinite-scroll var(--animation-duration, 30s) linear infinite reverse;
+    will-change: transform;
+  }
+
   /* Infinite slide animation for features carousel with 3D effect */
   @keyframes slide-infinite {
     0% {
@@ -544,7 +565,7 @@
 .card-2-description,
 .card-3-description {
   animation-fill-mode: both !important;
-  color: hsl(var(--muted-foreground));
+  color: hsl(220, 9%, 55%) !important; /* Dark mode muted-foreground - fixed for all themes */
 }
 
 .card-0-description {

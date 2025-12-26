@@ -46,6 +46,19 @@ export default function Landing() {
   const { mutate: disconnectWallet, isPending: isDisconnecting } = useDisconnectWallet();
   const connectButtonRef = useRef<HTMLDivElement>(null);
   const [shouldRedirectAfterConnect, setShouldRedirectAfterConnect] = useState(false);
+  const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('down');
+  const lastScrollY = useRef(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const carouselSectionRef = useRef<HTMLDivElement>(null);
+  const scrollVelocityRef = useRef(0);
+  const lastScrollTimeRef = useRef(Date.now());
+  const [animationDuration, setAnimationDuration] = useState(30); // Base duration in seconds
+  const velocityHistoryRef = useRef<number[]>([]); // For smoothing
+  const rafIdRef = useRef<number | null>(null);
+  const targetDurationRef = useRef(30);
+  const currentDurationRef = useRef(30);
+  const scrollPositionRef = useRef(0);
+  const baseAnimationSpeedRef = useRef(30); // Base animation duration when not scrolling
   
   const handleButtonClick = () => {
     if (account) {
@@ -69,6 +82,145 @@ export default function Landing() {
       setShouldRedirectAfterConnect(false); // Reset flag
     }
   }, [account, shouldRedirectAfterConnect, navigate]);
+
+
+  // Track scroll direction and velocity for carousel with smooth interpolation
+  useEffect(() => {
+    const carouselSection = carouselSectionRef.current;
+    if (!carouselSection) return;
+
+    let isInView = false;
+
+    // Check if carousel section is in viewport
+    const checkInView = () => {
+      const rect = carouselSection.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      isInView = rect.top < windowHeight && rect.bottom > 0;
+      return isInView;
+    };
+
+    // Walrus-style mapping: scroll speed directly controls animation speed
+    // Similar to data-marquee-scroll-speed="10" - animation speed = scroll speed * multiplier
+    const mapVelocityToDuration = (velocity: number): number => {
+      // Walrus approach: animation speed is directly proportional to scroll speed
+      // Base duration when not scrolling (slower = longer duration)
+      const baseDuration = 40;
+      
+      // FIXED: Reduced scroll speed multiplier from 6 to 3.5 for gentler, less sensitive response
+      const scrollSpeedMultiplier = 3.5;
+      
+      // Calculate how scroll speed affects animation
+      // Faster scroll = faster animation (shorter duration)
+      // The multiplier determines the sensitivity
+      
+      // Normalize velocity to 0-1 range (based on typical scroll speeds)
+      // Typical scroll: 50-500 px/s, fast scroll: 500-1500 px/s
+      // FIXED: Reduced cap from 1.0 to 0.8 to prevent excessive speed changes
+      const normalizedVelocity = Math.min(velocity / 800, 0.8);
+      
+      // Map to duration: faster scroll = shorter duration
+      // Formula inspired by Walrus: duration decreases as scroll speed increases
+      // The multiplier controls how responsive the animation is to scroll
+      const speedFactor = 1 + (normalizedVelocity * scrollSpeedMultiplier / 15);
+      const duration = baseDuration / speedFactor;
+      
+      // Clamp to reasonable bounds
+      // FIXED: Increased minimum from 15 to 22 to prevent carousel from being too fast
+      const minDuration = 22;
+      const maxDuration = 50;
+      
+      return Math.max(minDuration, Math.min(maxDuration, duration));
+    };
+
+    // Smooth animation duration updates using requestAnimationFrame
+    // Walrus-style smooth interpolation with easing
+    const updateAnimationDuration = () => {
+      const currentDuration = currentDurationRef.current;
+      const targetDuration = targetDurationRef.current;
+      
+      // Smooth interpolation with easing - FIXED: increased from 0.08 to 0.18 for faster, smoother response
+      const diff = targetDuration - currentDuration;
+      if (Math.abs(diff) > 0.05) {
+        // Use exponential easing with ease-out curve for smooth transitions
+        // FIXED: Higher interpolation rate (0.18) for more responsive but still smooth transitions
+        // Apply ease-out easing: faster at start, slower at end
+        const easingFactor = 0.18;
+        const newDuration = currentDuration + diff * easingFactor;
+        currentDurationRef.current = newDuration;
+        setAnimationDuration(newDuration);
+        rafIdRef.current = requestAnimationFrame(updateAnimationDuration);
+      } else {
+        currentDurationRef.current = targetDuration;
+        setAnimationDuration(targetDuration);
+        rafIdRef.current = null;
+      }
+    };
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const currentTime = Date.now();
+      const timeDelta = (currentTime - lastScrollTimeRef.current) / 1000; // Convert to seconds
+      
+      // Calculate scroll velocity (pixels per second)
+      if (timeDelta > 0 && timeDelta < 0.5) { // Only calculate if time delta is reasonable
+        const scrollDelta = Math.abs(currentScrollY - lastScrollY.current);
+        const velocity = scrollDelta / timeDelta; // pixels per second
+        
+        // Add to velocity history for smoothing (keep last 10 measurements for better smoothing)
+        velocityHistoryRef.current.push(velocity);
+        if (velocityHistoryRef.current.length > 10) {
+          velocityHistoryRef.current.shift();
+        }
+        
+        // Calculate average velocity for smoother transitions
+        const avgVelocity = velocityHistoryRef.current.reduce((a, b) => a + b, 0) / velocityHistoryRef.current.length;
+        scrollVelocityRef.current = avgVelocity;
+        
+        // Only adjust speed when section is in view
+        // FIXED: Increased threshold from 5 to 18 to ignore micro-scrolls and reduce sensitivity
+        if (checkInView() && avgVelocity > 18) { // Only adjust if there's meaningful scroll
+          // Calculate target duration using Walrus-style mapping
+          const targetDuration = mapVelocityToDuration(avgVelocity);
+          targetDurationRef.current = targetDuration;
+          
+          // Start smooth interpolation if not already running
+          if (rafIdRef.current === null) {
+            rafIdRef.current = requestAnimationFrame(updateAnimationDuration);
+          }
+        } else if (!isInView || avgVelocity <= 18) {
+          // Reset to base speed when out of view or not scrolling
+          // FIXED: Increased threshold from 5 to 18 to match the adjustment threshold
+          targetDurationRef.current = baseAnimationSpeedRef.current;
+          if (rafIdRef.current === null) {
+            rafIdRef.current = requestAnimationFrame(updateAnimationDuration);
+          }
+        }
+      }
+      
+      // Update direction
+      if (currentScrollY > lastScrollY.current) {
+        setScrollDirection('down');
+      } else if (currentScrollY < lastScrollY.current) {
+        setScrollDirection('up');
+      }
+      
+      lastScrollY.current = currentScrollY;
+      lastScrollTimeRef.current = currentTime;
+    };
+
+    // Initial check
+    checkInView();
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, []);
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -182,10 +334,80 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Who's Using SuiAttend Section - Infinite Logo Carousel */}
+      <section ref={carouselSectionRef} className="py-20 px-6 bg-white overflow-hidden relative">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Who's using SuiAttend?
+            </h2>
+          </div>
+          
+          {/* Infinite Scrolling Carousel */}
+          <div className="relative">
+            {/* Scrolling container */}
+            <div className="relative overflow-hidden group">
+              <div 
+                ref={carouselRef}
+                className={`flex gap-4 items-center ${scrollDirection === 'up' ? 'animate-infinite-scroll-reverse' : 'animate-infinite-scroll'}`}
+                style={{
+                  '--animation-duration': `${animationDuration}s`,
+                } as React.CSSProperties}
+              >
+                {/* First set of logos */}
+                {[
+                  { name: "Schools", icon: "🏫" },
+                  { name: "Banks", icon: "🏦" },
+                  { name: "Industries", icon: "🏭" },
+                  { name: "Universities", icon: "🎓" },
+                  { name: "Hospitals", icon: "🏥" },
+                  { name: "Corporations", icon: "🏢" },
+                  { name: "Government", icon: "🏛️" },
+                  { name: "NGOs", icon: "🤝" },
+                ].map((org, index) => (
+                  <div
+                    key={`first-${index}`}
+                    className="flex-shrink-0 bg-white border border-gray-300 rounded-lg px-10 py-6 flex items-center justify-center grayscale h-28 min-w-[240px]"
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className="text-4xl">{org.icon}</span>
+                      <span className="text-base font-semibold text-gray-900 whitespace-nowrap">{org.name}</span>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Duplicate set for seamless loop */}
+                {[
+                  { name: "Schools", icon: "🏫" },
+                  { name: "Banks", icon: "🏦" },
+                  { name: "Industries", icon: "🏭" },
+                  { name: "Universities", icon: "🎓" },
+                  { name: "Hospitals", icon: "🏥" },
+                  { name: "Corporations", icon: "🏢" },
+                  { name: "Government", icon: "🏛️" },
+                  { name: "NGOs", icon: "🤝" },
+                ].map((org, index) => (
+                  <div
+                    key={`second-${index}`}
+                    className="flex-shrink-0 bg-white border border-gray-300 rounded-lg px-10 py-6 flex items-center justify-center grayscale h-28 min-w-[240px]"
+                    aria-hidden="true"
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className="text-4xl">{org.icon}</span>
+                      <span className="text-base font-semibold text-gray-900 whitespace-nowrap">{org.name}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section id="features" className="py-20 px-6 bg-card overflow-hidden relative">
+      <section id="features" className="py-20 px-6 bg-[hsl(220,13%,9%)] overflow-hidden relative">
         {/* QR Code Background Pattern using qrcode.react - 12 QR codes */}
-        <div className="absolute inset-0 opacity-[0.05] dark:opacity-[0.04] pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none overflow-hidden">
           {/* Top-left QR Code - Primary Blue */}
           <div className="absolute top-0 left-0 w-64 h-64 -translate-x-1/2 -translate-y-1/2">
             <QRCodeSVG 
@@ -333,10 +555,10 @@ export default function Landing() {
         
         <div className="mx-auto max-w-7xl relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[hsl(220,14%,96%)] mb-4">
               Everything you need
             </h2>
-            <p className="text-base text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base text-[hsl(220,9%,55%)] max-w-2xl mx-auto">
               A complete solution for managing attendance with blockchain technology
             </p>
           </div>
@@ -353,7 +575,7 @@ export default function Landing() {
               return (
                 <div 
                   key={index}
-                  className="relative bg-card border border-border rounded-lg overflow-hidden group hover:border-primary/50 transition-all duration-300 flex flex-col"
+                  className="relative bg-[hsl(220,13%,9%)] border border-[hsl(220,13%,18%)] rounded-lg overflow-hidden group transition-all duration-300 flex flex-col"
                   style={{ minHeight: '20em' }}
                 >
                   {/* Content Container */}
@@ -363,7 +585,7 @@ export default function Landing() {
                       {Array.from({ length: 12 }).map((_, i) => (
                         <div 
                           key={`top-${i}`}
-                          className={topGridClass ? `grid-box-animated grid-box-${i}` : 'h-4 bg-foreground/5 group-hover:bg-foreground/10 transition-colors'}
+                          className={topGridClass ? `grid-box-animated grid-box-${i}` : 'h-4 bg-[hsl(220,14%,96%)]/5 group-hover:bg-[hsl(220,14%,96%)]/10 transition-colors'}
                         />
                       ))}
                     </div>
@@ -371,14 +593,14 @@ export default function Landing() {
                     {/* Middle Section - Icon and Heading */}
                     <div className="flex items-center gap-3 mb-3 min-h-[60px]">
                       <div className="h-4 w-4 bg-blue-500 flex-shrink-0" />
-                      <h3 className="text-base font-semibold text-foreground whitespace-nowrap">
+                      <h3 className="text-base font-semibold text-[hsl(220,14%,96%)] whitespace-nowrap">
                         {feature.title}
                       </h3>
                     </div>
 
                     {/* Description between grids - NOW WITH ANIMATION */}
                     <div className="mb-4">
-                      <p className={`text-base text-muted-foreground leading-relaxed ${descriptionClass}`}>
+                      <p className={`text-base text-[hsl(220,9%,55%)] leading-relaxed ${descriptionClass}`}>
                         {feature.description}
                       </p>
                     </div>
@@ -388,7 +610,7 @@ export default function Landing() {
                       {Array.from({ length: 12 }).map((_, i) => (
                         <div 
                           key={`bottom-${i}`}
-                          className={bottomGridClass ? `grid-box-animated grid-box-${i}` : 'h-4 bg-foreground/5 group-hover:bg-foreground/10 transition-colors'}
+                          className={bottomGridClass ? `grid-box-animated grid-box-${i}` : 'h-4 bg-[hsl(220,14%,96%)]/5 group-hover:bg-[hsl(220,14%,96%)]/10 transition-colors'}
                         />
                       ))}
                     </div>
