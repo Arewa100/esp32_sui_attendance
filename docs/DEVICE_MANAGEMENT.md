@@ -173,21 +173,49 @@ No request body needed (timestamp defaults to current time).
 
 ## Device Health Status
 
-Frontend can determine device health by:
-1. Querying `DeviceHeartbeatEvent` to get last heartbeat timestamp
-2. Comparing with current time
-3. Device is "alive" if heartbeat within last 2 hours (configurable threshold)
-4. Device is "dead" if heartbeat older than threshold
+The system tracks device health based on heartbeat timestamps to determine if devices are online or offline.
 
-Example query:
+### How It Works
+
+1. **Heartbeat Tracking**: Devices automatically send heartbeats every hour (configurable in firmware via `HEARTBEAT_INTERVAL`)
+2. **Timestamp Storage**: Each heartbeat updates the device's last heartbeat timestamp on-chain
+3. **Status Calculation**: Frontend queries `DeviceHeartbeatEvent` and compares last heartbeat with current time
+4. **Online/Offline Threshold**: 
+   - **Online**: Device is considered "alive" if last heartbeat was within the last **2 hours**
+   - **Offline**: Device is considered "dead" if no heartbeat received for more than 2 hours
+   - **Never Heartbeat**: Device shows "Never" for last heartbeat if no heartbeat has been sent yet
+
+### Frontend Implementation
+
+The frontend dashboard displays device status in the "Devices" tab:
+
+- **Status Badge**: Green "Online" badge if device is alive, red "Offline" badge if device is dead
+- **Last Heartbeat**: Shows formatted timestamp of last heartbeat (e.g., "12/27/2024, 3:45:30 PM") or "Never"
+- **Real-time Updates**: Frontend polls heartbeat events every 15 seconds to update device status
+
+### Example Query
+
 ```typescript
 const events = await suiClient.queryEvents({
   MoveEventType: `${packageId}::events::DeviceHeartbeatEvent`,
   filter: { device_id: "ESP32_ATTENDANCE_001" }
 });
 const lastHeartbeat = events.data[0]?.parsedJson?.timestamp;
-const isAlive = Date.now() - lastHeartbeat < 2 * 60 * 60 * 1000; // 2 hours
+const DEVICE_TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2 hours
+const isAlive = Date.now() - lastHeartbeat < DEVICE_TIMEOUT_MS;
 ```
+
+### Configuration
+
+- **Heartbeat Interval**: Configurable in firmware (`HEARTBEAT_INTERVAL`, default: 1 hour = 3,600,000 ms)
+- **Timeout Threshold**: Currently hardcoded to 2 hours in frontend (recommended: 2x heartbeat interval)
+- **Frontend Polling**: Heartbeat events are refetched every 15 seconds
+
+### Notes
+
+- Devices that haven't sent any heartbeat yet will show "Offline" status
+- The 2-hour threshold is recommended to account for potential network delays and missed heartbeats
+- Structure is designed to be extensible for future metrics (battery level, connectivity status, etc.)
 
 ## Migration Guide
 

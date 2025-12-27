@@ -669,7 +669,7 @@ export default function OrganisationDetail() {
                         <TableRow key={deviceEvent.device_id}>
                           <TableCell className="font-mono font-medium">{deviceEvent.device_id}</TableCell>
                           <TableCell>
-                            <Badge variant={isAlive ? "default" : "secondary"} className={isAlive ? "bg-green-500 hover:bg-green-600" : ""}>
+                            <Badge variant={isAlive ? "default" : "destructive"} className={isAlive ? "bg-green-500 hover:bg-green-600" : ""}>
                               {isAlive ? "Online" : "Offline"}
                             </Badge>
                           </TableCell>

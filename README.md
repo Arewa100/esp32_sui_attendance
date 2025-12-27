@@ -41,7 +41,9 @@ The ESP32 Sui Attendance System is a complete blockchain-based solution for educ
 
 - ✅ **Organisation Management**: Create and manage multiple attendance organisations
 - ✅ **Student Registration**: Register students with unique RFID card IDs
-- ✅ **Real-time Attendance**: Instant recording via ESP32 RFID readers
+- ✅ **Device Management**: Register and track ESP32 devices with device IDs
+- ✅ **Device Health Monitoring**: Real-time online/offline status via heartbeat tracking
+- ✅ **Real-time Attendance**: Instant recording via ESP32 RFID readers (device ID auto-resolves organisation)
 - ✅ **One Check-in Per Day**: Prevents duplicate daily check-ins (enforced on-chain)
 - ✅ **Subscription System**: Pay-per-use model (10 SUI for 30 days)
 - ✅ **Access Control**: Role-based permissions (organisation owners, system owner)
@@ -70,7 +72,8 @@ The ESP32 Sui Attendance System is a complete blockchain-based solution for educ
 └────────┬────────┘
          │
          │ HTTP POST /api/attendance
-         │ { cardId, orgObjectId, deviceId }
+         │ { cardId, deviceId } (orgObjectId optional)
+         │ + Heartbeat: POST /api/devices/:deviceId/heartbeat (hourly)
          ▼
 ┌─────────────────┐
 │  Backend Server  │  Validates, maps cardId → student address,
@@ -85,10 +88,11 @@ The ESP32 Sui Attendance System is a complete blockchain-based solution for educ
 │  (Move Contract) │  emits events, manages subscriptions
 └────────┬────────┘
          │
-         │ Event Queries
-         │ (StudentRegisteredEvent,
-         │  AttendanceRecordedEvent)
-         ▼
+        │ Event Queries
+        │ (StudentRegisteredEvent,
+        │  AttendanceRecordedEvent,
+        │  DeviceHeartbeatEvent)
+        ▼
 ┌─────────────────┐
 │  React Frontend  │  Displays dashboard, statistics,
 │  (dapp-kit)     │  organisation management

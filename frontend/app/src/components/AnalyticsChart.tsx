@@ -128,13 +128,16 @@ export default function AnalyticsChart() {
       recordCounts.push(0);
     }
 
-    // Count organisations per day
+    // Count organisations per day (cumulative)
     orgEvents.forEach((event: any) => {
       if (event.timestampMs) {
         const eventDate = new Date(Number(event.timestampMs));
         const daysAgo = Math.floor((now - eventDate.getTime()) / (24 * 60 * 60 * 1000));
         if (daysAgo >= 0 && daysAgo < days) {
-          for (let i = daysAgo; i < days; i++) {
+          // Convert daysAgo to array index (labels are in reverse: oldest=0, today=days-1)
+          const startIndex = (days - 1) - daysAgo;
+          // Cumulative count: from this day forward
+          for (let i = startIndex; i < days; i++) {
             orgCounts[i]++;
           }
         }
@@ -152,7 +155,10 @@ export default function AnalyticsChart() {
       const eventDate = new Date(Number(eventTimestamp));
       const daysAgo = Math.floor((now - eventDate.getTime()) / (24 * 60 * 60 * 1000));
       if (daysAgo >= 0 && daysAgo < days) {
-        for (let i = daysAgo; i < days; i++) {
+        // Convert daysAgo to array index (labels are in reverse: oldest=0, today=days-1)
+        const startIndex = (days - 1) - daysAgo;
+        // Cumulative count: from this day forward
+        for (let i = startIndex; i < days; i++) {
           studentMap.get(i)?.add(event.student);
         }
       }
@@ -165,10 +171,12 @@ export default function AnalyticsChart() {
     // Count attendance records per day
     attendanceEvents.forEach((event: any) => {
       if (event.timestamp) {
-        const eventDate = new Date(event.timestamp);
+        const eventDate = new Date(Number(event.timestamp));
         const daysAgo = Math.floor((now - eventDate.getTime()) / (24 * 60 * 60 * 1000));
         if (daysAgo >= 0 && daysAgo < days) {
-          recordCounts[daysAgo]++;
+          // Convert daysAgo to array index (labels are in reverse: oldest=0, today=days-1)
+          const index = (days - 1) - daysAgo;
+          recordCounts[index]++;
         }
       }
     });

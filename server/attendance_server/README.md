@@ -57,7 +57,7 @@ Maintains canonical attendance state:
 
 ### Express HTTP API (`src/index.ts`)
 
-Mounts `/api/attendance` and `/api/organisations` routes.
+Mounts `/api/attendance`, `/api/organisations`, and `/api/devices` routes.
 
 Provides `/health` endpoint with Sui balance and status.
 
@@ -82,13 +82,30 @@ Implements:
 - `checkSubscriptionActive(orgObjectId)` – Validates subscription before recording
 - `getSubscriptionStatus(orgObjectId)` – Returns subscription details
 - `recordAttendance(orgObjectId, studentAddress)` – Calls Move `record_attendance`
-- `processAttendanceEvent(event)` – Orchestrates the full flow
+- `processAttendanceEvent(event)` – Orchestrates the full flow (resolves org from deviceId if needed)
 - `clearStudentCache()` / `getCacheStats()`
+
+### Device Service (`src/services/deviceService.ts`)
+
+Manages device-to-organisation mappings and device lookups.
+
+Implements:
+- `getOrgByDeviceId(deviceId)` – Queries blockchain events to find organisation for a device
+- `registerDevice(orgObjectId, deviceId)` – Registers a device to an organisation
+- `unregisterDevice(orgObjectId, deviceId)` – Unregisters a device from an organisation
+
+### Heartbeat Service (`src/services/heartbeatService.ts`)
+
+Handles device heartbeat processing and updates on-chain heartbeat timestamps.
+
+Implements:
+- `processDeviceHeartbeat(deviceId, timestamp?)` – Processes heartbeat, updates on-chain timestamp
 
 ### Routing Layer
 
 - `src/routes/attendance.ts` – `/api/attendance` for ingesting and querying attendance events.
 - `src/routes/organisations.ts` – `/api/organisations` for subscription status and student lookups.
+- `src/routes/devices.ts` – `/api/devices` for device heartbeat and device-to-organisation lookups.
 
 ### Config, Logging, Middleware
 
@@ -114,10 +131,13 @@ attendance_server/
     │   └── env.ts
     ├── routes/
     │   ├── attendance.ts
-    │   └── organisations.ts
+    │   ├── organisations.ts
+    │   └── devices.ts
     ├── services/
     │   ├── suiClient.ts
-    │   └── attendanceService.ts
+    │   ├── attendanceService.ts
+    │   ├── deviceService.ts
+    │   └── heartbeatService.ts
     ├── models/
     │   └── attendanceEvent.ts
     ├── middleware/
@@ -198,14 +218,14 @@ Expected JSON body:
 ```json
 {
   "cardId": "A1B2C3D4",
-  "orgObjectId": "0x789abc123def456",
-  "deviceId": "ESP32_ATTENDANCE_001"
+  "deviceId": "ESP32_ATTENDANCE_001",
+  "orgObjectId": "0x789abc123def456"
 }
 ```
 
 - `cardId` – string, required. RFID card ID read by ESP32.
-- `orgObjectId` – string, required. Organisation object ID on Sui.
-- `deviceId` – string, optional. ESP32 device identifier.
+- `deviceId` – string, optional but recommended. ESP32 device identifier. If provided, server resolves organisation from device ID.
+- `orgObjectId` – string, optional. Organisation object ID on Sui. If not provided, server resolves from `deviceId`.
 
 Server behaviour:
 
@@ -281,6 +301,58 @@ Returns student information for a given card ID:
   }
 }
 ```
+
+### Device Management
+
+**POST** `/api/devices/:deviceId/heartbeat`
+
+Update device heartbeat timestamp. Devices send heartbeats periodically (typically every hour) to indicate they're alive.
+
+**Request Body** (optional):
+```json
+{
+  "timestamp": 1734567890000  // Optional, milliseconds since epoch. Defaults to current time.
+}
+```
+
+**Response**:
+```json
+{
+  "ok": true,
+  "message": "Heartbeat updated successfully",
+  "deviceId": "ESP32_ATTENDANCE_001",
+  "timestamp": 1734567890000,
+  "transactionDigest": "0xabc123..."
+}
+```
+
+**GET** `/api/devices/:deviceId/organisation`
+
+Get the organisation that owns a device.
+
+**Response**:
+```json
+{
+  "ok": true,
+  "deviceId": "ESP32_ATTENDANCE_001",
+  "orgObjectId": "0x789abc123def456"
+}
+```
+
+**GET** `/api/devices/:deviceId/heartbeat`
+
+Get the last heartbeat timestamp for a device.
+
+**Response**:
+```json
+{
+  "ok": true,
+  "deviceId": "ESP32_ATTENDANCE_001",
+  "lastHeartbeat": 1734567890000
+}
+```
+
+**Note**: Device management endpoints require devices to be registered to organisations. See [Device Management Documentation](../../docs/DEVICE_MANAGEMENT.md) for details.
 
 ## Configuration (.env)
 
