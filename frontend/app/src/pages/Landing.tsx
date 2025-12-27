@@ -276,7 +276,7 @@ export default function Landing() {
     <div className="min-h-screen bg-background">
 
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-md transition-all duration-200">
         <div className="mx-auto max-w-7xl px-6 py-4">
           <div className="flex items-center justify-between">
             <AnimatedLogo variant="default" />
@@ -285,12 +285,20 @@ export default function Landing() {
               <a
                 href="#features"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.querySelector('#features')?.scrollIntoView({ behavior: 'smooth' });
+                }}
               >
                 Features
               </a>
               <a
                 href="#benefits"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.querySelector('#benefits')?.scrollIntoView({ behavior: 'smooth' });
+                }}
               >
                 Benefits
               </a>
@@ -748,7 +756,7 @@ export default function Landing() {
         <div className="mx-auto max-w-7xl relative z-10">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-[hsl(220,14%,96%)] mb-4">
-              Real-Time System Analytics
+              Real-time System Analytics
             </h2>
             <p className="text-lg text-[hsl(220,9%,55%)] max-w-2xl mx-auto">
               Track system growth and activity in real-time. See how
@@ -868,10 +876,10 @@ export default function Landing() {
         </div>
 
         <div className="mx-auto max-w-4xl text-center relative z-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-[hsl(220,14%,96%)] mb-4">
             Ready to get started?
           </h2>
-          <p className="text-lg text-muted-foreground mb-8">
+          <p className="text-lg text-[hsl(220,9%,55%)] mb-8">
             Connect your wallet and create your first organisation today.
           </p>
           <Button size="lg" variant="default" onClick={handleButtonClick}>
@@ -884,31 +892,20 @@ export default function Landing() {
       {/* Footer */}
       <footer className="py-12 px-6 border-t border-border">
         <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <AnimatedLogo variant="footer" />
-
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <a
-                href="https://github.com/Arewa100/esp32_sui_attendance"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground transition-colors"
-              >
-                Documentation
-              </a>
-              <a
-                href="https://github.com/Arewa100/esp32_sui_attendance"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground transition-colors"
-              >
-                GitHub
-              </a>
+          <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+            <div className="flex justify-start">
+              <AnimatedLogo variant="footer" />
             </div>
 
-            <p className="text-sm text-muted-foreground">
-              © 2025 SuiAttend. All rights reserved.
+            <p className="text-sm text-muted-foreground text-center">
+              Built with love by Olasoyin Miracle
             </p>
+
+            <div className="flex justify-end">
+              <p className="text-sm text-muted-foreground">
+                © 2025 SuiAttend. All rights reserved.
+              </p>
+            </div>
           </div>
         </div>
       </footer>

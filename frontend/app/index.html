@@ -27,8 +27,8 @@
             root.classList.remove("dark");
           } else if (savedTheme === "dark") {
             root.classList.add("dark");
-          } else if (savedTheme === "system" || !savedTheme) {
-            // Default to system preference
+          } else if (savedTheme === "system") {
+            // Follow system preference when explicitly set to "system"
             if (
               window.matchMedia &&
               window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -37,15 +37,13 @@
             } else {
               root.classList.remove("dark");
             }
+          } else {
+            // Default to dark mode when no preference is saved
+            root.classList.add("dark");
           }
         } catch (error) {
-          // Fallback to system preference if localStorage fails
-          if (
-            window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches
-          ) {
-            document.documentElement.classList.add("dark");
-          }
+          // Fallback to dark mode if localStorage fails
+          document.documentElement.classList.add("dark");
         }
       })();
     </script>

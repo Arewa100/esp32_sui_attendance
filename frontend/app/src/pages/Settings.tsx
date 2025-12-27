@@ -31,7 +31,7 @@ const FONT_OPTIONS: { value: FontFamily; label: string; css: string }[] = [
 export default function Settings() {
   const { toast } = useToast();
   const [fontFamily, setFontFamily] = useState<FontFamily>("system");
-  const [theme, setTheme] = useState<Theme>("system");
+  const [theme, setTheme] = useState<Theme>("dark");
 
   // Font loading map for dynamic font loading
   const fontLoadMap: Record<string, string> = {
@@ -157,7 +157,7 @@ export default function Settings() {
 
   const handleReset = () => {
     setFontFamily("system");
-    setTheme("system");
+    setTheme("dark");
     localStorage.removeItem("app-font-family");
     localStorage.removeItem("app-theme");
     toast({
