@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import Settings from "./pages/Settings";
 
 // Lazy load pages for code splitting
@@ -48,8 +49,9 @@ export default function App() {
     <ChakraProvider value={defaultSystem}>
       <TooltipProvider>
         <Toaster />
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
             {/* Lovable routes */}
             <Route path="/" element={<Landing />} />
             <Route element={<DashboardLayout />}>
@@ -77,6 +79,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
         </Suspense>
+        </ErrorBoundary>
       </TooltipProvider>
     </ChakraProvider>
   );

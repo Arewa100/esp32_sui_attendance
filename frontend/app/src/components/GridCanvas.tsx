@@ -213,12 +213,15 @@ export default function GridCanvas() {
 
     // Configuration
     const gridSize = 40;
-    const particleCount = 50;
+    // Reduce particle count on low-end devices
+    const particleCount = navigator.hardwareConcurrency <= 4 ? 25 : 50;
     const particleSpeedMin = 0.5;
     const particleSpeedMax = 5;
     const trailLength = 100;
     const rippleDuration = 2000;
     const rippleMaxRadius = 200;
+    
+    let isVisible = false;
 
     // Get current theme
     const getIsDark = (): boolean => {
@@ -304,6 +307,12 @@ export default function GridCanvas() {
     }
 
     function animate() {
+      // Only animate when visible
+      if (!isVisible) {
+        animationFrameRef.current = null;
+        return;
+      }
+      
       createGrid();
 
       particlesRef.current.forEach(particle => {
@@ -320,6 +329,22 @@ export default function GridCanvas() {
 
       animationFrameRef.current = requestAnimationFrame(animate);
     }
+    
+    // Intersection Observer to pause animation when off-screen
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isVisible = entry.isIntersecting;
+          if (isVisible && animationFrameRef.current === null) {
+            // Resume animation when visible
+            animationFrameRef.current = requestAnimationFrame(animate);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    
+    observer.observe(canvas);
 
     // Handle canvas click
     const handleClick = (event: MouseEvent) => {
@@ -354,11 +379,13 @@ export default function GridCanvas() {
 
     window.addEventListener('resize', handleResize);
 
-    // Start animation
-    animate();
+    // Start animation only if visible
+    isVisible = true;
+    animationFrameRef.current = requestAnimationFrame(animate);
 
     // Cleanup
     return () => {
+      observer.disconnect();
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }

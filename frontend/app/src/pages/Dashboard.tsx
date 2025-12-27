@@ -1,3 +1,4 @@
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,7 @@ function formatNumber(num: number): string {
   return num.toString();
 }
 
-export default function Dashboard() {
+export default React.memo(function Dashboard() {
   const navigate = useNavigate();
   const { stats, isLoading: isLoadingStats, error: statsError } = useDashboardStats();
   const { activities, isLoading: isLoadingActivities, error: activitiesError } = useRecentActivity(5);
@@ -196,4 +197,4 @@ export default function Dashboard() {
       </Card>
     </div>
   );
-}
+});

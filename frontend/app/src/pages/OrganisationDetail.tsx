@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -190,7 +190,7 @@ export default function OrganisationDetail() {
   }, [organisation.students, attendanceEvents]);
 
   // Copy transaction hash to clipboard
-  const handleCopyHash = async (hash: string) => {
+  const handleCopyHash = useCallback(async (hash: string) => {
     try {
       await navigator.clipboard.writeText(hash);
       setCopiedHash(hash);
@@ -206,7 +206,7 @@ export default function OrganisationDetail() {
         variant: "destructive",
       });
     }
-  };
+  }, [toast]);
 
   return (
     <div className="space-y-6">

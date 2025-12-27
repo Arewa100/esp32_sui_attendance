@@ -150,3 +150,4 @@ async function isDeviceAvailable(deviceId: string): Promise<boolean> {
 - Device IDs are case-sensitive strings
 - Unregistering a device frees it up for registration by other organisations
 
+

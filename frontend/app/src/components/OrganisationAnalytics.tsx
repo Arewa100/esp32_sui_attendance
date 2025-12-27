@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,14 +27,19 @@ import { Printer, Download, Calendar as CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import { useAttendanceRecordedEvents, useStudentRegisteredEvents } from "@/hooks/use-attendance-events";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+// Register Chart.js plugins only once
+let chartRegistered = false;
+if (!chartRegistered) {
+  ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+  );
+  chartRegistered = true;
+}
 
 interface OrganisationAnalyticsProps {
   orgId: string;
@@ -43,7 +48,7 @@ interface OrganisationAnalyticsProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export default function OrganisationAnalytics({
+export default React.memo(function OrganisationAnalytics({
   orgId,
   orgName,
   open,
@@ -252,7 +257,7 @@ export default function OrganisationAnalytics({
     backgroundColor: "transparent",
   };
 
-  const handlePrint = () => {
+  const handlePrint = useCallback(() => {
     if (!printRef.current) return;
     
     const printWindow = window.open("", "_blank");
@@ -325,9 +330,9 @@ export default function OrganisationAnalytics({
       printWindow.print();
       printWindow.close();
     }, 500);
-  };
+  }, [orgName, printRef, filteredAttendanceEvents, studentAttendanceCounts, topStudentsForPrint, bottomStudentsForPrint, startDate, endDate]);
 
-  const handleDownload = () => {
+  const handleDownload = useCallback(() => {
     const data = {
       organisation: orgName,
       generatedAt: new Date().toISOString(),
@@ -363,7 +368,7 @@ export default function OrganisationAnalytics({
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  };
+  }, [orgName, filteredAttendanceEvents, studentAttendanceCounts, topStudentsForPrint, bottomStudentsForPrint, startDate, endDate]);
 
   return (
     <>
@@ -723,5 +728,5 @@ export default function OrganisationAnalytics({
     </Dialog>
     </>
   );
-}
+});
 

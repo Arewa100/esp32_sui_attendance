@@ -1,3 +1,4 @@
+import React from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -9,7 +10,7 @@ interface AnimatedLogoProps {
   onClick?: () => void;
 }
 
-export default function AnimatedLogo({ 
+export default React.memo(function AnimatedLogo({ 
   variant = "default", 
   collapsed = false,
   className = "",
@@ -99,4 +100,4 @@ export default function AnimatedLogo({
       {content}
     </Link>
   );
-}
+});

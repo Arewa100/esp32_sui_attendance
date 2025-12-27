@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -19,17 +19,22 @@ import { useSuiClient } from "@mysten/dapp-kit";
 import { CONFIG } from "@/config";
 import { Skeleton } from "@/components/ui/skeleton";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
+// Register Chart.js plugins only once
+let chartRegistered = false;
+if (!chartRegistered) {
+  ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler
+  );
+  chartRegistered = true;
+}
 
 // Plugin to create gradient border for the main line
 const gradientPlugin = {
@@ -50,7 +55,7 @@ const gradientPlugin = {
   }
 };
 
-export default function AnalyticsChart() {
+export default React.memo(function AnalyticsChart() {
   const { stats, isLoading } = useGlobalStats();
   const client = useSuiClient();
   const [timeSeriesData, setTimeSeriesData] = useState<{
@@ -358,5 +363,5 @@ export default function AnalyticsChart() {
       </div>
     </div>
   );
-}
+});
 
