@@ -27,6 +27,7 @@ import AnalyticsChart from "@/components/AnalyticsChart";
 import SignalIcon from "@/components/SignalIcon";
 import AnimatedLogo from "@/components/AnimatedLogo";
 import { QRCodeSVG } from "qrcode.react";
+import GridCanvas from "@/components/GridCanvas";
 
 const features = [
   {
@@ -740,13 +741,16 @@ export default function Landing() {
       </section>
 
       {/* Analytics Section */}
-      <section id="benefits" className="py-20 px-6 relative">
-        <div className="mx-auto max-w-7xl">
+      <section id="benefits" className="py-20 px-6 relative overflow-hidden bg-[hsl(220,13%,9%)]">
+        {/* Grid Canvas Background */}
+        <GridCanvas />
+        
+        <div className="mx-auto max-w-7xl relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-[hsl(220,14%,96%)] mb-4">
               Real-Time System Analytics
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg text-[hsl(220,9%,55%)] max-w-2xl mx-auto">
               Track system growth and activity in real-time. See how
               organisations, students, and attendance records are growing on the
               Sui blockchain.
@@ -760,8 +764,110 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-primary/5 relative">
-        <div className="mx-auto max-w-4xl text-center">
+      <section className="py-20 px-6 bg-[hsl(220,13%,9%)] overflow-hidden relative">
+        {/* QR Code Background Pattern */}
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none overflow-hidden">
+          <div className="absolute top-0 left-0 w-64 h-64 -translate-x-1/2 -translate-y-1/2">
+            <QRCodeSVG
+              value="https://github.com/Arewa100/esp32_sui_attendance"
+              size={256}
+              bgColor="transparent"
+              fgColor="hsl(217, 91%, 60%)"
+              level="L"
+              includeMargin={false}
+            />
+          </div>
+
+          <div className="absolute top-10 left-1/4 w-48 h-48 rotate-[15deg]">
+            <QRCodeSVG
+              value="https://github.com/Arewa100/esp32_sui_attendance"
+              size={192}
+              bgColor="transparent"
+              fgColor="hsl(188, 94%, 43%)"
+              level="L"
+              includeMargin={false}
+            />
+          </div>
+
+          <div className="absolute top-5 left-1/2 w-56 h-56 -translate-x-1/2 -rotate-12">
+            <QRCodeSVG
+              value="https://github.com/Arewa100/esp32_sui_attendance"
+              size={224}
+              bgColor="transparent"
+              fgColor="hsl(217, 91%, 60%)"
+              level="L"
+              includeMargin={false}
+            />
+          </div>
+
+          <div className="absolute top-1/4 right-0 w-96 h-96 translate-x-1/3 rotate-12">
+            <QRCodeSVG
+              value="https://github.com/Arewa100/esp32_sui_attendance"
+              size={384}
+              bgColor="transparent"
+              fgColor="hsl(188, 94%, 43%)"
+              level="L"
+              includeMargin={false}
+            />
+          </div>
+
+          <div className="absolute top-1/2 left-0 w-52 h-52 -translate-x-1/4 -translate-y-1/2 rotate-6">
+            <QRCodeSVG
+              value="https://github.com/Arewa100/esp32_sui_attendance"
+              size={208}
+              bgColor="transparent"
+              fgColor="hsl(188, 94%, 43%)"
+              level="L"
+              includeMargin={false}
+            />
+          </div>
+
+          <div className="absolute top-1/2 left-1/2 w-80 h-80 -translate-x-1/2 -translate-y-1/2 rotate-45 opacity-50">
+            <QRCodeSVG
+              value="https://github.com/Arewa100/esp32_sui_attendance"
+              size={320}
+              bgColor="transparent"
+              fgColor="hsl(217, 91%, 60%)"
+              level="L"
+              includeMargin={false}
+            />
+          </div>
+
+          <div className="absolute top-1/2 right-0 w-60 h-60 translate-x-1/4 -translate-y-1/2 -rotate-[25deg]">
+            <QRCodeSVG
+              value="https://github.com/Arewa100/esp32_sui_attendance"
+              size={240}
+              bgColor="transparent"
+              fgColor="hsl(217, 91%, 60%)"
+              level="L"
+              includeMargin={false}
+            />
+          </div>
+
+          <div className="absolute bottom-0 left-1/4 w-72 h-72 -translate-y-1/4 -rotate-6">
+            <QRCodeSVG
+              value="https://github.com/Arewa100/esp32_sui_attendance"
+              size={288}
+              bgColor="transparent"
+              fgColor="hsl(217, 91%, 60%)"
+              level="L"
+              includeMargin={false}
+            />
+          </div>
+
+          <div className="absolute bottom-10 left-1/3 w-44 h-44 rotate-[18deg]">
+            <QRCodeSVG
+              value="https://github.com/Arewa100/esp32_sui_attendance"
+              size={176}
+              bgColor="transparent"
+              fgColor="hsl(188, 94%, 43%)"
+              level="L"
+              includeMargin={false}
+            />
+          </div>
+        </div>
+
+        <div className="mx-auto max-w-4xl text-center relative z-10">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             Ready to get started?
           </h2>
