@@ -14,7 +14,6 @@ import { useState, useEffect, useRef } from "react";
 import { useCurrentAccount, useDisconnectWallet } from "@mysten/dapp-kit";
 import PageBackground from "@/components/PageBackground";
 import AnimatedLogo from "@/components/AnimatedLogo";
-import SignalIcon from "@/components/SignalIcon";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -82,21 +81,15 @@ export default function DashboardLayout() {
         collapsed ? "w-16" : "w-64"
       )}>
         {/* Logo */}
-        <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
-          {!collapsed ? (
+        <div className={cn("flex h-16 items-center border-b border-sidebar-border px-4", collapsed ? "justify-center" : "justify-between")}>
+          {!collapsed && (
             <AnimatedLogo variant="sidebar" collapsed={false} />
-          ) : (
-            <Link to="/" className="flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <SignalIcon className="h-4 w-4 text-primary-foreground" size={16} />
-              </div>
-            </Link>
           )}
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={() => setCollapsed(!collapsed)}
-            className={cn("h-8 w-8 text-sidebar-foreground", collapsed && "mx-auto")}
+            className="h-8 w-8 text-sidebar-foreground"
           >
             <ChevronLeft className={cn("h-4 w-4 transition-transform", collapsed && "rotate-180")} />
           </Button>
