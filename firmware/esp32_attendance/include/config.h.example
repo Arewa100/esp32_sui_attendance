@@ -16,11 +16,12 @@
 #define SERVER_URL "http://your-server.com/api/attendance"
 #define SERVER_TIMEOUT 10000  // milliseconds
 
-// Sui Blockchain Configuration
-#define ORG_OBJECT_ID "0xYOUR_ORG_OBJECT_ID"
+// Sui Blockchain Configuration (Optional - server resolves from deviceId)
+// Only needed for backward compatibility. Can be removed if device is registered to organisation.
+// #define ORG_OBJECT_ID "0xYOUR_ORG_OBJECT_ID"
 
 // Device Configuration
-#define DEVICE_ID "ESP32_ATTENDANCE_001"
+#define DEVICE_ID "ESP32_ATTENDANCE_001"  // Must be registered to your organisation
 
 // RFID Module Pins
 #define RFID_SS_PIN 5
@@ -33,6 +34,7 @@
 #define CARD_READ_DELAY 2000    // milliseconds between card reads
 #define WIFI_RECONNECT_DELAY 5000  // milliseconds before reconnecting WiFi
 #define MAIN_LOOP_DELAY 100     // milliseconds in main loop
+#define HEARTBEAT_INTERVAL 3600000  // Device heartbeat interval: 1 hour (3600000 ms)
 
 // Debug Configuration
 #define DEBUG_MODE true

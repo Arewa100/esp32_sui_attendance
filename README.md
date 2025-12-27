@@ -237,8 +237,11 @@ esp32_sui_attendance/
 
 ### Additional Resources
 
-- **[Upcoming Features](./UPCOMING_FEATURES.md)**: Planned improvements and roadmap
-- **[Deployment Checklist](./DEPLOYMENT_CHECKLIST.md)**: Step-by-step deployment guide
+- **[Device Management](./docs/DEVICE_MANAGEMENT.md)**: Device registration, heartbeat tracking, and health monitoring
+- **[Device Management Implementation](./docs/DEVICE_MANAGEMENT_IMPLEMENTATION.md)**: Implementation details and migration guide
+- **[Device Duplicate Prevention](./docs/DEVICE_DUPLICATE_PREVENTION.md)**: How the system prevents duplicate device IDs across organisations
+- **[Upcoming Features](./docs/UPCOMING_FEATURES.md)**: Planned improvements and roadmap
+- **[Deployment Checklist](./docs/DEPLOYMENT_CHECKLIST.md)**: Step-by-step deployment guide
 - **[Sui Documentation](https://docs.sui.io/)**: Official Sui blockchain docs
 - **[Move Language Guide](https://docs.sui.io/build/move)**: Move programming language reference
 

@@ -5,6 +5,7 @@ import { log } from "./utils/logger";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 import attendanceRouter from "./routes/attendance";
 import organisationsRouter from "./routes/organisations";
+import devicesRouter from "./routes/devices";
 import { suiService } from "./services/suiClient";
 import { clearStudentCache, getCacheStats } from "./services/attendanceService";
 
@@ -50,6 +51,7 @@ app.get("/health", async (_req, res) => {
 // API Routes
 app.use("/api/attendance", attendanceRouter);
 app.use("/api/organisations", organisationsRouter);
+app.use("/api/devices", devicesRouter);
 
 // 404 handler
 app.use(notFoundHandler);
@@ -90,6 +92,7 @@ async function startServer() {
       log.info(`Health check: http://localhost:${config.port}/health`);
       log.info(`Attendance API: http://localhost:${config.port}/api/attendance`);
       log.info(`Organisations API: http://localhost:${config.port}/api/organisations`);
+      log.info(`Devices API: http://localhost:${config.port}/api/devices`);
       log.info(`Environment: ${config.nodeEnv}`);
       log.info(`Network: ${config.network}`);
       log.info(`Package ID: ${config.packageId}`);

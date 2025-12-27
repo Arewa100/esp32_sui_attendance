@@ -26,10 +26,12 @@ import {
   User,
   BarChart3,
   Copy,
-  Check
+  Check,
+  Smartphone,
+  Trash2
 } from "lucide-react";
 import { useOrganisationObject, useStudentsByIds } from "@/hooks/use-attendance-objects";
-import { useAttendanceRecordedEvents, useStudentRegisteredEvents, useSubscriptionRenewedEvents } from "@/hooks/use-attendance-events";
+import { useAttendanceRecordedEvents, useStudentRegisteredEvents, useSubscriptionRenewedEvents, useDeviceRegisteredEvents, useDeviceHeartbeatEvents, type DeviceRegisteredEvent } from "@/hooks/use-attendance-events";
 import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
 import SubscribeButton from "@/components/SubscribeButton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -52,6 +54,8 @@ export default function OrganisationDetail() {
   const { data: attendanceEvents, isLoading: isLoadingAttendance } = useAttendanceRecordedEvents(orgId, 500);
   const { data: subscriptionEvents } = useSubscriptionRenewedEvents(orgId, 100);
   const { data: subscriptionStatus } = useSubscriptionStatus(orgId);
+  const { data: deviceRegisteredEvents } = useDeviceRegisteredEvents(orgId, 500);
+  const { data: deviceHeartbeatEvents } = useDeviceHeartbeatEvents(orgId, 500);
 
   const studentNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -290,6 +294,7 @@ export default function OrganisationDetail() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="students">Students</TabsTrigger>
           <TabsTrigger value="attendance">Attendance</TabsTrigger>
+          <TabsTrigger value="devices">Devices</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -596,6 +601,103 @@ export default function OrganisationDetail() {
                 )}
               </TableBody>
             </Table>
+          </Card>
+        </TabsContent>
+
+        {/* Devices Tab */}
+        <TabsContent value="devices" className="space-y-6 mt-6">
+          <Card className="border-border">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Registered Devices</CardTitle>
+                <Button asChild size="sm">
+                  <Link to={`/organisations/${id}/register-device`}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Register Device
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Device ID</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Last Heartbeat</TableHead>
+                    <TableHead className="w-[100px]">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {!deviceRegisteredEvents || deviceRegisteredEvents.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                        No devices registered yet. Register a device to get started.
+                      </TableCell>
+                    </TableRow>
+                  ) : (() => {
+                    // Get unique devices from registration events
+                    const uniqueDevices = new Map<string, DeviceRegisteredEvent>();
+                    (deviceRegisteredEvents ?? []).forEach((event) => {
+                      if (!uniqueDevices.has(event.device_id)) {
+                        uniqueDevices.set(event.device_id, event);
+                      }
+                    });
+
+                    // Get latest heartbeat for each device
+                    const deviceHeartbeats = new Map<string, number>();
+                    (deviceHeartbeatEvents ?? []).forEach((event) => {
+                      const timestamp = Number(event.timestamp);
+                      const existing = deviceHeartbeats.get(event.device_id);
+                      if (!existing || timestamp > existing) {
+                        deviceHeartbeats.set(event.device_id, timestamp);
+                      }
+                    });
+
+                    // Calculate device health status (device is "alive" if heartbeat within last 2 hours)
+                    const DEVICE_TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2 hours
+                    const now = Date.now();
+
+                    return Array.from(uniqueDevices.values()).map((deviceEvent) => {
+                      const lastHeartbeat = deviceHeartbeats.get(deviceEvent.device_id);
+                      const isAlive = lastHeartbeat ? (now - lastHeartbeat) < DEVICE_TIMEOUT_MS : false;
+                      const lastHeartbeatFormatted = lastHeartbeat 
+                        ? new Date(lastHeartbeat).toLocaleString()
+                        : "Never";
+
+                      return (
+                        <TableRow key={deviceEvent.device_id}>
+                          <TableCell className="font-mono font-medium">{deviceEvent.device_id}</TableCell>
+                          <TableCell>
+                            <Badge variant={isAlive ? "default" : "secondary"} className={isAlive ? "bg-green-500 hover:bg-green-600" : ""}>
+                              {isAlive ? "Online" : "Offline"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">{lastHeartbeatFormatted}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                // TODO: Implement unregister functionality
+                                toast({
+                                  title: "Unregister Device",
+                                  description: "Device unregistration is coming soon.",
+                                  variant: "default",
+                                });
+                              }}
+                              disabled
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    });
+                  })()}
+                </TableBody>
+              </Table>
+            </CardContent>
           </Card>
         </TabsContent>
 

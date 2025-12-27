@@ -24,8 +24,17 @@ router.post(
       throw new AppError("cardId is required and must be a string", 400);
     }
 
-    if (!body.orgObjectId || typeof body.orgObjectId !== "string") {
-      throw new AppError("orgObjectId is required and must be a string", 400);
+    // Either orgObjectId or deviceId must be provided
+    if (!body.orgObjectId && !body.deviceId) {
+      throw new AppError("Either orgObjectId or deviceId must be provided", 400);
+    }
+
+    if (body.orgObjectId && typeof body.orgObjectId !== "string") {
+      throw new AppError("orgObjectId must be a string if provided", 400);
+    }
+
+    if (body.deviceId && typeof body.deviceId !== "string") {
+      throw new AppError("deviceId must be a string if provided", 400);
     }
 
     // Create event

@@ -894,7 +894,7 @@ export default function Landing() {
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4">
             <div className="flex justify-start">
-              <AnimatedLogo variant="footer" />
+            <AnimatedLogo variant="footer" />
             </div>
 
             <p className="text-sm text-muted-foreground text-center">
@@ -902,9 +902,9 @@ export default function Landing() {
             </p>
 
             <div className="flex justify-end">
-              <p className="text-sm text-muted-foreground">
-                © 2025 SuiAttend. All rights reserved.
-              </p>
+            <p className="text-sm text-muted-foreground">
+              © 2025 SuiAttend. All rights reserved.
+            </p>
             </div>
           </div>
         </div>

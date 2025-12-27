@@ -39,7 +39,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"cardId\": \"{{cardId}}\",\n  \"orgObjectId\": \"{{orgObjectId}}\",\n  \"deviceId\": \"ESP32_ATTENDANCE_001\"\n}",
+							"raw": "{\n  \"cardId\": \"{{cardId}}\",\n  \"deviceId\": \"{{deviceId}}\",\n  \"orgObjectId\": \"{{orgObjectId}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -56,7 +56,7 @@
 								"attendance"
 							]
 						},
-						"description": "Submit an attendance event from ESP32 device"
+						"description": "Submit an attendance event from ESP32 device. orgObjectId is optional - server will resolve it from deviceId if not provided."
 					},
 					"response": []
 				},
@@ -204,6 +204,68 @@
 				}
 			],
 			"description": "Endpoints for managing organisations and students"
+		},
+		{
+			"name": "Devices",
+			"item": [
+				{
+					"name": "Update Device Heartbeat",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"timestamp\": 1234567890000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/devices/{{deviceId}}/heartbeat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"devices",
+								"{{deviceId}}",
+								"heartbeat"
+							]
+						},
+						"description": "Update device heartbeat timestamp. Timestamp is optional (defaults to current time)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Organisation by Device",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/devices/{{deviceId}}/organisation",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"devices",
+								"{{deviceId}}",
+								"organisation"
+							]
+						},
+						"description": "Get the organisation that owns a device"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for device management and health monitoring"
 		}
 	],
 	"variable": [
@@ -220,6 +282,11 @@
 		{
 			"key": "cardId",
 			"value": "NFC-100",
+			"type": "string"
+		},
+		{
+			"key": "deviceId",
+			"value": "ESP32_ATTENDANCE_001",
 			"type": "string"
 		}
 	]

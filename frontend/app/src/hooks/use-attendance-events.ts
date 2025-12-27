@@ -30,6 +30,22 @@ export type SubscriptionRenewedEvent = {
   payment_amount: string | number;
 };
 
+export type DeviceRegisteredEvent = {
+  organisation: string;
+  device_id: string;
+};
+
+export type DeviceUnregisteredEvent = {
+  organisation: string;
+  device_id: string;
+};
+
+export type DeviceHeartbeatEvent = {
+  organisation: string;
+  device_id: string;
+  timestamp: string | number;
+};
+
 function requirePackageId() {
   if (!CONFIG.PACKAGE_ID) {
     throw new Error("Missing VITE_PACKAGE_ID in frontend/app/.env");
@@ -117,6 +133,46 @@ export function useSubscriptionRenewedEvents(orgId?: string, limit = 200) {
     enabled: !!CONFIG.PACKAGE_ID && !!orgId,
     staleTime: 10_000,
     refetchInterval: 30_000,
+  });
+}
+
+export function useDeviceRegisteredEvents(orgId?: string, limit = 500) {
+  const client = useSuiClient();
+  return useQuery({
+    queryKey: ["events", "DeviceRegisteredEvent", CONFIG.PACKAGE_ID, orgId, limit],
+    queryFn: async () => {
+      const pkg = requirePackageId();
+      const res = await client.queryEvents({
+        query: { MoveEventType: `${pkg}::events::DeviceRegisteredEvent` },
+        limit,
+        order: "descending",
+      });
+      const items = (res.data || []).map((e) => e.parsedJson as unknown as DeviceRegisteredEvent);
+      return orgId ? items.filter((x) => x.organisation === orgId) : items;
+    },
+    enabled: !!CONFIG.PACKAGE_ID && !!orgId,
+    staleTime: 10_000,
+    refetchInterval: 15_000,
+  });
+}
+
+export function useDeviceHeartbeatEvents(orgId?: string, limit = 500) {
+  const client = useSuiClient();
+  return useQuery({
+    queryKey: ["events", "DeviceHeartbeatEvent", CONFIG.PACKAGE_ID, orgId, limit],
+    queryFn: async () => {
+      const pkg = requirePackageId();
+      const res = await client.queryEvents({
+        query: { MoveEventType: `${pkg}::events::DeviceHeartbeatEvent` },
+        limit,
+        order: "descending",
+      });
+      const items = (res.data || []).map((e) => e.parsedJson as unknown as DeviceHeartbeatEvent);
+      return orgId ? items.filter((x) => x.organisation === orgId) : items;
+    },
+    enabled: !!CONFIG.PACKAGE_ID && !!orgId,
+    staleTime: 10_000,
+    refetchInterval: 15_000,
   });
 }
 

@@ -24,7 +24,7 @@ export default function CustomCursor() {
 
     const checkElementType = (target: HTMLElement): { clickable: boolean; textInput: boolean } => {
       const now = Date.now();
-      
+
       // Use cached result if same element and within throttle
       if (target === lastElementRef.current && (now - checkThrottleRef.current) < CHECK_THROTTLE) {
         return lastCheckResultRef.current;

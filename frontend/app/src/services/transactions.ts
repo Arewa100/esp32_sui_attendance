@@ -79,5 +79,53 @@ export function buildPaySubscriptionTx(args: {
   return tx;
 }
 
+export function buildRegisterDeviceTx(args: {
+  systemObjectId: string;
+  orgObjectId: string;
+  deviceId: string;
+  systemMetadata?: ObjectMetadata | null;
+  orgMetadata?: ObjectMetadata | null;
+}) {
+  const tx = new Transaction();
+  // Use cached metadata if available to avoid network calls
+  const systemRef = getObjectReference(tx, args.systemObjectId, args.systemMetadata);
+  const orgRef = getObjectReference(tx, args.orgObjectId, args.orgMetadata);
+  
+  tx.moveCall({
+    target: contractTarget("register_device"),
+    arguments: [
+      systemRef, // Shared object (AttendanceSystem) - must be mutable
+      orgRef, // Shared object (AttendanceOrganisation) - must be mutable
+      tx.pure.string(args.deviceId)
+    ]
+  });
+  tx.setGasBudget(100_000_000);
+  return tx;
+}
+
+export function buildUnregisterDeviceTx(args: {
+  systemObjectId: string;
+  orgObjectId: string;
+  deviceId: string;
+  systemMetadata?: ObjectMetadata | null;
+  orgMetadata?: ObjectMetadata | null;
+}) {
+  const tx = new Transaction();
+  // Use cached metadata if available to avoid network calls
+  const systemRef = getObjectReference(tx, args.systemObjectId, args.systemMetadata);
+  const orgRef = getObjectReference(tx, args.orgObjectId, args.orgMetadata);
+  
+  tx.moveCall({
+    target: contractTarget("unregister_device"),
+    arguments: [
+      systemRef, // Shared object (AttendanceSystem) - must be mutable
+      orgRef, // Shared object (AttendanceOrganisation) - must be mutable
+      tx.pure.string(args.deviceId)
+    ]
+  });
+  tx.setGasBudget(100_000_000);
+  return tx;
+}
+
 
 

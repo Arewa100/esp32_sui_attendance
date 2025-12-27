@@ -11,6 +11,7 @@ module attendance_system::types {
         id: UID,
         organisations: vector<address>,
         system_owner: address,
+        device_to_org: table::Table<String, address>, // Global registry: deviceId -> orgObjectId (prevents duplicate device IDs)
     }
 
     // Changed from owned to shared object so server (system owner) can sign transactions
@@ -25,6 +26,8 @@ module attendance_system::types {
         card_id_to_student: table::Table<String, address>,
         subscription: Option<Subscription>,
         last_checkin_day: table::Table<address, u64>, // Track last check-in day (days since epoch) for one-check-in-per-day enforcement
+        device_ids: vector<String>, // List of registered device IDs for this organisation
+        device_heartbeats: table::Table<String, u64>, // deviceId -> last_heartbeat timestamp (milliseconds since epoch)
     }
 
     public struct Subscription has key, store {
@@ -66,12 +69,14 @@ module attendance_system::types {
     public fun create_attendance_system(
         organisations: vector<address>,
         system_owner: address,
+        device_to_org: table::Table<String, address>,
         ctx: &mut sui::tx_context::TxContext,
     ): AttendanceSystem {
         AttendanceSystem {
             id: object::new(ctx),
             organisations,
             system_owner,
+            device_to_org,
         }
     }
 
@@ -91,6 +96,14 @@ module attendance_system::types {
         system.system_owner
     }
 
+    public fun get_device_to_org(system: &AttendanceSystem): &table::Table<String, address> {
+        &system.device_to_org
+    }
+
+    public fun get_device_to_org_mut(system: &mut AttendanceSystem): &mut table::Table<String, address> {
+        &mut system.device_to_org
+    }
+
     // ========== ATTENDANCE ORGANISATION GETTERS/SETTERS ==========
 
     public fun create_attendance_organisation(
@@ -101,6 +114,8 @@ module attendance_system::types {
         card_id_to_student: table::Table<String, address>,
         subscription: Option<Subscription>,
         last_checkin_day: table::Table<address, u64>,
+        device_ids: vector<String>,
+        device_heartbeats: table::Table<String, u64>,
         ctx: &mut sui::tx_context::TxContext,
     ): AttendanceOrganisation {
         AttendanceOrganisation {
@@ -112,6 +127,8 @@ module attendance_system::types {
             card_id_to_student,
             subscription,
             last_checkin_day,
+            device_ids,
+            device_heartbeats,
         }
     }
 
@@ -167,6 +184,24 @@ module attendance_system::types {
 
     public fun get_last_checkin_day_mut(org: &mut AttendanceOrganisation): &mut table::Table<address, u64> {
         &mut org.last_checkin_day
+    }
+
+    // ========== DEVICE GETTERS/SETTERS ==========
+
+    public fun get_device_ids(org: &AttendanceOrganisation): &vector<String> {
+        &org.device_ids
+    }
+
+    public fun get_device_ids_mut(org: &mut AttendanceOrganisation): &mut vector<String> {
+        &mut org.device_ids
+    }
+
+    public fun get_device_heartbeats(org: &AttendanceOrganisation): &table::Table<String, u64> {
+        &org.device_heartbeats
+    }
+
+    public fun get_device_heartbeats_mut(org: &mut AttendanceOrganisation): &mut table::Table<String, u64> {
+        &mut org.device_heartbeats
     }
 
     // ========== SUBSCRIPTION GETTERS/SETTERS ==========

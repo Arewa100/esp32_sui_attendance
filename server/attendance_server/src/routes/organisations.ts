@@ -2,8 +2,7 @@ import { Router, Request, Response } from "express";
 import { asyncHandler, AppError } from "../middleware/errorHandler";
 import { suiService } from "../services/suiClient";
 import { config } from "../config/env";
-import { log } from "../utils/logger";
-import { getSubscriptionStatus, checkSubscriptionActive } from "../services/attendanceService";
+import { getSubscriptionStatus } from "../services/attendanceService";
 
 const router = Router();
 

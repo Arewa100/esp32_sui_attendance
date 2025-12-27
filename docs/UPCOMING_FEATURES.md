@@ -13,6 +13,17 @@ This document tracks planned features and improvements for future releases of th
   - Need to handle cascading deletion of related objects (students, attendance records, subscriptions)
   - Consider archival vs. permanent deletion approach
 
+## Device Management
+
+### Extended Device Health Metrics
+- **Status**: Planned
+- **Description**: Extend device health tracking beyond heartbeat to include battery capacity, connectivity status, and other health metrics.
+- **Technical Considerations**: 
+  - Current implementation tracks heartbeat timestamp only
+  - Structure designed to be extensible for future metrics (battery, connectivity, uptime, etc.)
+  - Will require firmware updates to collect and transmit additional metrics
+  - Frontend will need UI enhancements to display comprehensive device health dashboard
+
 ## Additional Features
 
 More features will be added here as they are planned and developed.

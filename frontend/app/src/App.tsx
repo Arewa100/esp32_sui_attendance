@@ -13,6 +13,7 @@ const Organisations = lazy(() => import("./pages/Organisations"));
 const OrganisationDetail = lazy(() => import("./pages/OrganisationDetail"));
 const CreateOrganisation = lazy(() => import("./pages/CreateOrganisation"));
 const RegisterStudent = lazy(() => import("./pages/RegisterStudent"));
+const RegisterDevice = lazy(() => import("./pages/RegisterDevice"));
 const StudentProfile = lazy(() => import("./pages/StudentProfile"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const ActivityPage = lazy(() => import("./pages/ActivityPage"));
@@ -58,6 +59,7 @@ export default function App() {
               <Route path="/organisations/new" element={<CreateOrganisation />} />
               <Route path="/organisations/:id" element={<OrganisationDetail />} />
               <Route path="/organisations/:id/register" element={<RegisterStudent />} />
+              <Route path="/organisations/:id/register-device" element={<RegisterDevice />} />
               <Route path="/organisations/:id/analytics" element={<AnalyticsPage />} />
               <Route path="/organisations/:orgId/students/:studentId" element={<StudentProfile />} />
               <Route path="/settings" element={<Settings />} />

@@ -12,6 +12,7 @@ module attendance_system::attendance_system {
     use attendance_system::student::{Self};
     use attendance_system::attendance::{Self};
     use attendance_system::subscription::{Self};
+    use attendance_system::device::{Self};
     
     // Import types for internal use
     use attendance_system::types::{
@@ -24,10 +25,12 @@ module attendance_system::attendance_system {
 
     fun init(ctx: &mut sui::tx_context::TxContext) {
         use attendance_system::types::{Self as types};
+        use 0x2::table;
         
         let system = types::create_attendance_system(
             vector::empty<address>(),
             sui::tx_context::sender(ctx),
+            table::new<String, address>(ctx),
             ctx,
         );
         // Share the system object so anyone can create organisations
@@ -160,6 +163,65 @@ module attendance_system::attendance_system {
         ctx: &mut sui::tx_context::TxContext,
     ): (bool, u64, u64) {
         subscription::get_subscription_status(system, org, clock, ctx)
+    }
+
+    // ========== DEVICE MANAGEMENT ==========
+
+    /// Register a device for an organisation
+    /// Can be called by organisation owner or system owner (server)
+    /// Prevents duplicate device IDs across different organisations
+    public fun register_device(
+        system: &mut AttendanceSystem,
+        org: &mut AttendanceOrganisation,
+        device_id: String,
+        ctx: &mut sui::tx_context::TxContext,
+    ): RegisterResponse {
+        device::register_device(system, org, device_id, ctx)
+    }
+
+    /// Unregister a device from an organisation
+    /// Can be called by organisation owner or system owner (server)
+    public fun unregister_device(
+        system: &mut AttendanceSystem,
+        org: &mut AttendanceOrganisation,
+        device_id: String,
+        ctx: &mut sui::tx_context::TxContext,
+    ): RegisterResponse {
+        device::unregister_device(system, org, device_id, ctx)
+    }
+
+    /// Update device heartbeat timestamp
+    /// Can be called by organisation owner or system owner (server)
+    public fun update_device_heartbeat(
+        system: &AttendanceSystem,
+        org: &mut AttendanceOrganisation,
+        device_id: String,
+        timestamp: u64,
+        ctx: &mut sui::tx_context::TxContext,
+    ): RegisterResponse {
+        device::update_device_heartbeat(system, org, device_id, timestamp, ctx)
+    }
+
+    /// Check if device is registered for this organisation
+    /// Can be called by organisation owner or system owner (server)
+    public fun is_device_registered(
+        system: &AttendanceSystem,
+        org: &AttendanceOrganisation,
+        device_id: String,
+        ctx: &mut sui::tx_context::TxContext,
+    ): bool {
+        device::is_device_registered(system, org, device_id, ctx)
+    }
+
+    /// Get device heartbeat timestamp
+    /// Can be called by organisation owner or system owner (server)
+    public fun get_device_heartbeat(
+        system: &AttendanceSystem,
+        org: &AttendanceOrganisation,
+        device_id: String,
+        ctx: &mut sui::tx_context::TxContext,
+    ): std::option::Option<u64> {
+        device::get_device_heartbeat(system, org, device_id, ctx)
     }
 
     // ========== SYSTEM QUERIES ==========

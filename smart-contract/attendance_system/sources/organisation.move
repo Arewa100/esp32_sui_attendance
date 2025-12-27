@@ -19,6 +19,8 @@ module attendance_system::organisation {
             table::new<String, address>(ctx),
             option::none(),
             table::new<address, u64>(ctx),
+            vector::empty<String>(),
+            table::new<String, u64>(ctx),
             ctx,
         );
         

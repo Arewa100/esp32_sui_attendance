@@ -4,6 +4,7 @@ import { suiService } from "./suiClient";
 import { config } from "../config/env";
 import { log } from "../utils/logger";
 import { AttendanceEvent, SubscriptionStatus } from "../models/attendanceEvent";
+import { getOrgByDeviceId } from "./deviceService";
 
 // Shared Clock object ID on Sui
 const CLOCK_OBJECT_ID = "0x6";
@@ -248,6 +249,7 @@ export async function recordAttendance(
 
 /**
  * Process attendance event from ESP32
+ * Now supports both orgObjectId (legacy) and deviceId-based lookup
  */
 export async function processAttendanceEvent(
   event: AttendanceEvent
@@ -261,9 +263,48 @@ export async function processAttendanceEvent(
       receivedAt: event.receivedAt,
     });
 
+    // Determine orgObjectId: use provided or lookup from deviceId
+    let orgObjectId = event.orgObjectId;
+    if (!orgObjectId && event.deviceId) {
+      log.info(`orgObjectId not provided, looking up from deviceId: ${event.deviceId}`);
+      const resolvedOrgId = await getOrgByDeviceId(event.deviceId);
+      orgObjectId = resolvedOrgId || undefined;
+      
+      if (!orgObjectId) {
+        const error = `Device ${event.deviceId} is not registered to any organisation. Please register the device first.`;
+        log.error(`${error}`);
+        event.error = error;
+        throw new Error(error);
+      }
+      
+      // Update event with resolved orgObjectId
+      event.orgObjectId = orgObjectId;
+      log.info(`Resolved orgObjectId from deviceId: ${orgObjectId}`);
+    }
+
+    if (!orgObjectId) {
+      const error = "Either orgObjectId or deviceId must be provided";
+      log.error(`${error}`);
+      event.error = error;
+      throw new Error(error);
+    }
+
+    // Validate device belongs to organisation (if deviceId is provided)
+    if (event.deviceId) {
+      // Check if device is registered for this organisation by querying events
+      // We can verify this by checking if the device was registered to this org
+      const deviceOrg = await getOrgByDeviceId(event.deviceId);
+      if (deviceOrg !== orgObjectId) {
+        const error = `Device ${event.deviceId} is not registered to organisation ${orgObjectId}. Attendance cannot be recorded.`;
+        log.error(`${error}`);
+        event.error = error;
+        throw new Error(error);
+      }
+    }
+
     // Get student address from card ID
     const studentAddress = await getStudentByCardId(
-      event.orgObjectId,
+      orgObjectId,
       event.cardId
     );
 
@@ -276,8 +317,11 @@ export async function processAttendanceEvent(
 
     log.info(`Found student: ${studentAddress}`);
 
+    // Verify student belongs to the same organisation as the device
+    // (This is already validated by getStudentByCardId which filters by orgObjectId)
+
     // Check subscription status
-    const isActive = await checkSubscriptionActive(event.orgObjectId);
+    const isActive = await checkSubscriptionActive(orgObjectId);
     if (!isActive) {
       const error = "Subscription expired or inactive. Please renew subscription before recording attendance.";
       log.error(`${error}`);
@@ -288,7 +332,7 @@ export async function processAttendanceEvent(
     // Record attendance on blockchain
     try {
       log.info(`Recording attendance on blockchain...`);
-      const txDigest = await recordAttendance(event.orgObjectId, studentAddress);
+      const txDigest = await recordAttendance(orgObjectId, studentAddress);
       event.blockchainTxDigest = txDigest;
       log.info(`Attendance recorded on blockchain: ${txDigest}`);
     } catch (error: any) {
