@@ -273,6 +273,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
+
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-6 py-4">
@@ -739,7 +740,7 @@ export default function Landing() {
       </section>
 
       {/* Analytics Section */}
-      <section id="benefits" className="py-20 px-6">
+      <section id="benefits" className="py-20 px-6 relative">
         <div className="mx-auto max-w-7xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -759,7 +760,7 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-primary/5">
+      <section className="py-20 px-6 bg-primary/5 relative">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             Ready to get started?

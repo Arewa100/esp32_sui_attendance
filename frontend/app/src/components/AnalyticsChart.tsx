@@ -320,7 +320,7 @@ export default function AnalyticsChart() {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg bg-[#171717] p-4" style={{ height: '400px' }}>
+      <div className="rounded-lg p-4" style={{ height: '400px' }}>
         <div className="mb-4 space-y-2">
           <Skeleton className="h-5 w-40" />
           <Skeleton className="h-4 w-32" />
@@ -331,7 +331,7 @@ export default function AnalyticsChart() {
   }
 
   return (
-    <div className="rounded-lg bg-[#171717] p-4" style={{ height: '400px' }}>
+    <div className="rounded-lg p-4" style={{ height: '400px' }}>
       <div className="mb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
