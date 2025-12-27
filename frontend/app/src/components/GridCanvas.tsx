@@ -231,8 +231,9 @@ export default function GridCanvas() {
     const getColors = () => {
       return {
         gridColor: 'rgba(51, 65, 85, 0.3)', // Slate-700 with opacity
-        particleColors: ['rgba(255, 255, 255, 0.6)', 'rgba(100, 116, 139, 0.6)', 'rgba(148, 163, 184, 0.6)'],
-        rippleColor: 'rgba(255, 255, 255, 0.4)'
+        // Primary blue color (HSL 217, 91%, 60%) converted to RGB: rgb(33, 144, 255)
+        particleColors: ['rgba(33, 144, 255, 0.8)', 'rgba(33, 144, 255, 0.6)', 'rgba(59, 130, 246, 0.7)'],
+        rippleColor: 'rgba(33, 144, 255, 0.4)'
       };
     };
 
