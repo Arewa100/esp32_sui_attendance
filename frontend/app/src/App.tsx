@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
 import Settings from "./pages/Settings";
-import CustomCursor from "./components/CustomCursor";
 
 // Lazy load pages for code splitting
 const Landing = lazy(() => import("./pages/Landing"));
@@ -47,7 +46,6 @@ export default function App() {
   return (
     <ChakraProvider value={defaultSystem}>
       <TooltipProvider>
-        <CustomCursor />
         <Toaster />
         <Suspense fallback={<LoadingFallback />}>
           <Routes>

@@ -118,66 +118,6 @@
   body {
     @apply text-foreground font-sans antialiased;
   }
-  
-  /* Hide default cursor */
-  * {
-    cursor: none !important;
-  }
-  
-  /* Custom cursor element - simple dot */
-  .custom-cursor {
-    position: fixed;
-    width: 8px;
-    height: 8px;
-    pointer-events: none;
-    z-index: 9999;
-    transform: translate(-50%, -50%);
-    transition: transform 0.01s linear;
-  }
-  
-  .custom-cursor-dot {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background-color: hsl(var(--foreground));
-  }
-  
-  .dark .custom-cursor-dot {
-    background-color: hsl(var(--foreground));
-  }
-  
-  /* Larger cursor for clickable elements */
-  .custom-cursor.clickable {
-    width: 12px;
-    height: 12px;
-  }
-  
-  /* Text cursor for input fields */
-  input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="search"], textarea, [contenteditable="true"] {
-    cursor: text !important;
-  }
-  
-  .custom-cursor.text-cursor {
-    width: 2px;
-    height: 20px;
-  }
-  
-  .custom-cursor.text-cursor .custom-cursor-dot {
-    width: 2px;
-    height: 20px;
-    border-radius: 0;
-    animation: cursor-blink 1s step-end infinite;
-    box-shadow: none;
-  }
-  
-  @keyframes cursor-blink {
-    0%, 50% {
-      opacity: 1;
-    }
-    51%, 100% {
-      opacity: 0;
-    }
-  }
 }
 
 @layer utilities {
