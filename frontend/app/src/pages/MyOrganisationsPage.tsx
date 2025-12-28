@@ -6,7 +6,6 @@ import PageBackground from "@/components/PageBackground";
 export default function MyOrganisationsPage() {
   const navigate = useNavigate();
 
-  // Note: UI is from Stitch. Real org listing will be wired to chain in the next step.
   return (
     <PhoneShell className="pb-20 relative">
       <PageBackground />

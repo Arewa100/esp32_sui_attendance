@@ -25,7 +25,6 @@ export default function OrganisationDashboardPage() {
   return (
     <PhoneShell withFrame={false} maxWidthClass="max-w-none" className="pb-24 relative">
       <PageBackground />
-      {/* Top App Bar (Stitch structure) */}
       <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between shadow-sm transition-colors duration-300">
         <button
           className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-slate-900 dark:text-white transition-colors"
@@ -282,7 +281,6 @@ export default function OrganisationDashboardPage() {
         </section>
       </main>
 
-      {/* Bottom Navigation Bar (Stitch structure) */}
       <nav className="fixed bottom-0 left-0 w-full bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 pb-safe pt-2 px-6 flex justify-between items-center z-50 shadow-[0_-4px_16px_-4px_rgba(0,0,0,0.05)]">
         <button className="flex flex-col items-center gap-1 p-2 text-primary" type="button">
           <span className="material-symbols-outlined filled text-[26px]">

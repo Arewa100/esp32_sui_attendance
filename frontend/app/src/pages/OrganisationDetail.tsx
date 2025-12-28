@@ -888,7 +888,6 @@ export default function OrganisationDetail() {
                               variant="ghost"
                               size="sm"
                               onClick={() => {
-                                // TODO: Implement unregister functionality
                                 toast({
                                   title: "Unregister Device",
                                   description: "Device unregistration is coming soon.",

@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 
-// For random hacking characters
 const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;':,./<>?";
 
 class Particle {
