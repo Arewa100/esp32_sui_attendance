@@ -1,4 +1,5 @@
-import { useCurrentAccount, ConnectButton } from "@mysten/dapp-kit";
+import { useCurrentAccount } from "@mysten/dapp-kit";
+import { MobileConnectButton } from "@/components/MobileConnectButton";
 
 export function WalletPill() {
   const account = useCurrentAccount();
@@ -6,7 +7,7 @@ export function WalletPill() {
   if (!account) {
     return (
       <div className="flex items-center justify-end">
-        <ConnectButton />
+        <MobileConnectButton />
       </div>
     );
   }

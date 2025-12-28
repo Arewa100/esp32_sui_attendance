@@ -300,12 +300,12 @@ export default function OrganisationDetail() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-muted w-full sm:w-auto">
-          <TabsTrigger value="overview" className="min-h-[44px] text-xs sm:text-sm">Overview</TabsTrigger>
-          <TabsTrigger value="students" className="min-h-[44px] text-xs sm:text-sm">Students</TabsTrigger>
-          <TabsTrigger value="attendance" className="min-h-[44px] text-xs sm:text-sm">Attendance</TabsTrigger>
-          <TabsTrigger value="devices" className="min-h-[44px] text-xs sm:text-sm">Devices</TabsTrigger>
-          <TabsTrigger value="settings" className="min-h-[44px] text-xs sm:text-sm">Settings</TabsTrigger>
+        <TabsList className="bg-muted w-full sm:w-auto h-11 p-0.5 sm:p-1 gap-0.5 sm:gap-1">
+          <TabsTrigger value="overview" className="h-9 text-xs sm:text-sm px-2 sm:px-2.5 md:px-3 lg:px-4 flex-shrink-0">Overview</TabsTrigger>
+          <TabsTrigger value="students" className="h-9 text-xs sm:text-sm px-2 sm:px-2.5 md:px-3 lg:px-4 flex-shrink-0">Students</TabsTrigger>
+          <TabsTrigger value="attendance" className="h-9 text-xs sm:text-sm px-2 sm:px-2.5 md:px-3 lg:px-4 flex-shrink-0">Attendance</TabsTrigger>
+          <TabsTrigger value="devices" className="h-9 text-xs sm:text-sm px-2 sm:px-2.5 md:px-3 lg:px-4 flex-shrink-0">Devices</TabsTrigger>
+          <TabsTrigger value="settings" className="h-9 text-xs sm:text-sm px-2 sm:px-2.5 md:px-3 lg:px-4 flex-shrink-0">Settings</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}

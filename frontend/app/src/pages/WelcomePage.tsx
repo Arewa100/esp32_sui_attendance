@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
+import { useCurrentAccount } from "@mysten/dapp-kit";
+import { MobileConnectButton } from "@/components/MobileConnectButton";
 import PhoneShell from "@/components/PhoneShell";
 import PageBackground from "@/components/PageBackground";
 import AnimatedLogo from "@/components/AnimatedLogo";
@@ -91,7 +92,7 @@ export default function WelcomePage() {
 
                 <div className="mt-4 w-full flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:w-auto">
                   <div className="w-full sm:w-auto min-w-[200px]">
-                    <ConnectButton />
+                    <MobileConnectButton />
                   </div>
 
                   <button

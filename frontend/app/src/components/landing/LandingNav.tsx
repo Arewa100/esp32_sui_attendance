@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   useCurrentAccount,
-  ConnectButton,
   useDisconnectWallet
 } from "@mysten/dapp-kit";
+import { MobileConnectButton } from "@/components/MobileConnectButton";
+import { isMobileDevice, connectMobileWallet } from "@/utils/mobile-wallet";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import AnimatedLogo from "@/components/AnimatedLogo";
@@ -25,9 +26,15 @@ export default React.memo(function LandingNav() {
       navigate("/dashboard");
     } else {
       setShouldRedirectAfterConnect(true);
-      const button = connectButtonRef.current?.querySelector("button");
-      if (button) {
-        button.click();
+      // On mobile, redirect to myslush.app
+      if (isMobileDevice()) {
+        connectMobileWallet();
+      } else {
+        // On desktop, trigger standard ConnectButton
+        const button = connectButtonRef.current?.querySelector("button");
+        if (button) {
+          button.click();
+        }
       }
     }
   }, [account, navigate]);
@@ -85,7 +92,10 @@ export default React.memo(function LandingNav() {
 
             {/* Hidden ConnectButton for programmatic triggering */}
             <div ref={connectButtonRef} className="hidden">
-              <ConnectButton />
+              <MobileConnectButton 
+                showStandardOnMobile={true}
+                onConnectStart={() => setShouldRedirectAfterConnect(true)}
+              />
             </div>
 
             {/* Desktop Wallet button */}
@@ -106,7 +116,15 @@ export default React.memo(function LandingNav() {
                 </Button>
               ) : (
                 <div className="[&>button]:!inline-flex [&>button]:!items-center [&>button]:!justify-center [&>button]:!gap-2 [&>button]:!rounded-md [&>button]:!bg-primary [&>button]:!px-4 [&>button]:!py-2 [&>button]:!text-sm [&>button]:!font-medium [&>button]:!text-white [&>button]:!shadow [&>button]:!transition-colors [&>button]:hover:!bg-primary/90 [&>button]:!h-10 [&>button]:!md:!h-11 [&>button]:!border-0 [&>button]:!cursor-pointer [&>button]:!font-sans">
-                  <ConnectButton />
+                  <MobileConnectButton 
+                    onConnectStart={() => setShouldRedirectAfterConnect(true)}
+                    onConnectSuccess={() => {
+                      if (shouldRedirectAfterConnect) {
+                        navigate("/dashboard");
+                        setShouldRedirectAfterConnect(false);
+                      }
+                    }}
+                  />
                 </div>
               )}
             </div>
@@ -185,7 +203,16 @@ export default React.memo(function LandingNav() {
                 </Button>
               ) : (
                 <div className="[&>button]:!inline-flex [&>button]:!items-center [&>button]:!justify-center [&>button]:!gap-2 [&>button]:!rounded-md [&>button]:!bg-primary [&>button]:!px-4 [&>button]:!py-2 [&>button]:!text-sm [&>button]:!font-medium [&>button]:!text-white [&>button]:!shadow [&>button]:!transition-colors [&>button]:hover:!bg-primary/90 [&>button]:!h-10 [&>button]:!border-0 [&>button]:!cursor-pointer [&>button]:!font-sans [&>button]:!w-full">
-                  <ConnectButton />
+                  <MobileConnectButton 
+                    onConnectStart={() => setShouldRedirectAfterConnect(true)}
+                    onConnectSuccess={() => {
+                      if (shouldRedirectAfterConnect) {
+                        navigate("/dashboard");
+                        setShouldRedirectAfterConnect(false);
+                        setMobileMenuOpen(false);
+                      }
+                    }}
+                  />
                 </div>
               )}
             </div>
