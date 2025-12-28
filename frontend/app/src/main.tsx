@@ -8,6 +8,11 @@ import { SuiClientProvider, WalletProvider } from "@mysten/dapp-kit";
 import { networkConfig } from "./networkConfig";
 import App from "./App";
 import "./index.css";
+import { validateEnv } from "./config/validate-env";
+import { reportWebVitals } from "./utils/web-vitals";
+
+// Validate environment variables before app initialization
+validateEnv();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,4 +56,7 @@ if (import.meta.env.PROD) {
 } else {
   root.render(<AppWrapper />);
 }
+
+// Report Web Vitals for performance monitoring
+reportWebVitals();
 

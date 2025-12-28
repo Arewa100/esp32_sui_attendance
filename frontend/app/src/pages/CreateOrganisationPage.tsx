@@ -6,6 +6,7 @@ import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-ki
 import { CONFIG } from "@/config";
 import { buildCreateOrganisationTx } from "@/services/transactions";
 import { usePreFetchObjectMetadata } from "@/hooks/use-object-metadata";
+import { sanitizeErrorMessage, logError } from "@/utils/error-handler";
 import PageBackground from "@/components/PageBackground";
 
 export default function CreateOrganisationPage() {
@@ -159,12 +160,14 @@ export default function CreateOrganisationPage() {
                     navigate("/orgs");
                   },
                   onError: (e) => {
-                    setError(e.message ?? String(e));
+                    logError(e, "CreateOrganisationPage");
+                    setError(sanitizeErrorMessage(e));
                   }
                 }
               );
             } catch (e) {
-              setError(e instanceof Error ? e.message : String(e));
+              logError(e, "CreateOrganisationPage");
+              setError(sanitizeErrorMessage(e));
             }
           }}
         >

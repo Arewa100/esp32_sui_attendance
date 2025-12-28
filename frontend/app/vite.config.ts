@@ -1,9 +1,19 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import { visualizer } from "rollup-plugin-visualizer";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    visualizer({
+      open: false,
+      filename: "dist/stats.html",
+      gzipSize: true,
+      brotliSize: true,
+      template: "treemap", // or "sunburst" or "network"
+    }),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -24,16 +34,30 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
+        manualChunks: (id) => {
           // Split large vendor chunks
-          "sui-vendor": ["@mysten/sui", "@mysten/dapp-kit"],
-          "ui-vendor": [
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-select",
-            "@radix-ui/react-tabs",
-          ],
-          "react-vendor": ["react", "react-dom", "react-router-dom"],
+          if (id.includes("node_modules")) {
+            if (id.includes("@mysten/sui") || id.includes("@mysten/dapp-kit")) {
+              return "sui-vendor";
+            }
+            if (id.includes("react") || id.includes("react-dom") || id.includes("react-router")) {
+              return "react-vendor";
+            }
+            if (id.includes("@tanstack/react-query")) {
+              return "query-vendor";
+            }
+            if (id.includes("chart.js") || id.includes("react-chartjs-2")) {
+              return "chart-vendor";
+            }
+            if (id.includes("recharts")) {
+              return "recharts-vendor";
+            }
+            if (id.includes("@radix-ui")) {
+              return "radix-vendor";
+            }
+            // Other vendor code
+            return "vendor";
+          }
         },
       },
     },

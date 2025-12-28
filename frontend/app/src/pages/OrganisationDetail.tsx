@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { sanitizeErrorMessage } from "@/utils/error-handler";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -229,7 +230,7 @@ export default function OrganisationDetail() {
       {orgError ? (
         <Card className="border-border">
           <CardContent className="p-4 text-sm text-destructive">
-            {(orgError as Error).message}
+            {useMemo(() => sanitizeErrorMessage(orgError), [orgError])}
           </CardContent>
         </Card>
       ) : null}

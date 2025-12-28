@@ -4,6 +4,7 @@ import PhoneShell from "@/components/PhoneShell";
 import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { buildRegisterStudentTx } from "@/services/transactions";
 import { usePreFetchObjectMetadata } from "@/hooks/use-object-metadata";
+import { sanitizeErrorMessage, logError } from "@/utils/error-handler";
 import PageBackground from "@/components/PageBackground";
 
 export default function RegisterStudentPage() {
@@ -195,11 +196,15 @@ export default function RegisterStudentPage() {
                 { transaction: tx },
                 {
                   onSuccess: () => navigate(`/orgs/${orgObjectId}`),
-                  onError: (e) => setError(e.message ?? String(e))
+                  onError: (e) => {
+                    logError(e, "RegisterStudentPage");
+                    setError(sanitizeErrorMessage(e));
+                  }
                 }
               );
             } catch (e) {
-              setError(e instanceof Error ? e.message : String(e));
+              logError(e, "RegisterStudentPage");
+              setError(sanitizeErrorMessage(e));
             }
           }}
         >

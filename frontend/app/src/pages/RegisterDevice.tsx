@@ -63,24 +63,14 @@ export default function RegisterDevice() {
       });
       setTimeout(() => navigate(`/organisations/${id}`), 1500);
     } catch (e: any) {
-      const errorMessage = e?.message || String(e);
+      const userMessage = sanitizeErrorMessage(e);
+      logError(e, "RegisterDevice");
       
-      // Check for duplicate device error (error code 7)
-      if (errorMessage.includes("device_already_registered") || errorMessage.includes("7") || 
-          errorMessage.toLowerCase().includes("device") && errorMessage.toLowerCase().includes("already")) {
-        setError("Device ID not available. This device is already registered to another organisation.");
-      } else if (errorMessage.includes("rejected")) {
-        setError("Transaction was rejected. Please try again.");
-      } else {
-        setError(errorMessage);
-      }
-      
+      setError(userMessage);
       setStatus("error");
       toast({
         title: "Registration Failed",
-        description: errorMessage.includes("rejected") 
-          ? "Transaction was rejected. Please try again."
-          : errorMessage,
+        description: userMessage,
         variant: "destructive",
       });
     }

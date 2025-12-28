@@ -24,7 +24,14 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    // Only log in development
+    if (import.meta.env.DEV) {
+      console.error("ErrorBoundary caught an error:", error, errorInfo);
+    }
+    // In production, send to error tracking service
+    // if (window.Sentry) {
+    //   window.Sentry.captureException(error, { contexts: { react: errorInfo } });
+    // }
   }
 
   handleReset = () => {
@@ -48,7 +55,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                {this.state.error?.message || "An unexpected error occurred"}
+                An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.
               </p>
               <div className="flex gap-2">
                 <Button onClick={this.handleReset} variant="default">

@@ -31,10 +31,14 @@ export default React.memo(function Dashboard() {
 
   // Log errors for debugging
   if (statsError) {
-    console.error("Dashboard stats error:", statsError);
+    if (import.meta.env.DEV) {
+      console.error("Dashboard stats error:", statsError);
+    }
   }
   if (activitiesError) {
-    console.error("Recent activity error:", activitiesError);
+    if (import.meta.env.DEV) {
+      console.error("Recent activity error:", activitiesError);
+    }
   }
 
   return (

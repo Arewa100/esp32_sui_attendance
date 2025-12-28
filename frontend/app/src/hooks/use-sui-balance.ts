@@ -36,7 +36,9 @@ export function useSuiBalance() {
           balanceSui,
         };
       } catch (error) {
-        console.error("Error fetching SUI balance:", error);
+        if (import.meta.env.DEV) {
+          console.error("Error fetching SUI balance:", error);
+        }
         return { balanceMist: 0n, balanceSui: 0 };
       }
     },

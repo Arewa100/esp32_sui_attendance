@@ -8,6 +8,7 @@ import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
 import { useMultipleObjectMetadata } from "@/hooks/use-object-metadata";
 import { useSuiBalance } from "@/hooks/use-sui-balance";
 import { useToast } from "@/hooks/use-toast";
+import { sanitizeErrorMessage, logError } from "@/utils/error-handler";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageBackground from "@/components/PageBackground";
 
@@ -324,24 +325,24 @@ export default function SubscriptionPage() {
                     setTimeout(() => navigate(`/orgs/${orgObjectId}`), 2000);
                   },
                   onError: (e) => {
-                    const errorMsg = e.message ?? String(e);
-                    setError(errorMsg);
+                    const userMessage = sanitizeErrorMessage(e);
+                    logError(e, "SubscriptionPage");
+                    setError(userMessage);
                     toast({
                       title: "Subscription Failed",
-                      description: errorMsg.includes("rejected") 
-                        ? "Transaction was rejected. Please try again."
-                        : errorMsg,
+                      description: userMessage,
                       variant: "destructive",
                     });
                   }
                 }
               );
             } catch (e) {
-              const errorMsg = e instanceof Error ? e.message : String(e);
-              setError(errorMsg);
+              const userMessage = sanitizeErrorMessage(e);
+              logError(e, "SubscriptionPage");
+              setError(userMessage);
               toast({
                 title: "Subscription Error",
-                description: errorMsg,
+                description: userMessage,
                 variant: "destructive",
               });
             }

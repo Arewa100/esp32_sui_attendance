@@ -55,7 +55,9 @@ export function useSubscriptionStatus(orgId?: string) {
           timeRemaining: isActuallyActive ? calculateTimeRemaining(expiry - now) : null,
         };
       } catch (error) {
-        console.error("Error fetching subscription from object:", error);
+        if (import.meta.env.DEV) {
+          console.error("Error fetching subscription from object:", error);
+        }
         return {
           isActive: false,
           expiryTimestamp: null,

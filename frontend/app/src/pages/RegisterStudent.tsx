@@ -8,6 +8,7 @@ import { ChevronLeft, Users, Loader2, CheckCircle2, AlertCircle } from "lucide-r
 import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { buildRegisterStudentTx } from "@/services/transactions";
 import { usePreFetchObjectMetadata } from "@/hooks/use-object-metadata";
+import { sanitizeErrorMessage, logError } from "@/utils/error-handler";
 
 type TransactionStatus = "idle" | "pending" | "success" | "error";
 
@@ -70,7 +71,9 @@ export default function RegisterStudent() {
       setStatus("success");
       setTimeout(() => navigate(`/organisations/${id}`), 1000);
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : String(e));
+      const userMessage = sanitizeErrorMessage(e);
+      logError(e, "RegisterStudent");
+      setSubmitError(userMessage);
       setStatus("error");
     }
   };

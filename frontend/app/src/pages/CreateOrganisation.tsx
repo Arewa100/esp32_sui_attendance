@@ -9,6 +9,7 @@ import { useCurrentAccount, useSignAndExecuteTransaction } from "@mysten/dapp-ki
 import { CONFIG } from "@/config";
 import { buildCreateOrganisationTx } from "@/services/transactions";
 import { usePreFetchObjectMetadata } from "@/hooks/use-object-metadata";
+import { sanitizeErrorMessage, logError } from "@/utils/error-handler";
 
 type TransactionStatus = "idle" | "pending" | "success" | "error";
 
@@ -57,7 +58,9 @@ export default function CreateOrganisation() {
       setStatus("success");
       setTimeout(() => navigate("/organisations"), 1000);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      const userMessage = sanitizeErrorMessage(e);
+      logError(e, "CreateOrganisation");
+      setError(userMessage);
       setStatus("error");
     }
   };
@@ -88,7 +91,7 @@ export default function CreateOrganisation() {
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-            {!CONFIG.SYSTEM_OBJECT_ID ? (
+            {!CONFIG.SYSTEM_OBJECT_ID && import.meta.env.DEV ? (
               <div className="rounded-lg bg-orange-50 border border-orange-100 p-3 text-sm text-orange-800">
                 Missing system object ID. Set <span className="font-mono">VITE_SYSTEM_OBJECT_ID</span> in{" "}
                 <span className="font-mono">frontend/app/.env</span>.

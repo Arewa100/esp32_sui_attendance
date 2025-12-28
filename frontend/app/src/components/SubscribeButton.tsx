@@ -9,6 +9,7 @@ import { useMultipleObjectMetadata } from "@/hooks/use-object-metadata";
 import { useSubscriptionStatus } from "@/hooks/use-subscription-status";
 import { useSuiBalance } from "@/hooks/use-sui-balance";
 import { useToast } from "@/hooks/use-toast";
+import { sanitizeErrorMessage, logError } from "@/utils/error-handler";
 import { Loader2, CreditCard, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 
 export type SubscribeButtonProps = {
@@ -169,31 +170,31 @@ export default function SubscribeButton({
             }, 1500);
           },
           onError: (e) => {
-            const errorMessage = e.message ?? String(e);
+            const userMessage = sanitizeErrorMessage(e);
+            logError(e, "SubscribeButton");
             // Show error toast
             toast({
               title: "Subscription Failed",
-              description: errorMessage.includes("rejected") 
-                ? "Transaction was rejected. Please try again."
-                : errorMessage,
+              description: userMessage,
               variant: "destructive",
             });
             if (onError) {
-              onError(e instanceof Error ? e : new Error(errorMessage));
+              onError(e instanceof Error ? e : new Error(userMessage));
             }
           },
         }
       );
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
+      const userMessage = sanitizeErrorMessage(e);
+      logError(e, "SubscribeButton");
       // Show error toast
       toast({
         title: "Subscription Error",
-        description: errorMessage,
+        description: userMessage,
         variant: "destructive",
       });
       if (onError) {
-        onError(e instanceof Error ? e : new Error(errorMessage));
+        onError(e instanceof Error ? e : new Error(userMessage));
       }
     }
   };

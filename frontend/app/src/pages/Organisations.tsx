@@ -141,7 +141,9 @@ export default function Organisations() {
           if (!fields) return null;
           return { orgId, fields };
         } catch (error) {
-          console.error(`Error fetching org ${orgId}:`, error);
+          if (import.meta.env.DEV) {
+            console.error(`Error fetching org ${orgId}:`, error);
+          }
           return null;
         }
       },
@@ -336,7 +338,7 @@ export default function Organisations() {
       {error ? (
         <Card className="border-border">
           <CardContent className="p-4 text-sm text-destructive">
-            {(error as Error).message}
+            {useMemo(() => sanitizeErrorMessage(error), [error])}
           </CardContent>
         </Card>
       ) : null}
