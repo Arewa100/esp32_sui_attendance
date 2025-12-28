@@ -299,7 +299,7 @@ export default function OrganisationDetail() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-muted w-full sm:w-auto overflow-x-auto flex-nowrap">
+        <TabsList className="bg-muted w-full sm:w-auto">
           <TabsTrigger value="overview" className="min-h-[44px] text-xs sm:text-sm">Overview</TabsTrigger>
           <TabsTrigger value="students" className="min-h-[44px] text-xs sm:text-sm">Students</TabsTrigger>
           <TabsTrigger value="attendance" className="min-h-[44px] text-xs sm:text-sm">Attendance</TabsTrigger>

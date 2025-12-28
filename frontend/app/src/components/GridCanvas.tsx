@@ -268,6 +268,8 @@ export default function GridCanvas() {
     const occupiedLines = occupiedLinesRef.current;
 
     function createGrid() {
+      if (!canvas || !ctx) return;
+      
       // Clear canvas to show section's background color
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -348,6 +350,8 @@ export default function GridCanvas() {
 
     // Handle canvas click
     const handleClick = (event: MouseEvent) => {
+      if (!canvas || !ctx) return;
+      
       const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;

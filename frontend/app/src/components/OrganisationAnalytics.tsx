@@ -585,28 +585,30 @@ export default React.memo(function OrganisationAnalytics({
                 <div className="overflow-x-auto -mx-4 sm:mx-0">
                   <div className="inline-block min-w-full align-middle px-4 sm:px-0">
                     <table className="print-table analytics-table w-full border-collapse">
-                  <thead>
-                    <tr>
-                      <th className="text-center">Total Students</th>
-                      <th className="text-center">Total Records</th>
-                      <th className="text-center">Average Attendance</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="text-center font-bold text-lg">{studentAttendanceCounts.length}</td>
-                      <td className="text-center font-bold text-lg">{filteredAttendanceEvents.length}</td>
-                      <td className="text-center font-bold text-lg">
-                        {studentAttendanceCounts.length > 0
-                          ? Math.round(
-                              studentAttendanceCounts.reduce((sum, s) => sum + s.count, 0) /
-                                studentAttendanceCounts.length
-                            )
-                          : 0}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                      <thead>
+                        <tr>
+                          <th className="text-center">Total Students</th>
+                          <th className="text-center">Total Records</th>
+                          <th className="text-center">Average Attendance</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="text-center font-bold text-lg">{studentAttendanceCounts.length}</td>
+                          <td className="text-center font-bold text-lg">{filteredAttendanceEvents.length}</td>
+                          <td className="text-center font-bold text-lg">
+                            {studentAttendanceCounts.length > 0
+                              ? Math.round(
+                                  studentAttendanceCounts.reduce((sum, s) => sum + s.count, 0) /
+                                    studentAttendanceCounts.length
+                                )
+                              : 0}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -750,4 +752,3 @@ export default React.memo(function OrganisationAnalytics({
     </>
   );
 });
-

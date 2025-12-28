@@ -13,15 +13,11 @@ export default function PageBackground() {
           // Optimized: Reduced image size and quality for faster loading
           backgroundImage: 'url("https://images.unsplash.com/photo-1753546466496-d2d8a819f61a?q=75&w=1200&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")',
           transform: 'scaleX(-1)', // Mirror effect
-          // Add loading optimization
           imageRendering: 'auto',
         }}
-        // Lazy load the background image
-        loading="lazy"
       />
       {/* Gradient overlay to maintain page colors */}
       <div className="absolute inset-0 bg-background/20 dark:bg-background/40" />
     </div>
   );
 }
-
