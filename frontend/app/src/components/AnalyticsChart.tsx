@@ -86,8 +86,16 @@ export default React.memo(function AnalyticsChart() {
       }));
     },
     enabled: !!CONFIG.PACKAGE_ID,
-    staleTime: 30_000,
-    refetchInterval: 30_000,
+    staleTime: 60_000, // Data is fresh for 1 minute
+    refetchInterval: (query) => {
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 120_000; // 2 minutes (reduced from 30s)
+    },
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData,
   });
 
   // Fetch organisation events for time series
@@ -109,8 +117,16 @@ export default React.memo(function AnalyticsChart() {
       }));
     },
     enabled: !!CONFIG.PACKAGE_ID,
-    staleTime: 30_000,
-    refetchInterval: 30_000,
+    staleTime: 60_000, // Data is fresh for 1 minute
+    refetchInterval: (query) => {
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 120_000; // 2 minutes (reduced from 30s)
+    },
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData,
   });
 
   // Process data into time series (last 7 days)

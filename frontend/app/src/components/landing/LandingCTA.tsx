@@ -9,7 +9,7 @@ interface LandingCTAProps {
 
 export default React.memo(function LandingCTA({ onGetStarted }: LandingCTAProps) {
   return (
-    <section className="py-20 px-6 bg-[hsl(220,13%,9%)] overflow-hidden relative">
+    <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-[hsl(220,13%,9%)] overflow-hidden relative">
       {/* QR Code Background Pattern - Keeping all QR codes for aesthetic */}
       <div className="absolute inset-0 opacity-[0.04] pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-0 w-64 h-64 -translate-x-1/2 -translate-y-1/2">
@@ -90,14 +90,19 @@ export default React.memo(function LandingCTA({ onGetStarted }: LandingCTAProps)
         </div>
       </div>
 
-      <div className="mx-auto max-w-4xl text-center relative z-10">
-        <h2 className="text-3xl md:text-4xl font-bold text-[hsl(220,14%,96%)] mb-4">
+      <div className="mx-auto max-w-4xl text-center relative z-10 px-4">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[hsl(220,14%,96%)] mb-3 sm:mb-4">
           Ready to get started?
         </h2>
-        <p className="text-lg text-[hsl(220,9%,55%)] mb-8">
+        <p className="text-sm sm:text-base md:text-lg text-[hsl(220,9%,55%)] mb-6 sm:mb-8">
           Connect your wallet and create your first organisation today.
         </p>
-        <Button size="lg" variant="default" onClick={onGetStarted}>
+        <Button 
+          size="lg" 
+          variant="default" 
+          onClick={onGetStarted}
+          className="min-h-[44px] text-base w-full sm:w-auto"
+        >
           Launch Dashboard
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>

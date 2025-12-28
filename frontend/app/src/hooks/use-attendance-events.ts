@@ -70,8 +70,16 @@ export function useOrganisationCreatedEvents(limit = 200) {
       }));
     },
     enabled: !!CONFIG.PACKAGE_ID,
-    staleTime: 30_000, // Increased cache time
-    refetchInterval: 30_000, // Reduced refetch frequency
+    staleTime: 60_000, // Data is fresh for 1 minute
+    refetchInterval: (query) => {
+      // Pause polling when tab is hidden
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 120_000; // 2 minutes (reduced from 30s)
+    },
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    refetchOnReconnect: true, // Refetch on network reconnect
     placeholderData: (previousData) => previousData, // Use placeholder for instant updates
   });
 }
@@ -91,8 +99,17 @@ export function useStudentRegisteredEvents(orgId?: string, limit = 500) {
       return orgId ? items.filter((x) => x.organisation === orgId) : items;
     },
     enabled: !!CONFIG.PACKAGE_ID && !!orgId,
-    staleTime: 10_000,
-    refetchInterval: 15_000,
+    staleTime: 30_000, // Data is fresh for 30 seconds
+    refetchInterval: (query) => {
+      // Pause polling when tab is hidden
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 30_000; // 30 seconds (reduced from 15s)
+    },
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -111,8 +128,17 @@ export function useAttendanceRecordedEvents(orgId?: string, limit = 500) {
       return orgId ? items.filter((x) => x.organisation === orgId) : items;
     },
     enabled: !!CONFIG.PACKAGE_ID && !!orgId,
-    staleTime: 10_000,
-    refetchInterval: 15_000,
+    staleTime: 30_000, // Data is fresh for 30 seconds
+    refetchInterval: (query) => {
+      // Pause polling when tab is hidden
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 30_000; // 30 seconds (reduced from 15s) - still real-time enough
+    },
+    refetchOnWindowFocus: true, // Immediate update when user returns
+    refetchOnReconnect: true, // Refetch on network reconnect
+    placeholderData: (previousData) => previousData, // Show stale data while fetching
   });
 }
 
@@ -131,8 +157,17 @@ export function useSubscriptionRenewedEvents(orgId?: string, limit = 200) {
       return orgId ? items.filter((x) => x.organisation === orgId) : items;
     },
     enabled: !!CONFIG.PACKAGE_ID && !!orgId,
-    staleTime: 10_000,
-    refetchInterval: 30_000,
+    staleTime: 60_000, // Data is fresh for 1 minute
+    refetchInterval: (query) => {
+      // Pause polling when tab is hidden
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 120_000; // 2 minutes (reduced from 30s) - subscriptions change rarely
+    },
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -151,8 +186,17 @@ export function useDeviceRegisteredEvents(orgId?: string, limit = 500) {
       return orgId ? items.filter((x) => x.organisation === orgId) : items;
     },
     enabled: !!CONFIG.PACKAGE_ID && !!orgId,
-    staleTime: 10_000,
-    refetchInterval: 15_000,
+    staleTime: 60_000, // Data is fresh for 1 minute
+    refetchInterval: (query) => {
+      // Pause polling when tab is hidden
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 60_000; // 1 minute (reduced from 15s) - devices registered rarely
+    },
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -171,8 +215,17 @@ export function useDeviceHeartbeatEvents(orgId?: string, limit = 500) {
       return orgId ? items.filter((x) => x.organisation === orgId) : items;
     },
     enabled: !!CONFIG.PACKAGE_ID && !!orgId,
-    staleTime: 10_000,
-    refetchInterval: 15_000,
+    staleTime: 60_000, // Data is fresh for 1 minute
+    refetchInterval: (query) => {
+      // Pause polling when tab is hidden
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 60_000; // 1 minute (reduced from 15s) - devices send heartbeats hourly
+    },
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData,
   });
 }
 

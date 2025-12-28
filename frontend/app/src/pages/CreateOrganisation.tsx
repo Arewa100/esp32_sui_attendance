@@ -63,30 +63,31 @@ export default function CreateOrganisation() {
   };
 
   return (
-    <div className="space-y-6 max-w-xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 max-w-xl mx-auto px-4 sm:px-0">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm">
-        <Link to="/organisations" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+      <div className="flex items-center gap-2 text-xs sm:text-sm overflow-x-auto">
+        <Link to="/organisations" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 min-h-[44px] flex-shrink-0">
           <ChevronLeft className="h-4 w-4" />
-          Organisations
+          <span className="hidden sm:inline">Organisations</span>
+          <span className="sm:hidden">Orgs</span>
         </Link>
-        <span className="text-muted-foreground">/</span>
-        <span className="text-foreground">Create New</span>
+        <span className="text-muted-foreground flex-shrink-0">/</span>
+        <span className="text-foreground truncate">Create New</span>
       </div>
 
       {/* Form Card */}
       <Card className="border-border">
-        <CardHeader className="text-center pb-2">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-            <Building2 className="h-7 w-7 text-primary" />
+        <CardHeader className="text-center pb-2 p-4 sm:p-6">
+          <div className="mx-auto mb-3 sm:mb-4 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl bg-primary/10">
+            <Building2 className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
           </div>
-          <CardTitle className="text-xl">Create Organisation</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-lg sm:text-xl">Create Organisation</CardTitle>
+          <CardDescription className="text-sm sm:text-base px-2">
             Create a new organisation on the Sui blockchain. A transaction will be submitted to create the organisation record.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <CardContent className="p-4 sm:p-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {!CONFIG.SYSTEM_OBJECT_ID ? (
               <div className="rounded-lg bg-orange-50 border border-orange-100 p-3 text-sm text-orange-800">
                 Missing system object ID. Set <span className="font-mono">VITE_SYSTEM_OBJECT_ID</span> in{" "}

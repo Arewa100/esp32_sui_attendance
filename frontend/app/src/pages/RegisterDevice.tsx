@@ -87,29 +87,30 @@ export default function RegisterDevice() {
   };
 
   return (
-    <div className="space-y-6 max-w-xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 max-w-xl mx-auto px-4 sm:px-0">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm">
-        <Link to={`/organisations/${id}`} className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+      <div className="flex items-center gap-2 text-xs sm:text-sm overflow-x-auto">
+        <Link to={`/organisations/${id}`} className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 min-h-[44px] flex-shrink-0">
           <ChevronLeft className="h-4 w-4" />
-          Organisation
+          <span className="hidden sm:inline">Organisation</span>
+          <span className="sm:hidden">Org</span>
         </Link>
-        <span className="text-muted-foreground">/</span>
-        <span className="text-foreground">Register Device</span>
+        <span className="text-muted-foreground flex-shrink-0">/</span>
+        <span className="text-foreground truncate">Register Device</span>
       </div>
 
       {/* Form Card */}
       <Card className="border-border">
-        <CardHeader className="text-center pb-2">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-            <Smartphone className="h-7 w-7 text-primary" />
+        <CardHeader className="text-center pb-2 p-4 sm:p-6">
+          <div className="mx-auto mb-3 sm:mb-4 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl bg-primary/10">
+            <Smartphone className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
           </div>
-          <CardTitle className="text-xl">Register Device</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-lg sm:text-xl">Register Device</CardTitle>
+          <CardDescription className="text-sm sm:text-base px-2">
             Register an attendance device (e.g., ESP32 scanner) to your organisation. The device ID will be stored on the blockchain.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {!account ? (
               <div className="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
@@ -118,7 +119,7 @@ export default function RegisterDevice() {
             ) : null}
 
             <div className="space-y-2">
-              <Label htmlFor="deviceId">Device ID</Label>
+              <Label htmlFor="deviceId" className="text-sm sm:text-base">Device ID</Label>
               <Input
                 id="deviceId"
                 placeholder="e.g., ESP32_ATTENDANCE_001"
@@ -128,7 +129,7 @@ export default function RegisterDevice() {
                   setError(null);
                 }}
                 disabled={status !== "idle"}
-                className={error ? "border-destructive" : ""}
+                className={`min-h-[44px] ${error ? "border-destructive" : ""}`}
               />
               <p className="text-xs text-muted-foreground">
                 Enter the unique device identifier for your attendance scanner.
@@ -176,26 +177,32 @@ export default function RegisterDevice() {
             <div className="flex gap-3 pt-2">
               <Button 
                 type="submit" 
-                className="flex-1"
+                className="flex-1 min-h-[44px] text-xs sm:text-sm"
                 disabled={!canSubmit}
               >
                 {!isMetadataReady ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Preparing...
+                    <span className="hidden sm:inline">Preparing...</span>
+                    <span className="sm:hidden">Preparing</span>
                   </>
                 ) : status === "pending" ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Registering...
+                    <span className="hidden sm:inline">Registering...</span>
+                    <span className="sm:hidden">Registering</span>
                   </>
                 ) : (
-                  "Register Device"
+                  <>
+                    <span className="hidden sm:inline">Register Device</span>
+                    <span className="sm:hidden">Register</span>
+                  </>
                 )}
               </Button>
               <Button 
                 type="button" 
                 variant="outline" 
+                className="min-h-[44px] text-xs sm:text-sm"
                 onClick={() => navigate(`/organisations/${id}`)}
                 disabled={status === "pending"}
               >

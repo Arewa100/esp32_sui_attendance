@@ -50,9 +50,16 @@ export function useDashboardStats() {
       }));
     },
     enabled: !!CONFIG.PACKAGE_ID && !!account?.address,
-    staleTime: 30_000, // Increased cache time
-    refetchInterval: 30_000, // Reduced refetch frequency
-    // Use placeholder data for instant UI updates
+    staleTime: 60_000, // Data is fresh for 1 minute
+    refetchInterval: (query) => {
+      // Pause polling when tab is hidden
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 60_000; // 1 minute (reduced from 30s)
+    },
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     placeholderData: (previousData) => previousData,
   });
 
@@ -141,9 +148,17 @@ export function useRecentActivity(limit = 5) {
       }));
     },
     enabled: !!CONFIG.PACKAGE_ID && !!account?.address,
-    staleTime: 30_000, // Increased cache time
-    refetchInterval: 30_000, // Reduced refetch frequency
-    placeholderData: (previousData) => previousData, // Use placeholder for instant updates
+    staleTime: 60_000, // Data is fresh for 1 minute
+    refetchInterval: (query) => {
+      // Pause polling when tab is hidden
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 60_000; // 1 minute (reduced from 30s)
+    },
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData,
   });
 
   // Get user's organizations
@@ -168,7 +183,16 @@ export function useRecentActivity(limit = 5) {
       return (res.data || []).map((e) => e.parsedJson as any);
     },
     enabled: !!CONFIG.PACKAGE_ID && !!account?.address,
-    staleTime: 60_000, // Longer cache for student data (changes less frequently)
+    staleTime: 120_000, // Longer cache for student data (changes less frequently)
+    refetchInterval: (query) => {
+      // Pause polling when tab is hidden
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 120_000; // 2 minutes - student data changes rarely
+    },
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     placeholderData: (previousData) => previousData,
   });
 

@@ -38,39 +38,40 @@ export default React.memo(function Dashboard() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back! Here's your overview.</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Welcome back! Here's your overview.</p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto min-h-[44px] text-xs sm:text-sm">
           <Link to="/organisations/new">
             <Plus className="mr-2 h-4 w-4" />
-            New Organisation
+            <span className="hidden sm:inline">New Organisation</span>
+            <span className="sm:hidden">New Org</span>
           </Link>
         </Button>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Organisations */}
         <Card className="border-border">
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                 <Building2 className="h-5 w-5 text-primary" />
               </div>
               <TrendingUp className="h-4 w-4 text-primary" />
             </div>
-            <div className="mt-4">
+            <div className="mt-3 sm:mt-4">
               {isLoadingStats ? (
-                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-7 sm:h-8 w-14 sm:w-16 mb-2" />
               ) : (
-                <p className="text-2xl font-bold text-foreground">{formatNumber(stats.totalOrganisations)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{formatNumber(stats.totalOrganisations)}</p>
               )}
-              <p className="text-sm text-muted-foreground">Total Organisations</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Total Organisations</p>
             </div>
           </CardContent>
         </Card>
@@ -86,11 +87,11 @@ export default React.memo(function Dashboard() {
             </div>
             <div className="mt-4">
               {isLoadingStats ? (
-                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-7 sm:h-8 w-14 sm:w-16 mb-2" />
               ) : (
-                <p className="text-2xl font-bold text-foreground">{formatNumber(stats.activeStudents)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{formatNumber(stats.activeStudents)}</p>
               )}
-              <p className="text-sm text-muted-foreground">Active Students</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Active Students</p>
             </div>
           </CardContent>
         </Card>
@@ -106,11 +107,11 @@ export default React.memo(function Dashboard() {
             </div>
             <div className="mt-4">
               {isLoadingStats ? (
-                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-7 sm:h-8 w-14 sm:w-16 mb-2" />
               ) : (
-                <p className="text-2xl font-bold text-foreground">{formatNumber(stats.attendanceRecords)}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{formatNumber(stats.attendanceRecords)}</p>
               )}
-              <p className="text-sm text-muted-foreground">Attendance Records</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Attendance Records</p>
             </div>
           </CardContent>
         </Card>
@@ -125,11 +126,11 @@ export default React.memo(function Dashboard() {
             </div>
             <div className="mt-4">
               {isLoadingStats ? (
-                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-7 sm:h-8 w-14 sm:w-16 mb-2" />
               ) : (
-                <p className="text-2xl font-bold text-foreground">{stats.activeSessions}</p>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{stats.activeSessions}</p>
               )}
-              <p className="text-sm text-muted-foreground">Active Sessions</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Active Sessions</p>
               {!isLoadingStats && stats.activeSessions > 0 && (
                 <p className="text-xs text-primary mt-1">{stats.activeSessions} organisation{stats.activeSessions !== 1 ? 's' : ''}</p>
               )}
@@ -140,19 +141,20 @@ export default React.memo(function Dashboard() {
 
       {/* Recent Activity */}
       <Card className="border-border">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6 pb-4">
+          <CardTitle className="text-base sm:text-lg font-semibold">Recent Activity</CardTitle>
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-primary"
+            className="text-primary min-h-[44px] text-xs sm:text-sm"
             onClick={() => navigate("/activity")}
           >
-            View all
+            <span className="hidden sm:inline">View all</span>
+            <span className="sm:hidden">All</span>
             <ArrowUpRight className="ml-1 h-4 w-4" />
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6 pt-0">
           {isLoadingActivities ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (

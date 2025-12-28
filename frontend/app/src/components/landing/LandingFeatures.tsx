@@ -38,7 +38,7 @@ export default React.memo(function LandingFeatures() {
   return (
     <section
       id="features"
-      className="py-20 px-6 bg-[hsl(220,13%,9%)] overflow-hidden relative"
+      className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-[hsl(220,13%,9%)] overflow-hidden relative"
     >
       {/* QR Code Background Pattern - Keeping all QR codes for aesthetic */}
       <div className="absolute inset-0 opacity-[0.04] pointer-events-none overflow-hidden">
@@ -176,17 +176,17 @@ export default React.memo(function LandingFeatures() {
       </div>
 
       <div className="mx-auto max-w-7xl relative z-10">
-        <div className="mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-[hsl(220,14%,96%)] mb-4">
+        <div className="mb-8 sm:mb-12 md:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[hsl(220,14%,96%)] mb-3 sm:mb-4 px-4 text-center sm:text-left">
             Everything you need
           </h2>
-          <p className="text-base text-[hsl(220,9%,55%)] max-w-2xl">
+          <p className="text-sm sm:text-base text-[hsl(220,9%,55%)] max-w-2xl px-4 text-center sm:text-left">
             A complete solution for managing attendance with blockchain
             technology
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-0">
           {features.map((feature, index) => {
             const topGridClass =
               index === 1

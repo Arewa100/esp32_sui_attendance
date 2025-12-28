@@ -190,10 +190,10 @@ export default React.memo(function LandingCarousel() {
   }, []);
 
   return (
-    <section ref={carouselSectionRef} className="py-20 px-6 bg-white overflow-hidden relative">
+    <section ref={carouselSectionRef} className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-white overflow-hidden relative">
       <div className="mx-auto max-w-7xl">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-8 sm:mb-10 md:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-4">
             Who&apos;s using SuiAttend?
           </h2>
         </div>
@@ -209,39 +209,39 @@ export default React.memo(function LandingCarousel() {
                 const IconComponent = org.icon;
                 const isLast = index === array.length - 1;
                 return (
-                  <div
-                    key={`first-${index}`}
-                    className={`flex-shrink-0 bg-white border-t border-b border-l ${isLast ? 'border-r border-gray-300' : 'border-r border-gray-300'} px-6 py-5 flex items-center justify-center grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300 h-24 min-w-[240px]`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <Icon as={IconComponent} boxSize={10} color="gray.700" />
-                      <span className="text-base font-semibold text-gray-900 whitespace-nowrap">
-                        {org.name}
-                      </span>
+                    <div
+                      key={`first-${index}`}
+                      className={`flex-shrink-0 bg-white border-t border-b border-l ${isLast ? 'border-r border-gray-300' : 'border-r border-gray-300'} px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-center grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300 h-20 sm:h-24 min-w-[180px] sm:min-w-[240px]`}
+                    >
+                      <div className="flex items-center gap-2 sm:gap-4">
+                        <Icon as={IconComponent} boxSize={8} sm={{ boxSize: 10 }} color="gray.700" />
+                        <span className="text-sm sm:text-base font-semibold text-gray-900 whitespace-nowrap">
+                          {org.name}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
 
-              {/* Duplicate set for seamless loop */}
-              {organisations.map((org, index, array) => {
-                const IconComponent = org.icon;
-                const isLast = index === array.length - 1;
-                return (
-                  <div
-                    key={`second-${index}`}
-                    className={`flex-shrink-0 bg-white border-t border-b border-l ${isLast ? 'border-r border-gray-300' : 'border-r border-gray-300'} px-6 py-5 flex items-center justify-center grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300 h-24 min-w-[240px]`}
-                    aria-hidden="true"
-                  >
-                    <div className="flex items-center gap-4">
-                      <Icon as={IconComponent} boxSize={10} color="gray.700" />
-                      <span className="text-base font-semibold text-gray-900 whitespace-nowrap">
-                        {org.name}
-                      </span>
+                {/* Duplicate set for seamless loop */}
+                {organisations.map((org, index, array) => {
+                  const IconComponent = org.icon;
+                  const isLast = index === array.length - 1;
+                  return (
+                    <div
+                      key={`second-${index}`}
+                      className={`flex-shrink-0 bg-white border-t border-b border-l ${isLast ? 'border-r border-gray-300' : 'border-r border-gray-300'} px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-center grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-300 h-20 sm:h-24 min-w-[180px] sm:min-w-[240px]`}
+                      aria-hidden="true"
+                    >
+                      <div className="flex items-center gap-2 sm:gap-4">
+                        <Icon as={IconComponent} boxSize={8} sm={{ boxSize: 10 }} color="gray.700" />
+                        <span className="text-sm sm:text-base font-semibold text-gray-900 whitespace-nowrap">
+                          {org.name}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           </div>
         </div>

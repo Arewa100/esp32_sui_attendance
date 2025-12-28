@@ -26,6 +26,7 @@ import {
   X,
   TrendingUp,
   Printer,
+  Download,
 } from "lucide-react";
 import { useStudentsByIds } from "@/hooks/use-attendance-objects";
 import { useAttendanceRecordedEvents } from "@/hooks/use-attendance-events";
@@ -401,9 +402,15 @@ export default function StudentProfile() {
               <p className="text-sm text-muted-foreground">Student Profile</p>
             </div>
           </div>
-          <Button variant="outline" onClick={handlePrint} className="shrink-0">
+          {/* Desktop: Print button */}
+          <Button variant="outline" onClick={handlePrint} className="shrink-0 hidden md:flex min-h-[44px] text-xs sm:text-sm">
             <Printer className="mr-2 h-4 w-4" />
             Print
+          </Button>
+          {/* Mobile: Download button that triggers print (can save as PDF) */}
+          <Button variant="outline" onClick={handlePrint} className="shrink-0 flex md:hidden w-full min-h-[44px] text-xs sm:text-sm">
+            <Download className="mr-2 h-4 w-4" />
+            Download
           </Button>
         </div>
 
@@ -623,21 +630,21 @@ export default function StudentProfile() {
 
         {/* Date Range Filter */}
         <Card className="border-border no-print min-w-0">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <CalendarIcon className="h-5 w-5" />
             Filter Attendance History
           </CardTitle>
         </CardHeader>
-        <CardContent className="min-w-0">
-          <div className="flex flex-col sm:flex-row items-end gap-4 min-w-0">
-            <div className="flex-1">
-              <Label htmlFor="start-date" className="mb-2 block">Start Date</Label>
+        <CardContent className="p-4 sm:p-6 pt-0 min-w-0">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 min-w-0">
+            <div className="flex-1 min-w-0">
+              <Label htmlFor="start-date" className="mb-2 block text-sm">Start Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="w-full justify-start text-left font-normal"
+                    className="w-full justify-start text-left font-normal min-h-[44px]"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {startDate ? format(startDate, "PPP") : "Pick a date"}
@@ -653,13 +660,13 @@ export default function StudentProfile() {
                 </PopoverContent>
               </Popover>
             </div>
-            <div className="flex-1">
-              <Label htmlFor="end-date" className="mb-2 block">End Date</Label>
+            <div className="flex-1 min-w-0">
+              <Label htmlFor="end-date" className="mb-2 block text-sm">End Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="w-full justify-start text-left font-normal"
+                    className="w-full justify-start text-left font-normal min-h-[44px]"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {endDate ? format(endDate, "PPP") : "Pick a date"}
@@ -675,21 +682,25 @@ export default function StudentProfile() {
                 </PopoverContent>
               </Popover>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setStartDate(undefined);
-                setEndDate(undefined);
-              }}
-              disabled={!startDate && !endDate}
-            >
-              <X className="h-4 w-4" />
-              Clear
-            </Button>
+            <div className="flex items-end sm:items-start">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="min-h-[44px] w-full sm:w-auto"
+                onClick={() => {
+                  setStartDate(undefined);
+                  setEndDate(undefined);
+                }}
+                disabled={!startDate && !endDate}
+              >
+                <X className="h-4 w-4 mr-2 sm:mr-0" />
+                <span className="sm:hidden">Clear Filters</span>
+                <span className="hidden sm:inline">Clear</span>
+              </Button>
+            </div>
           </div>
           {(startDate || endDate) && (
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-3 sm:mt-2">
               Showing records from {startDate ? format(startDate, "MMM dd, yyyy") : "beginning"} to {endDate ? format(endDate, "MMM dd, yyyy") : "now"}
             </p>
           )}
@@ -698,64 +709,125 @@ export default function StudentProfile() {
 
         {/* Attendance History */}
         <Card className="border-border print-section min-w-0">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Calendar className="h-5 w-5" />
               Attendance History
             </CardTitle>
           </CardHeader>
-          <CardContent className="min-w-0">
+          <CardContent className="p-0 min-w-0">
             {isLoadingAttendance ? (
-              <div className="space-y-2">
+              <div className="space-y-3 p-4 sm:p-6">
                 {Array.from({ length: 5 }).map((_, idx) => (
-                  <Skeleton key={idx} className="h-12 w-full" />
+                  <Card key={idx} className="border-border">
+                    <CardContent className="p-4 space-y-3">
+                      <Skeleton className="h-5 w-32" />
+                      <div className="flex items-center justify-between pt-2 border-t">
+                        <span className="text-xs text-muted-foreground">Time</span>
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Type</span>
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Transaction</span>
+                        <Skeleton className="h-5 w-24" />
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             ) : studentAttendanceRecords.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                No attendance records found for this student.
-              </p>
-            ) : (
-              <div className="overflow-x-auto min-w-0">
-                <Table className="print-table">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Transaction Hash</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {studentAttendanceRecords.map((record) => (
-                    <TableRow key={record.id}>
-                      <TableCell className="font-medium">{record.dateFormatted}</TableCell>
-                      <TableCell className="text-muted-foreground">{record.timeFormatted}</TableCell>
-                      <TableCell>
-                        <Badge variant="default" className="bg-primary">
-                          {record.type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <button
-                          onClick={() => handleCopyHash(record.txHash)}
-                          className="group relative inline-flex items-center gap-1.5 text-xs bg-muted hover:bg-muted/80 px-2 py-1 rounded font-mono transition-colors cursor-pointer"
-                          title="Click to copy full hash"
-                          data-hash={record.txHash}
-                        >
-                          {record.txHash.slice(0, 8)}...
-                          {copiedHash === record.txHash ? (
-                            <Check className="h-3 w-3 text-green-500" />
-                          ) : (
-                            <Copy className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                          )}
-                        </button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="p-4 sm:p-6">
+                <p className="text-center text-muted-foreground py-8">
+                  No attendance records found for this student.
+                </p>
               </div>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block px-4 sm:px-6 pb-4 sm:pb-6">
+                  <div className="overflow-x-auto min-w-0">
+                    <Table className="print-table">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="min-w-[120px]">Date</TableHead>
+                          <TableHead className="min-w-[100px]">Time</TableHead>
+                          <TableHead className="min-w-[80px]">Type</TableHead>
+                          <TableHead className="min-w-[120px]">Transaction Hash</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {studentAttendanceRecords.map((record) => (
+                          <TableRow key={record.id}>
+                            <TableCell className="font-medium">{record.dateFormatted}</TableCell>
+                            <TableCell className="text-muted-foreground">{record.timeFormatted}</TableCell>
+                            <TableCell>
+                              <Badge variant="default" className="bg-primary">
+                                {record.type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <button
+                                onClick={() => handleCopyHash(record.txHash)}
+                                className="group relative inline-flex items-center gap-1.5 text-xs bg-muted hover:bg-muted/80 px-2 py-2 rounded font-mono transition-colors cursor-pointer min-h-[44px]"
+                                title="Click to copy full hash"
+                                data-hash={record.txHash}
+                              >
+                                <span className="hidden sm:inline">{record.txHash.slice(0, 8)}...</span>
+                                <span className="sm:hidden">{record.txHash.slice(0, 4)}...</span>
+                                {copiedHash === record.txHash ? (
+                                  <Check className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <Copy className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                )}
+                              </button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-3 p-4">
+                  {studentAttendanceRecords.map((record) => (
+                    <Card key={record.id} className="border-border">
+                      <CardContent className="p-4 space-y-3">
+                        <h3 className="font-medium text-base text-foreground">{record.dateFormatted}</h3>
+                        <div className="flex items-center justify-between pt-2 border-t">
+                          <span className="text-xs font-medium text-muted-foreground">Time</span>
+                          <span className="text-sm text-muted-foreground">{record.timeFormatted}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-muted-foreground">Type</span>
+                          <Badge variant="default" className="bg-primary">
+                            {record.type}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-muted-foreground">Transaction</span>
+                          <button
+                            onClick={() => handleCopyHash(record.txHash)}
+                            className="group relative inline-flex items-center gap-1.5 text-xs bg-muted hover:bg-muted/80 px-2 py-2 rounded font-mono transition-colors cursor-pointer min-h-[44px]"
+                            title="Click to copy full hash"
+                            data-hash={record.txHash}
+                          >
+                            {record.txHash.slice(0, 4)}...
+                            {copiedHash === record.txHash ? (
+                              <Check className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Copy className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            )}
+                          </button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>

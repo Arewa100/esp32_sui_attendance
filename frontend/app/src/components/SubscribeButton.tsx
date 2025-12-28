@@ -313,7 +313,7 @@ export default function SubscribeButton({
         size={size}
         onClick={handleSubscribe}
         disabled={!canSubscribe}
-        className={size === "sm" ? "" : "w-full"}
+        className={`min-h-[44px] text-xs sm:text-sm ${size === "sm" ? "" : "w-full"} ${className}`}
       >
         {getButtonContent()}
       </Button>

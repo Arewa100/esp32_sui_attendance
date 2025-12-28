@@ -41,8 +41,17 @@ export function useSuiBalance() {
       }
     },
     enabled: !!account?.address,
-    staleTime: 10_000, // Cache for 10 seconds
-    refetchInterval: 30_000, // Refetch every 30 seconds
+    staleTime: 60_000, // Cache for 1 minute
+    refetchInterval: (query) => {
+      // Pause polling when tab is hidden
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 120_000; // 2 minutes (reduced from 30s) - balance changes only on transactions
+    },
+    refetchOnWindowFocus: true, // Immediate update when user returns
+    refetchOnReconnect: true, // Refetch on network reconnect
+    placeholderData: (previousData) => previousData, // Show stale data while fetching
   });
 }
 

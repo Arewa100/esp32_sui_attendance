@@ -12,7 +12,7 @@ export default React.memo(function LandingHero({ onGetStarted }: LandingHeroProp
   const { formattedStats, isLoading } = useGlobalStats();
 
   return (
-    <section className="pt-32 pb-20 px-6 relative overflow-hidden">
+    <section className="pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 relative overflow-hidden">
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30 dark:opacity-20"
         style={{
@@ -34,7 +34,7 @@ export default React.memo(function LandingHero({ onGetStarted }: LandingHeroProp
           </div>
 
           <h1
-            className="text-5xl md:text-6xl font-bold tracking-tight text-foreground mb-6 animate-fade-in-up opacity-0"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-4 sm:mb-6 px-2 animate-fade-in-up opacity-0 leading-tight"
             style={{ animationDelay: "0.3s", animationFillMode: "forwards" }}
           >
             Blockchain-Powered{" "}
@@ -43,7 +43,7 @@ export default React.memo(function LandingHero({ onGetStarted }: LandingHeroProp
           </h1>
 
           <p
-            className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto animate-fade-in-up opacity-0"
+            className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 md:mb-10 max-w-2xl mx-auto px-4 animate-fade-in-up opacity-0"
             style={{ animationDelay: "0.5s", animationFillMode: "forwards" }}
           >
             A decentralized attendance system using ESP32 RFID readers and Sui
@@ -58,7 +58,7 @@ export default React.memo(function LandingHero({ onGetStarted }: LandingHeroProp
             <Button
               size="lg"
               onClick={onGetStarted}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto min-h-[44px] text-base"
             >
               Get Started
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -67,7 +67,7 @@ export default React.memo(function LandingHero({ onGetStarted }: LandingHeroProp
               size="lg"
               variant="outline"
               asChild
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto min-h-[44px] text-base"
             >
               <a
                 href="https://github.com/Arewa100/esp32_sui_attendance"
@@ -81,7 +81,7 @@ export default React.memo(function LandingHero({ onGetStarted }: LandingHeroProp
         </div>
 
         {/* Stats Section */}
-        <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+        <div className="mt-12 sm:mt-16 md:mt-20 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 max-w-4xl mx-auto px-4">
           {[
             {
               value: isLoading ? "—" : formattedStats.organisations,
@@ -102,13 +102,13 @@ export default React.memo(function LandingHero({ onGetStarted }: LandingHeroProp
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               {isLoading ? (
-                <Skeleton className="h-10 w-20 mx-auto mb-2" />
+                <Skeleton className="h-8 sm:h-10 w-16 sm:w-20 mx-auto mb-2" />
               ) : (
-                <div className="text-3xl md:text-4xl font-bold text-foreground">
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
                   {stat.value}
                 </div>
               )}
-              <div className="text-sm text-muted-foreground mt-1">
+              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                 {stat.label}
               </div>
             </div>

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +22,7 @@ import { useAttendanceRecordedEvents, useStudentRegisteredEvents } from "@/hooks
 import { useOrganisationObject } from "@/hooks/use-attendance-objects";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageBackground from "@/components/PageBackground";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 ChartJS.register(
   CategoryScale,
@@ -350,7 +351,7 @@ export default function AnalyticsPage() {
     },
   }), [bottomStudents]);
 
-  const handlePrint = () => {
+  const handlePrint = useCallback(() => {
     if (!printRef.current) return;
     
     const printWindow = window.open("", "_blank");
@@ -423,9 +424,9 @@ export default function AnalyticsPage() {
       printWindow.print();
       printWindow.close();
     }, 500);
-  };
+  }, [orgName]);
 
-  const handleDownload = () => {
+  const handleDownload = useCallback(() => {
     const data = {
       organisation: orgName,
       generatedAt: new Date().toISOString(),
@@ -461,7 +462,7 @@ export default function AnalyticsPage() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  };
+  }, [orgName, studentAttendanceCounts, filteredAttendanceEvents, topStudentsForPrint, bottomStudentsForPrint, startDate, endDate]);
 
   if (orgLoading) {
     return (
@@ -477,30 +478,37 @@ export default function AnalyticsPage() {
       <PageBackground />
       
       {/* Header with Back Button */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(`/organisations/${orgId}`)}
+            className="min-h-[44px] min-w-[44px] flex-shrink-0"
           >
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Analytics Report - {orgName}</h1>
-            <p className="text-sm text-muted-foreground">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">Analytics Report - {orgName}</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
               View attendance statistics and student performance metrics
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={handlePrint} variant="outline" size="sm">
+        <div className="flex gap-2 w-full sm:w-auto">
+          {/* Desktop: Print and Download JSON buttons */}
+          <Button onClick={handlePrint} variant="outline" size="sm" className="hidden md:flex min-h-[44px] text-xs sm:text-sm">
             <Printer className="mr-2 h-4 w-4" />
             Print Report
           </Button>
-          <Button onClick={handleDownload} variant="outline" size="sm">
+          <Button onClick={handleDownload} variant="outline" size="sm" className="hidden md:flex min-h-[44px] text-xs sm:text-sm">
             <Download className="mr-2 h-4 w-4" />
             Download JSON
+          </Button>
+          {/* Mobile: Single Download button that triggers print (can save as PDF) */}
+          <Button onClick={handlePrint} variant="outline" size="sm" className="flex md:hidden w-full min-h-[44px] text-xs sm:text-sm">
+            <Download className="mr-2 h-4 w-4" />
+            Download
           </Button>
         </div>
       </div>
@@ -550,15 +558,15 @@ export default function AnalyticsPage() {
 
         {/* Date Filter Section */}
         <Card className="border-border no-print">
-          <CardContent className="p-6">
-            <div className="flex items-end gap-4">
-              <div className="flex-1">
-                <Label htmlFor="start-date" className="mb-2 block">Start Date</Label>
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <div className="flex-1 min-w-0">
+                <Label htmlFor="start-date" className="mb-2 block text-sm">Start Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
-                      className="w-full justify-start text-left font-normal"
+                      className="w-full justify-start text-left font-normal min-h-[44px] text-xs sm:text-sm"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {startDate ? format(startDate, "PPP") : "Pick a date"}
@@ -574,13 +582,13 @@ export default function AnalyticsPage() {
                   </PopoverContent>
                 </Popover>
               </div>
-              <div className="flex-1">
-                <Label htmlFor="end-date" className="mb-2 block">End Date</Label>
+              <div className="flex-1 min-w-0">
+                <Label htmlFor="end-date" className="mb-2 block text-sm">End Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
-                      className="w-full justify-start text-left font-normal"
+                      className="w-full justify-start text-left font-normal min-h-[44px] text-xs sm:text-sm"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {endDate ? format(endDate, "PPP") : "Pick a date"}
@@ -596,21 +604,25 @@ export default function AnalyticsPage() {
                   </PopoverContent>
                 </Popover>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setStartDate(undefined);
-                  setEndDate(undefined);
-                }}
-                disabled={!startDate && !endDate}
-              >
-                <X className="h-4 w-4" />
-                Clear
-              </Button>
+              <div className="flex items-end sm:items-start">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full sm:w-auto min-h-[44px] text-xs sm:text-sm"
+                  onClick={() => {
+                    setStartDate(undefined);
+                    setEndDate(undefined);
+                  }}
+                  disabled={!startDate && !endDate}
+                >
+                  <X className="h-4 w-4 mr-2 sm:mr-0" />
+                  <span className="sm:hidden">Clear Filters</span>
+                  <span className="hidden sm:inline">Clear</span>
+                </Button>
+              </div>
             </div>
             {(startDate || endDate) && (
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-3 sm:mt-2">
                 Showing records from {startDate ? format(startDate, "MMM dd, yyyy") : "beginning"} to {endDate ? format(endDate, "MMM dd, yyyy") : "now"}
               </p>
             )}

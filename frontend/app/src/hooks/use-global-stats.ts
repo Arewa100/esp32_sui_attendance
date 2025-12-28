@@ -45,8 +45,16 @@ export function useGlobalStats() {
       return res.data.map((e) => e.parsedJson as any);
     },
     enabled: !!CONFIG.PACKAGE_ID,
-    staleTime: 60_000, // Cache for 1 minute
-    refetchInterval: 60_000, // Refetch every minute
+    staleTime: 120_000, // Cache for 2 minutes
+    refetchInterval: (query) => {
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 180_000; // 3 minutes (reduced from 60s) - global stats change slowly
+    },
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData,
   });
   
   // Fetch all student registrations (without orgId filter)

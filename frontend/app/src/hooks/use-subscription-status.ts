@@ -65,8 +65,17 @@ export function useSubscriptionStatus(orgId?: string) {
       }
     },
     enabled: !!orgId,
-    staleTime: 5_000,
-    refetchInterval: 10_000,
+    staleTime: 60_000, // Data is fresh for 1 minute
+    refetchInterval: (query) => {
+      // Pause polling when tab is hidden
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 60_000; // 1 minute (reduced from 10s) - subscriptions change rarely
+    },
+    refetchOnWindowFocus: true, // Immediate update when user returns
+    refetchOnReconnect: true, // Refetch on network reconnect
+    placeholderData: (previousData) => previousData, // Show stale data while fetching
   });
 }
 

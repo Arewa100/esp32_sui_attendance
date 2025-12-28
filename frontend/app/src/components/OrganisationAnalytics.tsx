@@ -26,6 +26,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { Printer, Download, Calendar as CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import { useAttendanceRecordedEvents, useStudentRegisteredEvents } from "@/hooks/use-attendance-events";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Register Chart.js plugins only once
 let chartRegistered = false;
@@ -400,15 +401,15 @@ export default React.memo(function OrganisationAnalytics({
         }
       `}</style>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader className="text-left">
-          <DialogTitle>Analytics Report - {orgName}</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-lg sm:text-xl">Analytics Report - {orgName}</DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm">
             View attendance statistics and student performance metrics
           </DialogDescription>
         </DialogHeader>
 
-        <div ref={printRef} className="space-y-6">
+        <div ref={printRef} className="space-y-4 sm:space-y-6">
           {/* Print Header - Hidden on screen, shown in print */}
           <div className="print-header no-print" style={{ display: "none" }}>
             <h1>SuiAttend Attendance Report</h1>
@@ -425,15 +426,15 @@ export default React.memo(function OrganisationAnalytics({
 
           {/* Date Filter Section */}
           <Card className="border-border no-print">
-            <CardContent className="p-6">
-              <div className="flex items-end gap-4">
-                <div className="flex-1">
-                  <Label htmlFor="start-date" className="mb-2 block">Start Date</Label>
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <div className="flex-1 min-w-0">
+                  <Label htmlFor="start-date" className="mb-2 block text-sm">Start Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-start text-left font-normal"
+                        className="w-full justify-start text-left font-normal min-h-[44px] text-xs sm:text-sm"
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {startDate ? format(startDate, "PPP") : "Pick a date"}
@@ -449,13 +450,13 @@ export default React.memo(function OrganisationAnalytics({
                     </PopoverContent>
                   </Popover>
                 </div>
-                <div className="flex-1">
-                  <Label htmlFor="end-date" className="mb-2 block">End Date</Label>
+                <div className="flex-1 min-w-0">
+                  <Label htmlFor="end-date" className="mb-2 block text-sm">End Date</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-start text-left font-normal"
+                        className="w-full justify-start text-left font-normal min-h-[44px] text-xs sm:text-sm"
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {endDate ? format(endDate, "PPP") : "Pick a date"}
@@ -471,21 +472,25 @@ export default React.memo(function OrganisationAnalytics({
                     </PopoverContent>
                   </Popover>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setStartDate(undefined);
-                    setEndDate(undefined);
-                  }}
-                  disabled={!startDate && !endDate}
-                >
-                  <X className="h-4 w-4" />
-                  Clear
-                </Button>
+                <div className="flex items-end sm:items-start">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full sm:w-auto min-h-[44px] text-xs sm:text-sm"
+                    onClick={() => {
+                      setStartDate(undefined);
+                      setEndDate(undefined);
+                    }}
+                    disabled={!startDate && !endDate}
+                  >
+                    <X className="h-4 w-4 mr-2 sm:mr-0" />
+                    <span className="sm:hidden">Clear Filters</span>
+                    <span className="hidden sm:inline">Clear</span>
+                  </Button>
+                </div>
               </div>
               {(startDate || endDate) && (
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-3 sm:mt-2">
                   Showing records from {startDate ? format(startDate, "MMM dd, yyyy") : "beginning"} to {endDate ? format(endDate, "MMM dd, yyyy") : "now"}
                 </p>
               )}
@@ -494,25 +499,31 @@ export default React.memo(function OrganisationAnalytics({
 
           {/* Action Buttons */}
           <div className="flex gap-2 no-print mb-2">
-            <Button onClick={handlePrint} variant="outline" size="sm">
+            {/* Desktop: Print and Download JSON buttons */}
+            <Button onClick={handlePrint} variant="outline" size="sm" className="hidden md:flex min-h-[44px] text-xs sm:text-sm">
               <Printer className="mr-2 h-4 w-4" />
               Print Report
             </Button>
-            <Button onClick={handleDownload} variant="outline" size="sm">
+            <Button onClick={handleDownload} variant="outline" size="sm" className="hidden md:flex min-h-[44px] text-xs sm:text-sm">
               <Download className="mr-2 h-4 w-4" />
               Download JSON
+            </Button>
+            {/* Mobile: Single Download button that triggers print (can save as PDF) */}
+            <Button onClick={handlePrint} variant="outline" size="sm" className="flex md:hidden w-full min-h-[44px] text-xs sm:text-sm">
+              <Download className="mr-2 h-4 w-4" />
+              Download
             </Button>
           </div>
 
           {/* Overall Attendance Health Gauge */}
           <div className="print-section no-print">
             <Card className="border-border">
-              <CardHeader className="p-6 pb-4">
-                <CardTitle>Overall Attendance Health</CardTitle>
+              <CardHeader className="p-4 sm:p-6 pb-3 sm:pb-4">
+                <CardTitle className="text-base sm:text-lg">Overall Attendance Health</CardTitle>
               </CardHeader>
-              <CardContent className="p-6 pt-0">
+              <CardContent className="p-4 sm:p-6 pt-0">
                 <div className="flex flex-col items-center justify-center">
-                  <div className="relative" style={{ width: "400px", height: "200px" }}>
+                  <div className="relative w-full max-w-[400px] aspect-[2/1]" style={{ height: "200px" }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -541,17 +552,17 @@ export default React.memo(function OrganisationAnalytics({
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 grid grid-cols-3 gap-4 w-full max-w-md">
-                    <div className="text-center">
-                      <div className="text-xl font-bold">{studentAttendanceCounts.length}</div>
-                      <div className="text-xs text-muted-foreground">Total Students</div>
+                  <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-md">
+                    <div className="text-center min-w-0">
+                      <div className="text-lg sm:text-xl font-bold">{studentAttendanceCounts.length}</div>
+                      <div className="text-xs text-muted-foreground mt-1">Total Students</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-xl font-bold">{filteredAttendanceEvents.length}</div>
-                      <div className="text-xs text-muted-foreground">Total Records</div>
+                    <div className="text-center min-w-0">
+                      <div className="text-lg sm:text-xl font-bold">{filteredAttendanceEvents.length}</div>
+                      <div className="text-xs text-muted-foreground mt-1">Total Records</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-xl font-bold">
+                    <div className="text-center min-w-0">
+                      <div className="text-lg sm:text-xl font-bold">
                         {studentAttendanceCounts.length > 0
                           ? Math.round(
                               studentAttendanceCounts.reduce((sum, s) => sum + s.count, 0) /
@@ -559,7 +570,7 @@ export default React.memo(function OrganisationAnalytics({
                             )
                           : 0}
                       </div>
-                      <div className="text-xs text-muted-foreground">Avg per Student</div>
+                      <div className="text-xs text-muted-foreground mt-1">Avg per Student</div>
                     </div>
                   </div>
                 </div>
@@ -570,8 +581,10 @@ export default React.memo(function OrganisationAnalytics({
           {/* Summary Stats */}
           <div className="print-section">
             <Card className="border-border">
-              <CardContent className="p-6">
-                <table className="print-table analytics-table w-full border-collapse">
+              <CardContent className="p-4 sm:p-6">
+                <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <div className="inline-block min-w-full align-middle px-4 sm:px-0">
+                    <table className="print-table analytics-table w-full border-collapse">
                   <thead>
                     <tr>
                       <th className="text-center">Total Students</th>
@@ -609,24 +622,28 @@ export default React.memo(function OrganisationAnalytics({
                   <Bar data={chartData} options={chartOptions} />
                 </div>
                 <div className="mt-4">
-                  <table className="print-table analytics-table w-full border-collapse">
-                    <thead>
-                      <tr>
-                        <th style={{ width: "80px" }}>Rank</th>
-                        <th>Student Name</th>
-                        <th style={{ width: "150px" }} className="text-right">Attendance Count</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {topStudents.map((student, idx) => (
-                        <tr key={idx}>
-                          <td className="text-center">{idx + 1}</td>
-                          <td>{student.name}</td>
-                          <td className="text-right">{student.count}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                    <div className="inline-block min-w-full align-middle px-4 sm:px-0">
+                      <table className="print-table analytics-table w-full border-collapse">
+                        <thead>
+                          <tr>
+                            <th style={{ width: "80px" }} className="min-w-[60px]">Rank</th>
+                            <th className="min-w-[150px]">Student Name</th>
+                            <th style={{ width: "150px" }} className="text-right min-w-[100px]">Attendance Count</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {topStudents.map((student, idx) => (
+                            <tr key={idx}>
+                              <td className="text-center">{idx + 1}</td>
+                              <td className="text-sm sm:text-base">{student.name}</td>
+                              <td className="text-right text-sm sm:text-base">{student.count}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -635,32 +652,36 @@ export default React.memo(function OrganisationAnalytics({
           {/* Bottom Students Chart - Hidden in print */}
           <div className="print-section no-print">
             <Card className="border-border">
-              <CardHeader className="p-6 pb-4">
-                <CardTitle>Bottom 10 Students (Lowest Attendance)</CardTitle>
+              <CardHeader className="p-4 sm:p-6 pb-3 sm:pb-4">
+                <CardTitle className="text-base sm:text-lg">Bottom 10 Students (Lowest Attendance)</CardTitle>
               </CardHeader>
-              <CardContent className="p-6 pt-0">
+              <CardContent className="p-4 sm:p-6 pt-0">
                 <div style={{ height: "200px", backgroundColor: "transparent" }}>
                   <Bar data={bottomChartData} options={chartOptions} />
                 </div>
                 <div className="mt-4">
-                  <table className="print-table analytics-table w-full border-collapse">
-                    <thead>
-                      <tr>
-                        <th style={{ width: "80px" }}>Rank</th>
-                        <th>Student Name</th>
-                        <th style={{ width: "150px" }} className="text-right">Attendance Count</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {bottomStudents.map((student, idx) => (
-                        <tr key={idx}>
-                          <td className="text-center">{studentAttendanceCounts.length - bottomStudents.length + idx + 1}</td>
-                          <td>{student.name}</td>
-                          <td className="text-right">{student.count}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                    <div className="inline-block min-w-full align-middle px-4 sm:px-0">
+                      <table className="print-table analytics-table w-full border-collapse">
+                        <thead>
+                          <tr>
+                            <th style={{ width: "80px" }} className="min-w-[60px]">Rank</th>
+                            <th className="min-w-[150px]">Student Name</th>
+                            <th style={{ width: "150px" }} className="text-right min-w-[100px]">Attendance Count</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {bottomStudents.map((student, idx) => (
+                            <tr key={idx}>
+                              <td className="text-center">{studentAttendanceCounts.length - bottomStudents.length + idx + 1}</td>
+                              <td className="text-sm sm:text-base">{student.name}</td>
+                              <td className="text-right text-sm sm:text-base">{student.count}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,13 +26,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useOrganisationCreatedEvents } from "@/hooks/use-attendance-events";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useSuiClient } from "@mysten/dapp-kit";
 import { useQuery, useQueries } from "@tanstack/react-query";
 import { CONFIG } from "@/config";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useDebounce } from "@/hooks/use-debounce";
 
 type StatusFilter = "all" | "active" | "inactive";
 type OrgStatus = "active" | "inactive" | "checking" | "unknown";
@@ -49,10 +50,23 @@ type SortOption =
 export default function Organisations() {
   const account = useCurrentAccount();
   const client = useSuiClient();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
   const { data: createdEvents, isLoading: isLoadingOrgs, error } = useOrganisationCreatedEvents(200);
+  
+  // Debounce search query to reduce filtering operations
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  
+  // Memoize filter/sort handlers to prevent unnecessary re-renders
+  const handleStatusFilterChange = useCallback((filter: StatusFilter) => {
+    setStatusFilter(filter);
+  }, []);
+  
+  const handleSortOptionChange = useCallback((sort: SortOption) => {
+    setSortOption(sort);
+  }, []);
 
   // Fetch all student events (without orgId filter to get all events for counting)
   const { data: allStudentEvents } = useQuery({
@@ -67,8 +81,16 @@ export default function Organisations() {
       return (res.data || []).map((e) => e.parsedJson as any);
     },
     enabled: !!CONFIG.PACKAGE_ID,
-    staleTime: 30_000,
-    refetchInterval: 30_000,
+    staleTime: 60_000, // Data is fresh for 1 minute
+    refetchInterval: (query) => {
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 120_000; // 2 minutes (reduced from 30s)
+    },
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData,
   });
 
   // Fetch all attendance events (without orgId filter to get all events for counting)
@@ -84,8 +106,16 @@ export default function Organisations() {
       return (res.data || []).map((e) => e.parsedJson as any);
     },
     enabled: !!CONFIG.PACKAGE_ID,
-    staleTime: 30_000,
-    refetchInterval: 30_000,
+    staleTime: 60_000, // Data is fresh for 1 minute
+    refetchInterval: (query) => {
+      if (typeof document !== 'undefined' && document.hidden) {
+        return false;
+      }
+      return 120_000; // 2 minutes (reduced from 30s)
+    },
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    placeholderData: (previousData) => previousData,
   });
 
   // Filter orgs owned by connected wallet
@@ -226,9 +256,9 @@ export default function Organisations() {
   const filteredOrganisations = useMemo(() => {
     let filtered = organisations;
 
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
+    // Apply search filter (using debounced query)
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase().trim();
       filtered = filtered.filter((org) =>
         org.name.toLowerCase().includes(query)
       );
@@ -275,21 +305,22 @@ export default function Organisations() {
       }
     });
 
-    return sorted;
-  }, [organisations, searchQuery, statusFilter, sortOption]);
+            return sorted;
+          }, [organisations, debouncedSearchQuery, statusFilter, sortOption]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Organisations</h1>
-          <p className="text-muted-foreground">Manage your registered organisations</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Organisations</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage your registered organisations</p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto min-h-[44px] text-xs sm:text-sm">
           <Link to="/organisations/new">
             <Plus className="mr-2 h-4 w-4" />
-            Create Organisation
+            <span className="hidden sm:inline">Create Organisation</span>
+            <span className="sm:hidden">Create Org</span>
           </Link>
         </Button>
       </div>
@@ -313,85 +344,89 @@ export default function Organisations() {
       {/* Search and Filters */}
       <Card className="border-border">
         <CardContent className="p-4">
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-sm">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+            <div className="relative flex-1 w-full sm:max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input 
                 placeholder="Search organisations..." 
-                className="pl-9"
+                className="pl-9 min-h-[44px]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <DropdownMenu>
+            <div className="flex gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="min-h-[44px] flex-1 sm:flex-none text-xs sm:text-sm">
+                    {statusFilter === "all" ? "All Status" : statusFilter === "active" ? "Active" : "Inactive"}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setStatusFilter("all")}>
+                    All Status
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setStatusFilter("active")}>
+                    Active
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setStatusFilter("inactive")}>
+                    Inactive
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  {statusFilter === "all" ? "All Status" : statusFilter === "active" ? "Active" : "Inactive"}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setStatusFilter("all")}>
-                  All Status
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("active")}>
-                  Active
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("inactive")}>
-                  Inactive
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="min-h-[44px] flex-1 sm:flex-none text-xs sm:text-sm">
                   <ArrowUpDown className="mr-2 h-4 w-4" />
                   Sort
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setSortOption("name-asc")}>
-                  Name (A-Z)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOption("name-desc")}>
-                  Name (Z-A)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOption("created-newest")}>
-                  Created (Newest)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOption("created-oldest")}>
-                  Created (Oldest)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOption("students-most")}>
-                  Students (Most)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOption("students-least")}>
-                  Students (Least)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOption("records-most")}>
-                  Records (Most)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOption("records-least")}>
-                  Records (Least)
-                </DropdownMenuItem>
-              </DropdownMenuContent>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleSortOptionChange("name-asc")}>
+                            Name (A-Z)
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleSortOptionChange("name-desc")}>
+                            Name (Z-A)
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleSortOptionChange("created-newest")}>
+                            Created (Newest)
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleSortOptionChange("created-oldest")}>
+                            Created (Oldest)
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleSortOptionChange("students-most")}>
+                            Students (Most)
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleSortOptionChange("students-least")}>
+                            Students (Least)
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleSortOptionChange("records-most")}>
+                            Records (Most)
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleSortOptionChange("records-least")}>
+                            Records (Least)
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
             </DropdownMenu>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Table */}
-      <Card className="border-border">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="w-[300px]">Organisation</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Students</TableHead>
-              <TableHead className="text-right">Records</TableHead>
-              <TableHead className="text-right">Created</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+      {/* Desktop Table */}
+      <Card className="border-border hidden md:block">
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <div className="inline-block min-w-full align-middle px-4 sm:px-0">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="min-w-[200px] sm:w-[300px]">Organisation</TableHead>
+                  <TableHead className="min-w-[80px]">Status</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Students</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Records</TableHead>
+                  <TableHead className="text-right min-w-[100px]">Created</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
             {(isLoadingOrgs || orgQueries.some((q) => q.isLoading)) ? (
               Array.from({ length: 5 }).map((_, idx) => (
                 <TableRow key={idx}>
@@ -439,11 +474,11 @@ export default function Organisations() {
             {filteredOrganisations.map((org) => (
               <TableRow key={org.id} className="cursor-pointer hover:bg-muted/50">
                 <TableCell>
-                  <Link to={`/organisations/${org.id}`} className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                      <Building2 className="h-5 w-5 text-primary" />
+                  <Link to={`/organisations/${org.id}`} className="flex items-center gap-2 sm:gap-3 min-h-[44px]">
+                    <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
+                      <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </div>
-                    <span className="font-medium text-foreground">{org.name}</span>
+                    <span className="font-medium text-sm sm:text-base text-foreground truncate">{org.name}</span>
                   </Link>
                 </TableCell>
                 <TableCell>
@@ -488,9 +523,120 @@ export default function Organisations() {
                 </TableCell>
               </TableRow>
             ))}
-          </TableBody>
-        </Table>
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       </Card>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {(isLoadingOrgs || orgQueries.some((q) => q.isLoading)) ? (
+          Array.from({ length: 5 }).map((_, idx) => (
+            <Card key={idx} className="border-border">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-lg" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <span className="text-xs text-muted-foreground">Status</span>
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Students</span>
+                  <Skeleton className="h-4 w-12" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Records</span>
+                  <Skeleton className="h-4 w-12" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Created</span>
+                  <Skeleton className="h-4 w-20" />
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : !isLoadingOrgs && organisations.length === 0 ? (
+          <Card className="border-border">
+            <CardContent className="p-6 text-center text-muted-foreground">
+              No organisations found. Create one to get started.
+            </CardContent>
+          </Card>
+        ) : !isLoadingOrgs && organisations.length > 0 && filteredOrganisations.length === 0 ? (
+          <Card className="border-border">
+            <CardContent className="p-6 text-center text-muted-foreground">
+              No organisations found matching "{searchQuery}". Try a different search term.
+            </CardContent>
+          </Card>
+        ) : (
+          filteredOrganisations.map((org) => (
+            <Card
+              key={org.id}
+              className="border-border cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={() => navigate(`/organisations/${org.id}`)}
+            >
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 flex-shrink-0">
+                    <Building2 className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-base text-foreground truncate">{org.name}</h3>
+                    {org.created && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Created {new Date(org.created).toLocaleDateString(undefined, { 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <span className="text-xs font-medium text-muted-foreground">Status</span>
+                  {org.status === "checking" ? (
+                    <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/30">
+                      <span className="inline-block w-2 h-2 rounded-full bg-yellow-500 animate-pulse mr-1.5" />
+                      Checking...
+                    </Badge>
+                  ) : org.status === "unknown" ? (
+                    <Badge variant="secondary" className="bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30">
+                      Unknown
+                    </Badge>
+                  ) : (
+                    <Badge 
+                      variant={org.status === "active" ? "default" : "destructive"}
+                      className={org.status === "active" ? "bg-primary" : ""}
+                    >
+                      {org.status === "active" ? "active" : "inactive"}
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">Students</span>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{org.students.toLocaleString()}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">Records</span>
+                  <div className="flex items-center gap-2">
+                    <FileCheck className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{org.records.toLocaleString()}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
     </div>
   );
 }
