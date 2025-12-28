@@ -434,7 +434,7 @@ export default React.memo(function OrganisationAnalytics({
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-start text-left font-normal min-h-[44px] text-xs sm:text-sm"
+                        className="w-full justify-start text-left font-normal md:h-11 text-xs sm:text-sm"
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {startDate ? format(startDate, "PPP") : "Pick a date"}
@@ -456,7 +456,7 @@ export default React.memo(function OrganisationAnalytics({
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-start text-left font-normal min-h-[44px] text-xs sm:text-sm"
+                        className="w-full justify-start text-left font-normal md:h-11 text-xs sm:text-sm"
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {endDate ? format(endDate, "PPP") : "Pick a date"}
@@ -476,7 +476,7 @@ export default React.memo(function OrganisationAnalytics({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full sm:w-auto min-h-[44px] text-xs sm:text-sm"
+                    className="w-full sm:w-auto md:h-11 text-xs sm:text-sm"
                     onClick={() => {
                       setStartDate(undefined);
                       setEndDate(undefined);
@@ -500,16 +500,16 @@ export default React.memo(function OrganisationAnalytics({
           {/* Action Buttons */}
           <div className="flex gap-2 no-print mb-2">
             {/* Desktop: Print and Download JSON buttons */}
-            <Button onClick={handlePrint} variant="outline" size="sm" className="hidden md:flex min-h-[44px] text-xs sm:text-sm">
+            <Button onClick={handlePrint} variant="outline" size="sm" className="hidden md:flex md:h-11 text-xs sm:text-sm">
               <Printer className="mr-2 h-4 w-4" />
               Print Report
             </Button>
-            <Button onClick={handleDownload} variant="outline" size="sm" className="hidden md:flex min-h-[44px] text-xs sm:text-sm">
+            <Button onClick={handleDownload} variant="outline" size="sm" className="hidden md:flex md:h-11 text-xs sm:text-sm">
               <Download className="mr-2 h-4 w-4" />
               Download JSON
             </Button>
             {/* Mobile: Single Download button that triggers print (can save as PDF) */}
-            <Button onClick={handlePrint} variant="outline" size="sm" className="flex md:hidden w-full min-h-[44px] text-xs sm:text-sm">
+            <Button onClick={handlePrint} variant="outline" size="sm" className="flex md:hidden w-full text-xs sm:text-sm">
               <Download className="mr-2 h-4 w-4" />
               Download
             </Button>

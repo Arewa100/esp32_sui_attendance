@@ -177,7 +177,7 @@ export default function RegisterDevice() {
             <div className="flex gap-3 pt-2">
               <Button 
                 type="submit" 
-                className="flex-1 min-h-[44px] text-xs sm:text-sm"
+                className="flex-1 md:h-11 text-xs sm:text-sm"
                 disabled={!canSubmit}
               >
                 {!isMetadataReady ? (
@@ -202,7 +202,7 @@ export default function RegisterDevice() {
               <Button 
                 type="button" 
                 variant="outline" 
-                className="min-h-[44px] text-xs sm:text-sm"
+                className="md:h-11 text-xs sm:text-sm"
                 onClick={() => navigate(`/organisations/${id}`)}
                 disabled={status === "pending"}
               >

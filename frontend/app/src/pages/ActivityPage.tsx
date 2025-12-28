@@ -44,7 +44,7 @@ export default function ActivityPage() {
       <div className="space-y-4 sm:space-y-6 px-4 sm:px-0">
         {/* Header */}
         <div className="flex items-center gap-2 sm:gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="min-h-[44px] min-w-[44px] flex-shrink-0">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="md:h-11 md:w-11 flex-shrink-0">
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div className="min-w-0 flex-1">

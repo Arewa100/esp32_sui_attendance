@@ -58,7 +58,7 @@ export default React.memo(function LandingHero({ onGetStarted }: LandingHeroProp
             <Button
               size="lg"
               onClick={onGetStarted}
-              className="w-full sm:w-auto min-h-[44px] text-base"
+              className="w-full sm:w-auto md:h-11 text-base"
             >
               Get Started
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -67,7 +67,7 @@ export default React.memo(function LandingHero({ onGetStarted }: LandingHeroProp
               size="lg"
               variant="outline"
               asChild
-              className="w-full sm:w-auto min-h-[44px] text-base"
+              className="w-full sm:w-auto md:h-11 text-base"
             >
               <a
                 href="https://github.com/Arewa100/esp32_sui_attendance"

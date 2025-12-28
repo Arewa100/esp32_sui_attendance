@@ -87,7 +87,7 @@ export default React.memo(function LandingNav() {
             <Button
               variant="ghost"
               size="sm"
-              className="font-mono text-xs text-foreground hover:bg-orange-500 hover:text-white transition-colors relative group"
+              className="font-mono text-xs text-foreground hover:bg-orange-500 hover:text-white transition-colors relative group md:h-11"
               onClick={handleDisconnect}
               disabled={isDisconnecting}
             >
@@ -98,7 +98,7 @@ export default React.memo(function LandingNav() {
               <span className="hidden group-hover:inline">Disconnect</span>
             </Button>
           ) : (
-            <div className="[&>button]:!inline-flex [&>button]:!items-center [&>button]:!justify-center [&>button]:!gap-2 [&>button]:!rounded-md [&>button]:!bg-primary [&>button]:!px-4 [&>button]:!py-2 [&>button]:!text-sm [&>button]:!font-medium [&>button]:!text-white [&>button]:!shadow [&>button]:!transition-colors [&>button]:hover:!bg-primary/90 [&>button]:!h-10 [&>button]:!border-0 [&>button]:!cursor-pointer [&>button]:!font-sans">
+            <div className="[&>button]:!inline-flex [&>button]:!items-center [&>button]:!justify-center [&>button]:!gap-2 [&>button]:!rounded-md [&>button]:!bg-primary [&>button]:!px-4 [&>button]:!py-2 [&>button]:!text-sm [&>button]:!font-medium [&>button]:!text-white [&>button]:!shadow [&>button]:!transition-colors [&>button]:hover:!bg-primary/90 [&>button]:!h-10 [&>button]:!md:!h-11 [&>button]:!border-0 [&>button]:!cursor-pointer [&>button]:!font-sans">
               <ConnectButton />
             </div>
           )}

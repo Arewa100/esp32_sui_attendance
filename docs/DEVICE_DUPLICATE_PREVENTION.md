@@ -151,3 +151,4 @@ async function isDeviceAvailable(deviceId: string): Promise<boolean> {
 - Unregistering a device frees it up for registration by other organisations
 
 
+

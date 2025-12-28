@@ -403,12 +403,12 @@ export default function StudentProfile() {
             </div>
           </div>
           {/* Desktop: Print button */}
-          <Button variant="outline" onClick={handlePrint} className="shrink-0 hidden md:flex min-h-[44px] text-xs sm:text-sm">
+          <Button variant="outline" onClick={handlePrint} className="shrink-0 hidden md:flex md:h-11 text-xs sm:text-sm">
             <Printer className="mr-2 h-4 w-4" />
             Print
           </Button>
           {/* Mobile: Download button that triggers print (can save as PDF) */}
-          <Button variant="outline" onClick={handlePrint} className="shrink-0 flex md:hidden w-full min-h-[44px] text-xs sm:text-sm">
+          <Button variant="outline" onClick={handlePrint} className="shrink-0 flex md:hidden w-full text-xs sm:text-sm">
             <Download className="mr-2 h-4 w-4" />
             Download
           </Button>
@@ -644,7 +644,7 @@ export default function StudentProfile() {
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="w-full justify-start text-left font-normal min-h-[44px]"
+                    className="w-full justify-start text-left font-normal md:h-11"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {startDate ? format(startDate, "PPP") : "Pick a date"}
@@ -666,7 +666,7 @@ export default function StudentProfile() {
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="w-full justify-start text-left font-normal min-h-[44px]"
+                    className="w-full justify-start text-left font-normal md:h-11"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {endDate ? format(endDate, "PPP") : "Pick a date"}
@@ -686,7 +686,7 @@ export default function StudentProfile() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="min-h-[44px] w-full sm:w-auto"
+                className="md:h-11 w-full sm:w-auto"
                 onClick={() => {
                   setStartDate(undefined);
                   setEndDate(undefined);
@@ -771,7 +771,7 @@ export default function StudentProfile() {
                             <TableCell>
                               <button
                                 onClick={() => handleCopyHash(record.txHash)}
-                                className="group relative inline-flex items-center gap-1.5 text-xs bg-muted hover:bg-muted/80 px-2 py-2 rounded font-mono transition-colors cursor-pointer min-h-[44px]"
+                                className="group relative inline-flex items-center gap-1.5 text-xs px-2 py-2 rounded font-mono transition-opacity cursor-pointer min-h-[44px] hover:opacity-80"
                                 title="Click to copy full hash"
                                 data-hash={record.txHash}
                               >

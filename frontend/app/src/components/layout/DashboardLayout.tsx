@@ -189,7 +189,7 @@ export default function DashboardLayout() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="font-mono text-xs sm:text-sm text-foreground hover:bg-orange-500 hover:text-white transition-colors relative group min-h-[44px]"
+                className="font-mono text-xs sm:text-sm text-foreground hover:bg-orange-500 hover:text-white transition-colors relative group md:h-11"
                 onClick={() => {
                   if (account && !isDisconnecting) {
                     disconnectWallet();
@@ -208,7 +208,7 @@ export default function DashboardLayout() {
               <Button 
                 variant="default" 
                 size="sm" 
-                className="gap-2 text-white min-h-[44px] text-xs sm:text-sm"
+                className="gap-2 text-white md:h-11 text-xs sm:text-sm"
                 onClick={() => navigate("/")}
               >
                 <Wallet className="h-4 w-4" />

@@ -287,7 +287,7 @@ export default function OrganisationDetail() {
               }}
             />
           )}
-          <Button asChild size="sm" className="min-h-[44px] w-full sm:w-auto text-xs sm:text-sm">
+          <Button asChild size="sm" className="md:h-11 w-full sm:w-auto text-xs sm:text-sm">
             <Link to={`/organisations/${id}/register`}>
               <Plus className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">Register Student</span>
@@ -414,7 +414,7 @@ export default function OrganisationDetail() {
                           <TableCell>
                             <button
                               onClick={() => handleCopyHash(record.txHash)}
-                              className="group relative inline-flex items-center gap-1.5 text-xs bg-muted hover:bg-muted/80 px-2 py-2 rounded font-mono transition-colors cursor-pointer min-h-[44px]"
+                              className="group relative inline-flex items-center gap-1.5 text-xs px-2 py-2 rounded font-mono transition-opacity cursor-pointer min-h-[44px] hover:opacity-80"
                               title="Click to copy full hash"
                             >
                               <span className="hidden sm:inline">{record.txHash.slice(0, 8)}...</span>
@@ -458,7 +458,7 @@ export default function OrganisationDetail() {
                           <span className="text-xs font-medium text-muted-foreground">Transaction</span>
                           <button
                             onClick={() => handleCopyHash(record.txHash)}
-                            className="group relative inline-flex items-center gap-1.5 text-xs bg-muted hover:bg-muted/80 px-2 py-2 rounded font-mono transition-colors cursor-pointer min-h-[44px]"
+                            className="group relative inline-flex items-center gap-1.5 text-xs px-2 py-2 rounded font-mono transition-opacity cursor-pointer min-h-[44px] hover:opacity-80"
                             title="Click to copy full hash"
                           >
                             {record.txHash.slice(0, 4)}...
@@ -553,7 +553,7 @@ export default function OrganisationDetail() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-10 w-10 min-h-[44px] min-w-[44px]"
+                                className="h-10 w-10 md:h-11 md:w-11 min-w-[44px]"
                                 asChild
                               >
                                 <Link to={`/organisations/${orgId}/students/${student.id}`}>
@@ -657,7 +657,7 @@ export default function OrganisationDetail() {
                 <Button 
                   variant="default" 
                   size="sm"
-                  className="min-h-[44px] w-full sm:w-auto text-xs sm:text-sm"
+                  className="md:h-11 w-full sm:w-auto text-xs sm:text-sm"
                   onClick={() => navigate(`/organisations/${id}/analytics`)}
                 >
                   <BarChart3 className="mr-2 h-4 w-4" />
@@ -721,7 +721,7 @@ export default function OrganisationDetail() {
                             <TableCell>
                               <button
                                 onClick={() => handleCopyHash(record.txHash)}
-                                className="group relative inline-flex items-center gap-1.5 text-xs bg-muted hover:bg-muted/80 px-2 py-2 rounded font-mono transition-colors cursor-pointer min-h-[44px]"
+                                className="group relative inline-flex items-center gap-1.5 text-xs px-2 py-2 rounded font-mono transition-opacity cursor-pointer min-h-[44px] hover:opacity-80"
                                 title="Click to copy full hash"
                               >
                                 <span className="hidden sm:inline">{record.txHash.slice(0, 8)}...</span>
@@ -788,7 +788,7 @@ export default function OrganisationDetail() {
                           <span className="text-xs font-medium text-muted-foreground">Transaction</span>
                           <button
                             onClick={() => handleCopyHash(record.txHash)}
-                            className="group relative inline-flex items-center gap-1.5 text-xs bg-muted hover:bg-muted/80 px-2 py-2 rounded font-mono transition-colors cursor-pointer min-h-[44px]"
+                            className="group relative inline-flex items-center gap-1.5 text-xs px-2 py-2 rounded font-mono transition-opacity cursor-pointer min-h-[44px] hover:opacity-80"
                             title="Click to copy full hash"
                           >
                             <span className="hidden sm:inline">{record.txHash.slice(0, 8)}...</span>
@@ -815,7 +815,7 @@ export default function OrganisationDetail() {
             <CardHeader className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
                 <CardTitle className="text-base sm:text-lg">Registered Devices</CardTitle>
-                <Button asChild size="sm" className="w-full sm:w-auto min-h-[44px] text-xs sm:text-sm">
+                <Button asChild size="sm" className="w-full sm:w-auto md:h-11 text-xs sm:text-sm">
                   <Link to={`/organisations/${id}/register-device`}>
                     <Plus className="mr-2 h-4 w-4" />
                     <span className="hidden sm:inline">Register Device</span>
@@ -951,7 +951,7 @@ export default function OrganisationDetail() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="min-h-[44px] min-w-[44px] flex-shrink-0"
+                              className="md:h-11 md:min-w-[44px] flex-shrink-0"
                               onClick={() => {
                                 toast({
                                   title: "Unregister Device",
@@ -1047,7 +1047,7 @@ export default function OrganisationDetail() {
               <p className="text-sm text-muted-foreground mb-4">
                 Organisation deletion functionality is coming soon. This feature will allow you to permanently remove an organisation and all its associated data.
               </p>
-              <Button variant="destructive" disabled className="w-full sm:w-auto min-h-[44px] text-xs sm:text-sm">
+              <Button variant="destructive" disabled className="w-full sm:w-auto md:h-11 text-xs sm:text-sm">
                 <span className="hidden sm:inline">Delete Organisation (Coming Soon)</span>
                 <span className="sm:hidden">Delete (Coming Soon)</span>
               </Button>

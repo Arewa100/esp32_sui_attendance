@@ -316,7 +316,7 @@ export default function Organisations() {
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">Organisations</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Manage your registered organisations</p>
         </div>
-        <Button asChild className="w-full sm:w-auto min-h-[44px] text-xs sm:text-sm">
+        <Button asChild className="w-full sm:w-auto md:h-11 text-xs sm:text-sm">
           <Link to="/organisations/new">
             <Plus className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">Create Organisation</span>
@@ -357,7 +357,7 @@ export default function Organisations() {
             <div className="flex gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="min-h-[44px] flex-1 sm:flex-none text-xs sm:text-sm">
+                  <Button variant="outline" size="sm" className="md:h-11 flex-1 sm:flex-none text-xs sm:text-sm">
                     {statusFilter === "all" ? "All Status" : statusFilter === "active" ? "Active" : "Inactive"}
                   </Button>
                 </DropdownMenuTrigger>

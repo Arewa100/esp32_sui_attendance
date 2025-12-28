@@ -45,7 +45,7 @@ export default React.memo(function Dashboard() {
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Welcome back! Here's your overview.</p>
         </div>
-        <Button asChild className="w-full sm:w-auto min-h-[44px] text-xs sm:text-sm">
+        <Button asChild className="w-full sm:w-auto md:h-11 text-xs sm:text-sm">
           <Link to="/organisations/new">
             <Plus className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">New Organisation</span>
@@ -146,7 +146,7 @@ export default React.memo(function Dashboard() {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-primary min-h-[44px] text-xs sm:text-sm"
+            className="text-primary md:h-11 text-xs sm:text-sm"
             onClick={() => navigate("/activity")}
           >
             <span className="hidden sm:inline">View all</span>

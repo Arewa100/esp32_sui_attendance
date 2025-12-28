@@ -101,7 +101,7 @@ export default React.memo(function LandingCTA({ onGetStarted }: LandingCTAProps)
           size="lg" 
           variant="default" 
           onClick={onGetStarted}
-          className="min-h-[44px] text-base w-full sm:w-auto"
+          className="md:h-11 text-base w-full sm:w-auto"
         >
           Launch Dashboard
           <ArrowRight className="ml-2 h-4 w-4" />
