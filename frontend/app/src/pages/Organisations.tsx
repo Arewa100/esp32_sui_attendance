@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useMemo, useState, useCallback } from "react";
 import { useOrganisationCreatedEvents } from "@/hooks/use-attendance-events";
+import { sanitizeErrorMessage } from "@/utils/error-handler";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { useSuiClient } from "@mysten/dapp-kit";
 import { useQuery, useQueries } from "@tanstack/react-query";

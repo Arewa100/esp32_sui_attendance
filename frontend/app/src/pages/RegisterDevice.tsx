@@ -10,6 +10,7 @@ import { buildRegisterDeviceTx } from "@/services/transactions";
 import { CONFIG } from "@/config";
 import { usePreFetchObjectMetadata } from "@/hooks/use-object-metadata";
 import { useToast } from "@/hooks/use-toast";
+import { sanitizeErrorMessage, logError } from "@/utils/error-handler";
 
 type TransactionStatus = "idle" | "pending" | "success" | "error";
 

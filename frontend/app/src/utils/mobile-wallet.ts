@@ -235,8 +235,8 @@ export function getMobileWalletConnectUrl(): string {
   // Convert to JSON and base64 encode
   // JSON is ASCII-safe, so btoa() works directly
   // Use standard base64 (not URL-safe) as myslush.app expects standard base64
-  let jsonString: string;
-  let base64Encoded: string;
+  let jsonString: string = '';
+  let base64Encoded: string = '';
   
   try {
     // Stringify with compact format (no spaces) to match exact format
