@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import LandingNav from "@/components/landing/LandingNav";
 import LandingHero from "@/components/landing/LandingHero";
@@ -13,19 +13,29 @@ export default function Landing() {
   const account = useCurrentAccount();
   const navigate = useNavigate();
   const connectButtonRef = useRef<HTMLDivElement>(null);
+  const [shouldRedirectAfterConnect, setShouldRedirectAfterConnect] = useState(false);
 
   const handleGetStarted = useCallback(() => {
     if (account) {
       // If wallet is connected, navigate to dashboard
       navigate("/dashboard");
     } else {
-      // If wallet is not connected, trigger wallet connection dialog
+      // If wallet is not connected, trigger wallet connection dialog and set redirect flag
+      setShouldRedirectAfterConnect(true);
       const button = connectButtonRef.current?.querySelector("button");
       if (button) {
         button.click();
       }
     }
   }, [account, navigate]);
+
+  // Redirect after connect only if user clicked button
+  useEffect(() => {
+    if (account && shouldRedirectAfterConnect) {
+      navigate("/dashboard");
+      setShouldRedirectAfterConnect(false);
+    }
+  }, [account, shouldRedirectAfterConnect, navigate]);
 
   return (
     <div className="min-h-screen bg-background">
