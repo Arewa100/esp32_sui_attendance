@@ -6,7 +6,6 @@ import {
   useDisconnectWallet
 } from "@mysten/dapp-kit";
 import { MobileConnectButton } from "@/components/MobileConnectButton";
-import { isMobileDevice, connectMobileWallet } from "@/utils/mobile-wallet";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import AnimatedLogo from "@/components/AnimatedLogo";
@@ -25,16 +24,11 @@ export default React.memo(function LandingNav() {
     if (account) {
       navigate("/dashboard");
     } else {
+      // Trigger standard ConnectButton - it handles both desktop and mobile automatically
       setShouldRedirectAfterConnect(true);
-      // On mobile, redirect to myslush.app
-      if (isMobileDevice()) {
-        connectMobileWallet();
-      } else {
-        // On desktop, trigger standard ConnectButton
-        const button = connectButtonRef.current?.querySelector("button");
-        if (button) {
-          button.click();
-        }
+      const button = connectButtonRef.current?.querySelector("button");
+      if (button) {
+        button.click();
       }
     }
   }, [account, navigate]);
@@ -93,7 +87,6 @@ export default React.memo(function LandingNav() {
             {/* Hidden ConnectButton for programmatic triggering */}
             <div ref={connectButtonRef} className="hidden">
               <MobileConnectButton 
-                showStandardOnMobile={true}
                 onConnectStart={() => setShouldRedirectAfterConnect(true)}
               />
             </div>

@@ -46,7 +46,12 @@ const AppWrapper = () => {
     >
       <QueryClientProvider client={queryClient}>
         <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
-          <WalletProvider autoConnect>
+          <WalletProvider 
+            autoConnect
+            slushWallet={{
+              name: 'Sui Attendance System',
+            }}
+          >
             <App />
           </WalletProvider>
         </SuiClientProvider>

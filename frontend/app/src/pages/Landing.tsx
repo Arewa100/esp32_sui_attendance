@@ -9,7 +9,6 @@ import LandingCTA from "@/components/landing/LandingCTA";
 import LandingFooter from "@/components/landing/LandingFooter";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { MobileConnectButton } from "@/components/MobileConnectButton";
-import { isMobileDevice, connectMobileWallet } from "@/utils/mobile-wallet";
 
 export default function Landing() {
   const account = useCurrentAccount();
@@ -22,17 +21,12 @@ export default function Landing() {
       // If wallet is connected, navigate to dashboard
       navigate("/dashboard");
     } else {
-      // If wallet is not connected, trigger wallet connection dialog and set redirect flag
+      // If wallet is not connected, trigger wallet connection dialog
+      // The standard ConnectButton handles both desktop and mobile automatically
       setShouldRedirectAfterConnect(true);
-      // On mobile, redirect to myslush.app
-      if (isMobileDevice()) {
-        connectMobileWallet();
-      } else {
-        // On desktop, trigger standard ConnectButton
-        const button = connectButtonRef.current?.querySelector("button");
-        if (button) {
-          button.click();
-        }
+      const button = connectButtonRef.current?.querySelector("button");
+      if (button) {
+        button.click();
       }
     }
   }, [account, navigate]);
@@ -52,7 +46,6 @@ export default function Landing() {
       {/* Hidden ConnectButton for programmatic triggering */}
       <div ref={connectButtonRef} className="hidden">
         <MobileConnectButton 
-          showStandardOnMobile={true}
           onConnectStart={() => setShouldRedirectAfterConnect(true)}
         />
       </div>

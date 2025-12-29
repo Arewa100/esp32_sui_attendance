@@ -90,14 +90,18 @@ function getAppUrl(): string {
   // Check for production URL in environment variable (for development/testing)
   const prodUrl = import.meta.env.VITE_PUBLIC_APP_URL;
   if (prodUrl && prodUrl.startsWith('https://')) {
-    // Use production URL if available (useful for development)
-    return prodUrl.endsWith('/') ? prodUrl : prodUrl + '/';
+    // Use production URL - ensure no trailing slash
+    const cleanUrl = prodUrl.endsWith('/') ? prodUrl.slice(0, -1) : prodUrl;
+    if (import.meta.env.DEV) {
+      console.log('Using production URL from env:', cleanUrl);
+    }
+    return cleanUrl;
   }
   
   // Construct the complete URL from location
-  // Use origin + pathname to ensure we have a complete URL
-  // Remove hash and query params for cleaner redirect
-  let url = `${window.location.origin}${window.location.pathname}`;
+  // Use origin only (no pathname) for cleaner redirect
+  // This matches walrus.xyz behavior - they use origin only
+  let url = window.location.origin;
   
   // Ensure URL is valid and complete
   // Must start with http:// or https://
@@ -105,13 +109,12 @@ function getAppUrl(): string {
     // Fallback: construct from location properties
     const protocol = window.location.protocol || 'https:';
     const host = window.location.host || window.location.hostname;
-    const pathname = window.location.pathname || '/';
-    url = `${protocol}//${host}${pathname}`;
+    url = `${protocol}//${host}`;
   }
   
-  // Ensure URL ends with / if pathname is empty (root)
-  if (!url.endsWith('/') && window.location.pathname === '/') {
-    url = url + '/';
+  // Ensure no trailing slash - critical for my.slush.app redirects
+  if (url.endsWith('/')) {
+    url = url.slice(0, -1);
   }
   
   // Check if URL is localhost or local IP (won't work with myslush.app)
@@ -137,7 +140,8 @@ function getAppUrl(): string {
     
     // If we have a production URL from env, use it
     if (prodUrl) {
-      return prodUrl.endsWith('/') ? prodUrl : prodUrl + '/';
+      // Remove trailing slash for consistency
+      return prodUrl.endsWith('/') ? prodUrl.slice(0, -1) : prodUrl;
     }
     
     // For development, show a user-friendly error
@@ -226,10 +230,10 @@ export function getMobileWalletConnectUrl(): string {
     if (import.meta.env.DEV) {
       console.error('appUrl is not a valid URL:', requestData.appUrl);
     }
-    // Last resort fallback
+    // Last resort fallback - use origin only
     requestData.appUrl = typeof window !== 'undefined' 
-      ? `${window.location.protocol}//${window.location.host}/`
-      : 'https://localhost/';
+      ? window.location.origin
+      : 'https://localhost';
   }
   
   // Convert to JSON and base64 encode
@@ -283,8 +287,65 @@ export function getMobileWalletConnectUrl(): string {
 }
 
 /**
+ * Sets up message listener for wallet communication
+ * Listens for postMessage from my.slush.app wallet
+ */
+function setupWalletMessageListener(): void {
+  if (typeof window === 'undefined') return;
+  
+  // Only set up once
+  if ((window as any).__walletMessageListenerSetup) return;
+  (window as any).__walletMessageListenerSetup = true;
+  
+  window.addEventListener('message', (event) => {
+    // Security: Only accept messages from my.slush.app
+    if (event.origin !== 'https://my.slush.app' && 
+        event.origin !== 'https://walrus.xyz' &&
+        !event.origin.includes('slush.app')) {
+      if (import.meta.env.DEV) {
+        console.warn('Ignored message from untrusted origin:', event.origin);
+      }
+      return;
+    }
+    
+    try {
+      // Handle wallet response
+      const data = event.data;
+      
+      if (import.meta.env.DEV) {
+        console.log('Wallet message received:', data);
+      }
+      
+      // Check if this is a wallet connection response
+      if (data && (data.type === 'wallet_connected' || data.type === 'sui_wallet_response')) {
+        // Store connection info if available
+        if (data.account || data.address) {
+          try {
+            sessionStorage.setItem('wallet_connection_response', JSON.stringify(data));
+          } catch (e) {
+            // Ignore storage errors
+          }
+        }
+        
+        // Trigger page reload to let dapp-kit pick up the connection
+        // The wallet should also redirect, but this ensures we refresh
+        if (import.meta.env.DEV) {
+          console.log('Wallet connected, reloading page...');
+        }
+        window.location.reload();
+      }
+    } catch (error) {
+      // Silently handle errors - don't expose to users
+      if (import.meta.env.DEV) {
+        console.error('Error handling wallet message:', error);
+      }
+    }
+  });
+}
+
+/**
  * Opens the mobile wallet connection
- * Redirects to my.slush.app using the correct dapp-request format
+ * Opens my.slush.app in a new tab (like walrus.xyz) for better UX
  */
 export function connectMobileWallet(): void {
   if (typeof window === 'undefined') return;
@@ -292,63 +353,128 @@ export function connectMobileWallet(): void {
   try {
     const connectUrl = getMobileWalletConnectUrl();
     
-    // Store the URL in sessionStorage for debugging (can be checked on mobile)
-    try {
-      sessionStorage.setItem('last_wallet_connect_url', connectUrl);
-      // Also store the decoded JSON for debugging
-      const hashPart = connectUrl.split('#')[1];
-      if (hashPart) {
-        try {
-          const decoded = atob(hashPart);
-          sessionStorage.setItem('last_wallet_connect_json', decoded);
-          // Also store in localStorage for easier access
-          localStorage.setItem('last_wallet_connect_json', decoded);
-          localStorage.setItem('last_wallet_connect_url', connectUrl);
-        } catch (e) {
-          // Ignore decode errors
+    // Set up message listener for wallet communication
+    setupWalletMessageListener();
+    
+    // Store the URL for debugging (development only)
+    if (import.meta.env.DEV) {
+      try {
+        sessionStorage.setItem('last_wallet_connect_url', connectUrl);
+        const hashPart = connectUrl.split('#')[1];
+        if (hashPart) {
+          try {
+            const decoded = atob(hashPart);
+            sessionStorage.setItem('last_wallet_connect_json', decoded);
+            localStorage.setItem('last_wallet_connect_json', decoded);
+            localStorage.setItem('last_wallet_connect_url', connectUrl);
+          } catch (e) {
+            // Ignore decode errors
+          }
         }
+        
+        // Store in global for debugging
+        (window as any).__lastWalletConnectUrl = connectUrl;
+        if (hashPart) {
+          try {
+            (window as any).__lastWalletConnectJson = atob(hashPart);
+          } catch (e) {
+            // Ignore
+          }
+        }
+      } catch (e) {
+        // Ignore storage errors
       }
-    } catch (e) {
-      // Ignore sessionStorage errors
     }
     
-    // Store in a global variable for debugging (visible in window object)
-    if (typeof window !== 'undefined') {
-      (window as any).__lastWalletConnectUrl = connectUrl;
-      const hashPart = connectUrl.split('#')[1];
-      if (hashPart) {
-        try {
-          (window as any).__lastWalletConnectJson = atob(hashPart);
-        } catch (e) {
-          // Ignore
-        }
+    // Open wallet in new tab (like walrus.xyz does)
+    // This keeps the original app open and provides better UX
+    const walletWindow = window.open(connectUrl, '_blank', 'noopener,noreferrer');
+    
+    // Check if popup was blocked
+    if (!walletWindow || walletWindow.closed || typeof walletWindow.closed === 'undefined') {
+      // Popup blocked - fallback to same-tab redirect
+      if (import.meta.env.DEV) {
+        console.warn('Popup blocked, falling back to same-tab redirect');
+      }
+      window.location.href = connectUrl;
+    } else {
+      // Successfully opened in new tab
+      if (import.meta.env.DEV) {
+        console.log('Wallet opened in new tab');
+      }
+      
+      // Optional: Focus the new window (may not work on all mobile browsers)
+      try {
+        walletWindow.focus();
+      } catch (e) {
+        // Ignore focus errors (some browsers block this)
       }
     }
-    
-    // Redirect to myslush.app
-    // Use href for maximum compatibility across mobile browsers
-    // Format: https://my.slush.app/dapp-request#<base64_encoded_json>
-    // The app will handle the connection and redirect back to appUrl
-    window.location.href = connectUrl;
   } catch (error) {
+    // Silent error handling - never expose errors to production users
     if (import.meta.env.DEV) {
       console.error('Failed to open mobile wallet:', error);
-      // Only show alert in development
       alert('Failed to open wallet. Please try again.');
     }
-    // In production, silently fail - user will see the error from myslush.app if needed
-    // We don't want to show technical errors to end users
+    // In production: silently fail - user will see error from wallet app if needed
   }
 }
 
 /**
  * Checks if we're returning from a mobile wallet connection
  * This can be used to detect when user returns to the app after connecting
+ * Checks multiple possible return formats from different wallet implementations
+ * Also handles error cases from wallet redirects
  */
 export function isReturningFromWallet(): boolean {
   if (typeof window === 'undefined') return false;
   
   const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.has('wallet_connected') || urlParams.has('connected');
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  
+  // Check for various return indicators
+  const hasQueryParam = urlParams.has('wallet_connected') || 
+                       urlParams.has('connected') ||
+                       urlParams.has('sui_wallet_connected') ||
+                       urlParams.has('account') ||
+                       urlParams.has('error') ||
+                       urlParams.has('wallet_error');
+  
+  const hasHashParam = hashParams.has('wallet_connected') || 
+                      hashParams.has('connected') ||
+                      hashParams.has('account') ||
+                      hashParams.has('error');
+  
+  // Check for error in URL (wallet might redirect with error)
+  if (urlParams.has('error') || hashParams.has('error')) {
+    // Silently handle error - don't expose to users
+    if (import.meta.env.DEV) {
+      const errorMsg = urlParams.get('error') || hashParams.get('error');
+      console.warn('Wallet connection error:', errorMsg);
+    }
+    // Clean up error params from URL
+    try {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('error');
+      newUrl.searchParams.delete('wallet_error');
+      window.history.replaceState({}, '', newUrl.toString());
+    } catch (e) {
+      // Ignore URL cleanup errors
+    }
+  }
+  
+  // Check sessionStorage for wallet response (from postMessage)
+  try {
+    const walletResponse = sessionStorage.getItem('wallet_connection_response');
+    if (walletResponse) {
+      // Clear it after checking
+      sessionStorage.removeItem('wallet_connection_response');
+      return true;
+    }
+  } catch (e) {
+    // Ignore storage errors
+  }
+  
+  return hasQueryParam || hasHashParam;
 }
 
