@@ -32,35 +32,12 @@ export default defineConfig({
     target: "esnext",
     minify: "esbuild",
     sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks: (id) => {
-          // Split large vendor chunks
-          if (id.includes("node_modules")) {
-            if (id.includes("@mysten/sui") || id.includes("@mysten/dapp-kit")) {
-              return "sui-vendor";
-            }
-            if (id.includes("react") || id.includes("react-dom") || id.includes("react-router")) {
-              return "react-vendor";
-            }
-            if (id.includes("@tanstack/react-query")) {
-              return "query-vendor";
-            }
-            if (id.includes("chart.js") || id.includes("react-chartjs-2")) {
-              return "chart-vendor";
-            }
-            if (id.includes("recharts")) {
-              return "recharts-vendor";
-            }
-            if (id.includes("@radix-ui")) {
-              return "radix-vendor";
-            }
-            // Other vendor code
-            return "vendor";
-          }
-        },
-      },
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
     },
+    // Remove manual chunking to let Vite handle it automatically
+    // This avoids module resolution and initialization order issues
   },
   // Optimize dependency pre-bundling
   optimizeDeps: {

@@ -1,9 +1,9 @@
 /**
  * Validate required environment variables
- * Throws error in production if required vars are missing
- * Warns in development
+ * Logs warnings instead of throwing to prevent white screen
+ * Returns validation status
  */
-export function validateEnv() {
+export function validateEnv(): { isValid: boolean; missing: string[] } {
   const required = [
     'VITE_PACKAGE_ID',
     'VITE_SYSTEM_OBJECT_ID',
@@ -11,26 +11,26 @@ export function validateEnv() {
   
   const missing = required.filter(key => !import.meta.env[key]);
   
-  if (missing.length > 0 && import.meta.env.PROD) {
-    throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}\n` +
-      `Please check your .env file or deployment configuration.`
-    );
-  }
-  
-  if (missing.length > 0 && import.meta.env.DEV) {
-    console.warn(
-      `⚠️ Missing environment variables: ${missing.join(', ')}\n` +
-      `Some features may not work correctly. Please check your .env file.`
-    );
+  if (missing.length > 0) {
+    const message = `Missing required environment variables: ${missing.join(', ')}\n` +
+      `Please check your deployment configuration.`;
+    
+    if (import.meta.env.PROD) {
+      // In production, log error but don't throw to prevent white screen
+      console.error('❌ Environment Variable Error:', message);
+      console.error('Available env vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')));
+    } else {
+      console.warn('⚠️', message);
+    }
+    
+    return { isValid: false, missing };
   }
   
   // Log available env vars in development (without values for security)
   if (import.meta.env.DEV) {
-    const available = required.filter(key => import.meta.env[key]);
-    if (available.length > 0) {
-      console.log(`✅ Environment variables configured: ${available.join(', ')}`);
-    }
+    console.log(`✅ Environment variables configured: ${required.join(', ')}`);
   }
+  
+  return { isValid: true, missing: [] };
 }
 

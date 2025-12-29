@@ -10,9 +10,11 @@ import App from "./App";
 import "./index.css";
 import { validateEnv } from "./config/validate-env";
 import { reportWebVitals } from "./utils/web-vitals";
+import { EnvError } from "./components/EnvError";
 
 // Validate environment variables before app initialization
-validateEnv();
+// Don't throw - let the app render so we can show an error message
+const envValidation = validateEnv();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,22 +31,29 @@ const queryClient = new QueryClient({
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 
 // Only use StrictMode in production builds to avoid double renders in dev
-const AppWrapper = () => (
-  <BrowserRouter
-    future={{
-      v7_startTransition: true,
-      v7_relativeSplatPath: true,
-    }}
-  >
-    <QueryClientProvider client={queryClient}>
-      <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
-        <WalletProvider autoConnect>
-          <App />
-        </WalletProvider>
-      </SuiClientProvider>
-    </QueryClientProvider>
-  </BrowserRouter>
-);
+const AppWrapper = () => {
+  // Show error screen if env vars are missing
+  if (!envValidation.isValid) {
+    return <EnvError missing={envValidation.missing} />;
+  }
+  
+  return (
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
+          <WalletProvider autoConnect>
+            <App />
+          </WalletProvider>
+        </SuiClientProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
+  );
+};
 
 // Use StrictMode only in production for better dev performance
 if (import.meta.env.PROD) {

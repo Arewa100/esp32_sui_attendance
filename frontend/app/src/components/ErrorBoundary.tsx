@@ -24,10 +24,16 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Only log in development
-    if (import.meta.env.DEV) {
-      console.error("ErrorBoundary caught an error:", error, errorInfo);
+    // Always log errors, even in production, to help debug
+    console.error("ErrorBoundary caught an error:", error);
+    console.error("Error details:", errorInfo);
+    console.error("Error stack:", error.stack);
+    
+    // In production, also log to help with debugging
+    if (import.meta.env.PROD) {
+      console.error("Production error - check browser console for details");
     }
+    
     // In production, send to error tracking service
     // if (window.Sentry) {
     //   window.Sentry.captureException(error, { contexts: { react: errorInfo } });
