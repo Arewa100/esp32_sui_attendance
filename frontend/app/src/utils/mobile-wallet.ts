@@ -193,10 +193,14 @@ function getAppUrl(): string {
  * - version: "1"
  * - requestId: unique UUID
  * - appUrl: the app URL to redirect back to
+ * - appName: the app name (required for wallet to display in Review screen)
  */
 export function getMobileWalletConnectUrl(): string {
   const appUrl = getAppUrl();
   const requestId = generateRequestId();
+  
+  // Get app name from WalletProvider config or use default
+  const appName = 'Sui Attendance System';
   
   // Create the request object matching myslush.app format
   // Based on: https://my.slush.app/dapp-request#<base64>
@@ -205,10 +209,12 @@ export function getMobileWalletConnectUrl(): string {
     version: string;
     requestId: string;
     appUrl: string;
+    appName: string;
   } = {
     version: "1",
     requestId: requestId,
-    appUrl: appUrl
+    appUrl: appUrl,
+    appName: appName
   };
   
   // Validate appUrl is complete and valid
@@ -216,11 +222,10 @@ export function getMobileWalletConnectUrl(): string {
     if (import.meta.env.DEV) {
       console.error('Invalid appUrl for wallet connection:', appUrl);
     }
-    // Fallback: construct complete URL from current location
+    // Fallback: construct complete URL from current location (origin only, no pathname)
     const protocol = typeof window !== 'undefined' ? window.location.protocol : 'https:';
     const host = typeof window !== 'undefined' ? window.location.host : 'localhost';
-    const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
-    requestData.appUrl = `${protocol}//${host}${pathname}`;
+    requestData.appUrl = `${protocol}//${host}`;
   }
   
   // Final validation: ensure appUrl is a valid URL
@@ -260,7 +265,8 @@ export function getMobileWalletConnectUrl(): string {
       const parsed = JSON.parse(decoded);
       if (parsed.version !== requestData.version || 
           parsed.requestId !== requestData.requestId ||
-          parsed.appUrl !== requestData.appUrl) {
+          parsed.appUrl !== requestData.appUrl ||
+          parsed.appName !== requestData.appName) {
         if (import.meta.env.DEV) {
           console.warn('Base64 decode verification mismatch:', { parsed, requestData });
         }

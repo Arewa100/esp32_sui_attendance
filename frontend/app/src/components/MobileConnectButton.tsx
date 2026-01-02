@@ -28,8 +28,8 @@ interface MobileConnectButtonProps {
 /**
  * MobileConnectButton - Hybrid approach for Slush wallet connection
  * 
- * The official dapp-kit slushWallet prop doesn't generate the correct URL format
- * that Slush web wallet expects, causing "Invalid Link" errors on mobile.
+ * The official ConnectButton works on desktop but causes 404 errors on mobile
+ * because it generates callback URLs that don't match our routes.
  * 
  * Solution: Use custom deep links for mobile (proven format), official support for desktop
  * 
@@ -83,7 +83,7 @@ export function MobileConnectButton({
     return <ConnectButton className={className} />;
   }
 
-  // Mobile: Use custom deep link (correct format that Slush expects)
+  // Mobile: Use custom deep link (prevents 404 errors from official ConnectButton)
   if (isMobile) {
     return (
       <Button
