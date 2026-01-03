@@ -19,6 +19,7 @@ const StudentProfile = lazy(() => import("./pages/StudentProfile"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const ActivityPage = lazy(() => import("./pages/ActivityPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const WalletCallback = lazy(() => import("./pages/WalletCallback"));
 const DashboardLayout = lazy(() => import("./components/layout/DashboardLayout"));
 
 // Keep legacy routes working (existing app paths)
@@ -54,6 +55,12 @@ export default function App() {
             <Routes>
             {/* Lovable routes */}
             <Route path="/" element={<Landing />} />
+            
+            {/* Wallet callback routes - handle wallet redirects */}
+            <Route path="/callback" element={<WalletCallback />} />
+            <Route path="/wallet/callback" element={<WalletCallback />} />
+            <Route path="/connect/callback" element={<WalletCallback />} />
+            
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/activity" element={<ActivityPage />} />

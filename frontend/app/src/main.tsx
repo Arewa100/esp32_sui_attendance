@@ -50,7 +50,6 @@ const AppWrapper = () => {
             autoConnect
             slushWallet={{
               name: 'Sui Attendance System',
-              origin: import.meta.env.VITE_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : undefined),
             }}
           >
             <App />

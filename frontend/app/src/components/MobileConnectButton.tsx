@@ -1,7 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
-import { isMobileDevice, connectMobileWallet } from "@/utils/mobile-wallet";
-import { Button } from "@/components/ui/button";
 
 interface MobileConnectButtonProps {
   /**
@@ -18,58 +16,25 @@ interface MobileConnectButtonProps {
    * Callback when wallet is successfully connected
    */
   onConnectSuccess?: () => void;
-  
-  /**
-   * Label for mobile connect button
-   */
-  mobileLabel?: string;
 }
 
 /**
- * MobileConnectButton - Hybrid approach for Slush wallet connection
+ * MobileConnectButton - Wrapper around official ConnectButton
  * 
- * The official ConnectButton works on desktop but causes 404 errors on mobile
- * because it generates callback URLs that don't match our routes.
+ * The official ConnectButton from @mysten/dapp-kit handles:
+ * - Desktop: Slush browser extension
+ * - Mobile: Native Slush app via Wallet Standard
+ * - Fallback: Slush web wallet
  * 
- * Solution: Use custom deep links for mobile (proven format), official support for desktop
- * 
- * - Desktop: Uses standard ConnectButton with official Slush extension support
- * - Mobile: Uses custom deep link to my.slush.app with correct URL format
+ * When configured with slushWallet prop in WalletProvider (see main.tsx),
+ * it automatically handles all wallet connection scenarios correctly.
  */
 export function MobileConnectButton({
   className,
   onConnectStart,
   onConnectSuccess,
-  mobileLabel = "Connect Wallet",
 }: MobileConnectButtonProps) {
   const account = useCurrentAccount();
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detect mobile on mount and resize
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(isMobileDevice());
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Handle mobile wallet connection with custom deep link
-  const handleMobileConnect = useCallback(() => {
-    if (onConnectStart) {
-      onConnectStart();
-    }
-    
-    try {
-      connectMobileWallet();
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Failed to connect mobile wallet:', error);
-      }
-    }
-  }, [onConnectStart]);
 
   // Monitor for successful connection
   useEffect(() => {
@@ -78,24 +43,7 @@ export function MobileConnectButton({
     }
   }, [account, onConnectSuccess]);
 
-  // If wallet is already connected, show account info
-  if (account) {
-    return <ConnectButton className={className} />;
-  }
-
-  // Mobile: Use custom deep link (prevents 404 errors from official ConnectButton)
-  if (isMobile) {
-    return (
-      <Button
-        onClick={handleMobileConnect}
-        className={className}
-      >
-        {mobileLabel}
-      </Button>
-    );
-  }
-
-  // Desktop: Use standard ConnectButton (official Slush extension support)
+  // Use the official ConnectButton - it handles everything
   return <ConnectButton className={className} />;
 }
 
