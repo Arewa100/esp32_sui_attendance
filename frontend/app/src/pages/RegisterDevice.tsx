@@ -26,7 +26,6 @@ export default function RegisterDevice() {
 
   const systemObjectId = CONFIG.SYSTEM_OBJECT_ID;
   
-  // Pre-fetch object metadata immediately when component mounts
   const { data: systemMetadata, isReady: isSystemMetadataReady } = usePreFetchObjectMetadata(systemObjectId);
   const { data: orgMetadata, isReady: isOrgMetadataReady } = usePreFetchObjectMetadata(id);
 

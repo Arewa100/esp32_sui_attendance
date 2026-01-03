@@ -72,7 +72,6 @@ export function useOrganisationCreatedEvents(limit = 200) {
     enabled: !!CONFIG.PACKAGE_ID,
     staleTime: 60_000, // Data is fresh for 1 minute
     refetchInterval: (query) => {
-      // Pause polling when tab is hidden
       if (typeof document !== 'undefined' && document.hidden) {
         return false;
       }
@@ -101,7 +100,6 @@ export function useStudentRegisteredEvents(orgId?: string, limit = 500) {
     enabled: !!CONFIG.PACKAGE_ID && !!orgId,
     staleTime: 30_000, // Data is fresh for 30 seconds
     refetchInterval: (query) => {
-      // Pause polling when tab is hidden
       if (typeof document !== 'undefined' && document.hidden) {
         return false;
       }
@@ -130,7 +128,6 @@ export function useAttendanceRecordedEvents(orgId?: string, limit = 500) {
     enabled: !!CONFIG.PACKAGE_ID && !!orgId,
     staleTime: 30_000, // Data is fresh for 30 seconds
     refetchInterval: (query) => {
-      // Pause polling when tab is hidden
       if (typeof document !== 'undefined' && document.hidden) {
         return false;
       }
@@ -159,7 +156,6 @@ export function useSubscriptionRenewedEvents(orgId?: string, limit = 200) {
     enabled: !!CONFIG.PACKAGE_ID && !!orgId,
     staleTime: 60_000, // Data is fresh for 1 minute
     refetchInterval: (query) => {
-      // Pause polling when tab is hidden
       if (typeof document !== 'undefined' && document.hidden) {
         return false;
       }
@@ -188,7 +184,6 @@ export function useDeviceRegisteredEvents(orgId?: string, limit = 500) {
     enabled: !!CONFIG.PACKAGE_ID && !!orgId,
     staleTime: 60_000, // Data is fresh for 1 minute
     refetchInterval: (query) => {
-      // Pause polling when tab is hidden
       if (typeof document !== 'undefined' && document.hidden) {
         return false;
       }
@@ -217,7 +212,6 @@ export function useDeviceHeartbeatEvents(orgId?: string, limit = 500) {
     enabled: !!CONFIG.PACKAGE_ID && !!orgId,
     staleTime: 60_000, // Data is fresh for 1 minute
     refetchInterval: (query) => {
-      // Pause polling when tab is hidden
       if (typeof document !== 'undefined' && document.hidden) {
         return false;
       }

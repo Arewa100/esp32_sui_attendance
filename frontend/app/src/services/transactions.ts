@@ -31,7 +31,6 @@ export function buildRegisterStudentTx(args: {
   orgMetadata?: ObjectMetadata | null;
 }) {
   const tx = new Transaction();
-  // Use cached metadata if available
   const orgRef = getObjectReference(tx, args.orgObjectId, args.orgMetadata);
   
   tx.moveCall({
@@ -58,10 +57,8 @@ export function buildPaySubscriptionTx(args: {
   const feeMist = args.feeMist ?? SUBSCRIPTION_FEE_MIST;
   const tx = new Transaction();
 
-  // Create a Coin<SUI> from gas to pass as payment.
   const [paymentCoin] = tx.splitCoins(tx.gas, [tx.pure.u64(feeMist)]);
 
-  // Use cached metadata for all objects to avoid network calls
   const systemRef = getObjectReference(tx, args.systemObjectId, args.systemMetadata);
   const orgRef = getObjectReference(tx, args.orgObjectId, args.orgMetadata);
   const clockRef = getObjectReference(tx, CONFIG.CLOCK_OBJECT_ID, args.clockMetadata);
@@ -87,7 +84,6 @@ export function buildRegisterDeviceTx(args: {
   orgMetadata?: ObjectMetadata | null;
 }) {
   const tx = new Transaction();
-  // Use cached metadata if available to avoid network calls
   const systemRef = getObjectReference(tx, args.systemObjectId, args.systemMetadata);
   const orgRef = getObjectReference(tx, args.orgObjectId, args.orgMetadata);
   
@@ -111,7 +107,6 @@ export function buildUnregisterDeviceTx(args: {
   orgMetadata?: ObjectMetadata | null;
 }) {
   const tx = new Transaction();
-  // Use cached metadata if available to avoid network calls
   const systemRef = getObjectReference(tx, args.systemObjectId, args.systemMetadata);
   const orgRef = getObjectReference(tx, args.orgObjectId, args.orgMetadata);
   

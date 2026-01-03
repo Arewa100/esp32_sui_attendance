@@ -52,7 +52,6 @@ export function useDashboardStats() {
     enabled: !!CONFIG.PACKAGE_ID && !!account?.address,
     staleTime: 60_000, // Data is fresh for 1 minute
     refetchInterval: (query) => {
-      // Pause polling when tab is hidden
       if (typeof document !== 'undefined' && document.hidden) {
         return false;
       }
@@ -150,7 +149,6 @@ export function useRecentActivity(limit = 5) {
     enabled: !!CONFIG.PACKAGE_ID && !!account?.address,
     staleTime: 60_000, // Data is fresh for 1 minute
     refetchInterval: (query) => {
-      // Pause polling when tab is hidden
       if (typeof document !== 'undefined' && document.hidden) {
         return false;
       }
@@ -185,7 +183,6 @@ export function useRecentActivity(limit = 5) {
     enabled: !!CONFIG.PACKAGE_ID && !!account?.address,
     staleTime: 120_000, // Longer cache for student data (changes less frequently)
     refetchInterval: (query) => {
-      // Pause polling when tab is hidden
       if (typeof document !== 'undefined' && document.hidden) {
         return false;
       }

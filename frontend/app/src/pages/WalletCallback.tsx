@@ -15,7 +15,6 @@ export default function WalletCallback() {
   const account = useCurrentAccount();
 
   useEffect(() => {
-    // Log for debugging (always log to help diagnose the issue)
     console.log("WalletCallback: Handling wallet callback", {
       pathname: location.pathname,
       search: location.search,
@@ -24,23 +23,17 @@ export default function WalletCallback() {
       account: account?.address,
     });
 
-    // Wait a brief moment for WalletProvider to process the callback
-    // Then redirect based on connection status
     const timeoutId = setTimeout(() => {
       if (account) {
-        // Wallet connected successfully, redirect to dashboard
         navigate("/dashboard", { replace: true });
       } else {
-        // No account yet, redirect to home
-        // The WalletProvider's autoConnect will handle the connection
         navigate("/", { replace: true });
       }
-    }, 1000); // Increased timeout to allow WalletProvider to process
+    }, 1000);
 
     return () => clearTimeout(timeoutId);
   }, [navigate, location, account]);
 
-  // Show a brief loading state while processing
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="text-center">

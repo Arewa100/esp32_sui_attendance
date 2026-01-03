@@ -12,17 +12,15 @@ import { validateEnv } from "./config/validate-env";
 import { reportWebVitals } from "./utils/web-vitals";
 import { EnvError } from "./components/EnvError";
 
-// Validate environment variables before app initialization
-// Don't throw - let the app render so we can show an error message
 const envValidation = validateEnv();
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 30_000, // 30 seconds default
-      gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
-      refetchOnWindowFocus: true, // Refetch when user returns to tab (optimized)
-      refetchOnReconnect: true, // Refetch on network reconnect
+      staleTime: 30_000,
+      gcTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
       retry: 1,
     },
   },
@@ -30,9 +28,7 @@ const queryClient = new QueryClient({
 
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 
-// Only use StrictMode in production builds to avoid double renders in dev
 const AppWrapper = () => {
-  // Show error screen if env vars are missing
   if (!envValidation.isValid) {
     return <EnvError missing={envValidation.missing} />;
   }
@@ -60,7 +56,6 @@ const AppWrapper = () => {
   );
 };
 
-// Use StrictMode only in production for better dev performance
 if (import.meta.env.PROD) {
   root.render(
     <React.StrictMode>
@@ -71,6 +66,5 @@ if (import.meta.env.PROD) {
   root.render(<AppWrapper />);
 }
 
-// Report Web Vitals for performance monitoring
 reportWebVitals();
 

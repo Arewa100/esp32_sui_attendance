@@ -18,7 +18,6 @@ export default function CreateOrganisationPage() {
 
   const systemObjectId = useMemo(() => CONFIG.SYSTEM_OBJECT_ID, []);
   
-  // Pre-fetch system object metadata immediately when component mounts
   const { data: systemMetadata, isReady: isMetadataReady } = usePreFetchObjectMetadata(systemObjectId);
 
   const canSubmit = !!account && !!systemObjectId && name.trim().length > 0 && !isPending && isMetadataReady;

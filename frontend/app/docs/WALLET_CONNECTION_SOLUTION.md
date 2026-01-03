@@ -1,8 +1,15 @@
 # Mobile Wallet Connection Solution Documentation
 
+> **⚠️ IMPORTANT UPDATE:** This document is kept for historical reference.  
+> **For the complete, up-to-date integration guide, see [WALLET_INTEGRATION_COMPLETE_GUIDE.md](./WALLET_INTEGRATION_COMPLETE_GUIDE.md)**
+
 ## Problem Summary
 
 The application was experiencing wallet connection issues on mobile devices. When users tried to connect their wallet on mobile, they were prompted to "Install Extension" instead of being redirected to the Slush web wallet (`my.slush.app`), which is the expected behavior for mobile wallet connections.
+
+**CRITICAL FIX:** The root cause was setting the `origin` property in `slushWallet` config. This property refers to where the Slush wallet UI is hosted, NOT where your app is hosted. Setting it to your app's URL caused Slush to try accessing `/dapp-request` on your domain, resulting in 404 errors.
+
+**The Fix:** Remove the `origin` property entirely. See the complete guide for details.
 
 ### Error Symptoms
 
@@ -41,7 +48,9 @@ The application was experiencing wallet connection issues on mobile devices. Whe
   autoConnect
   slushWallet={{
     name: 'Sui Attendance System',
-    origin: import.meta.env.VITE_PUBLIC_APP_URL || window.location.origin,
+    // ⚠️ DO NOT SET 'origin' HERE - This was the bug!
+    // The 'origin' prop refers to where the Slush WALLET UI is hosted,
+    // NOT where your app is hosted. Setting it causes 404 errors.
   }}
 >
 ```
@@ -49,7 +58,7 @@ The application was experiencing wallet connection issues on mobile devices. Whe
 **Why this works:**
 - Enables official Slush wallet support for desktop extensions
 - Provides app metadata to Slush wallet
-- Sets the origin for proper redirect handling
+- **Without `origin`, dapp-kit uses the default Slush wallet URL** (this is what you want!)
 
 #### 2. Hybrid MobileConnectButton (`src/components/MobileConnectButton.tsx`)
 

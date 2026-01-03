@@ -23,13 +23,11 @@ export default function CreateOrganisation() {
 
   const systemObjectId = useMemo(() => CONFIG.SYSTEM_OBJECT_ID, []);
   
-  // Pre-fetch system object metadata immediately when component mounts
   // This eliminates blocking network calls during transaction flow
   const { data: systemMetadata, isReady: isMetadataReady } = usePreFetchObjectMetadata(systemObjectId);
 
   const canSubmit = !!account && !!systemObjectId && name.trim().length > 0 && status === "idle" && isMetadataReady;
 
-  // Pre-fetch metadata on mount
   useEffect(() => {
     if (systemObjectId && !systemMetadata) {
       // Metadata will be fetched automatically by the hook

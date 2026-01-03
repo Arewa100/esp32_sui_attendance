@@ -241,6 +241,7 @@ esp32_sui_attendance/
 
 ### Additional Resources
 
+- **[Wallet Integration Guide](./frontend/app/docs/WALLET_INTEGRATION_COMPLETE_GUIDE.md)**: Complete guide for integrating Slush wallet with Sui dapp-kit, including mobile fixes and routing solutions
 - **[Device Management](./docs/DEVICE_MANAGEMENT.md)**: Device registration, heartbeat tracking, and health monitoring
 - **[Device Management Implementation](./docs/DEVICE_MANAGEMENT_IMPLEMENTATION.md)**: Implementation details and migration guide
 - **[Device Duplicate Prevention](./docs/DEVICE_DUPLICATE_PREVENTION.md)**: How the system prevents duplicate device IDs across organisations

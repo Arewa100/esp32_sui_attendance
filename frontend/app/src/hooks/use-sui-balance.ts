@@ -45,7 +45,6 @@ export function useSuiBalance() {
     enabled: !!account?.address,
     staleTime: 60_000, // Cache for 1 minute
     refetchInterval: (query) => {
-      // Pause polling when tab is hidden
       if (typeof document !== 'undefined' && document.hidden) {
         return false;
       }

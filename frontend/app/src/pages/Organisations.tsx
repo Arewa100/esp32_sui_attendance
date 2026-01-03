@@ -119,8 +119,6 @@ export default function Organisations() {
     placeholderData: (previousData) => previousData,
   });
 
-  // Filter orgs owned by connected wallet
-  // Only show organisations if wallet is connected
   const userOrgIds = useMemo(() => {
     if (!createdEvents || !account?.address) return [];
     return createdEvents
@@ -158,11 +156,9 @@ export default function Organisations() {
     })),
   });
 
-  // Compute counts per organisation using useMemo
   const organisations = useMemo(() => {
     if (!createdEvents) return [];
 
-    // Filter orgs owned by connected wallet
     const userOrgs = createdEvents.filter((e) => 
       account?.address ? e.owner === account.address : true
     );

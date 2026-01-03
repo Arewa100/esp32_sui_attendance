@@ -36,14 +36,12 @@ export function MobileConnectButton({
 }: MobileConnectButtonProps) {
   const account = useCurrentAccount();
 
-  // Monitor for successful connection
   useEffect(() => {
     if (account && onConnectSuccess) {
       onConnectSuccess();
     }
   }, [account, onConnectSuccess]);
 
-  // Use the official ConnectButton - it handles everything
   return <ConnectButton className={className} />;
 }
 

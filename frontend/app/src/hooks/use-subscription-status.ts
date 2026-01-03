@@ -69,7 +69,6 @@ export function useSubscriptionStatus(orgId?: string) {
     enabled: !!orgId,
     staleTime: 60_000, // Data is fresh for 1 minute
     refetchInterval: (query) => {
-      // Pause polling when tab is hidden
       if (typeof document !== 'undefined' && document.hidden) {
         return false;
       }

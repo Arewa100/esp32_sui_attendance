@@ -33,14 +33,11 @@ export default function DashboardLayout() {
   const hasCheckedRef = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Redirect to landing page if wallet is not connected (with delay to allow autoConnect)
   useEffect(() => {
-    // Skip if already on landing page
     if (location.pathname === "/") {
       return;
     }
 
-    // If account is connected, clear any pending timeout
     if (account) {
       hasCheckedRef.current = true;
       if (timeoutRef.current) {
@@ -50,13 +47,11 @@ export default function DashboardLayout() {
       return;
     }
 
-    // If we've already checked and account is still null, redirect immediately
     if (hasCheckedRef.current && !account) {
       navigate("/");
       return;
     }
 
-    // Wait for autoConnect to finish (give it 1.5 seconds)
     if (!hasCheckedRef.current) {
       timeoutRef.current = setTimeout(() => {
         hasCheckedRef.current = true;
@@ -66,7 +61,6 @@ export default function DashboardLayout() {
       }, 1500);
     }
 
-    // Cleanup timeout on unmount
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);

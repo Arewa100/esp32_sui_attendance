@@ -18,11 +18,8 @@ export default function Landing() {
 
   const handleGetStarted = useCallback(() => {
     if (account) {
-      // If wallet is connected, navigate to dashboard
       navigate("/dashboard");
     } else {
-      // If wallet is not connected, trigger wallet connection dialog
-      // The standard ConnectButton handles both desktop and mobile automatically
       setShouldRedirectAfterConnect(true);
       const button = connectButtonRef.current?.querySelector("button");
       if (button) {
@@ -31,7 +28,6 @@ export default function Landing() {
     }
   }, [account, navigate]);
 
-  // Redirect after connect only if user clicked button
   useEffect(() => {
     if (account && shouldRedirectAfterConnect) {
       navigate("/dashboard");
@@ -43,7 +39,6 @@ export default function Landing() {
     <div className="min-h-screen bg-background">
       <LandingNav />
 
-      {/* Hidden ConnectButton for programmatic triggering */}
       <div ref={connectButtonRef} className="hidden">
         <MobileConnectButton 
           onConnectStart={() => setShouldRedirectAfterConnect(true)}

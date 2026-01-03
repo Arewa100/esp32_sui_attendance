@@ -23,8 +23,6 @@ export default function SubscriptionPage() {
   const { data: subscriptionStatus, isLoading: isLoadingStatus } = useSubscriptionStatus(orgObjectId);
   const { data: balance, isLoading: isLoadingBalance } = useSuiBalance();
   
-  // Pre-fetch all required object metadata in parallel
-  // This eliminates blocking network calls during transaction flow
   const { data: metadataMap, isSuccess: isMetadataReady } = useMultipleObjectMetadata([
     systemObjectId,
     orgObjectId,
@@ -35,8 +33,7 @@ export default function SubscriptionPage() {
   const orgMetadata = metadataMap?.get(orgObjectId || "");
   const clockMetadata = metadataMap?.get(CONFIG.CLOCK_OBJECT_ID);
 
-  // Check if user has sufficient balance (10 SUI + gas)
-  const requiredAmount = SUBSCRIPTION_FEE_MIST + 2_000_000n; // 10 SUI + ~0.002 SUI for gas
+  const requiredAmount = SUBSCRIPTION_FEE_MIST + 2_000_000n;
   const hasSufficientBalance = (balance?.balanceMist ?? 0n) >= requiredAmount;
   
   const canPay = !!account && 
@@ -47,7 +44,6 @@ export default function SubscriptionPage() {
                  !isLoadingBalance &&
                  hasSufficientBalance;
 
-  // Update time remaining every second
   const [currentTime, setCurrentTime] = useState(Date.now());
   useEffect(() => {
     if (!subscriptionStatus?.timeRemaining) return;
@@ -57,7 +53,6 @@ export default function SubscriptionPage() {
     return () => clearInterval(interval);
   }, [subscriptionStatus?.timeRemaining]);
 
-  // Recalculate time remaining based on current time
   const timeRemaining = useMemo(() => {
     if (!subscriptionStatus?.expiryTimestamp) return null;
     const remaining = subscriptionStatus.expiryTimestamp - currentTime;
@@ -284,8 +279,7 @@ export default function SubscriptionPage() {
               return;
             }
             
-            // Check balance before attempting transaction
-            const requiredAmount = SUBSCRIPTION_FEE_MIST + 2_000_000n; // 10 SUI + ~0.002 SUI for gas
+            const requiredAmount = SUBSCRIPTION_FEE_MIST + 2_000_000n;
             const currentBalance = balance?.balanceMist ?? 0n;
             
             if (currentBalance < requiredAmount) {
@@ -303,7 +297,6 @@ export default function SubscriptionPage() {
             }
             
             try {
-              // Use cached metadata - no blocking network calls here!
               const tx = buildPaySubscriptionTx({
                 systemObjectId,
                 orgObjectId,
@@ -311,7 +304,6 @@ export default function SubscriptionPage() {
                 orgMetadata,
                 clockMetadata,
               });
-              // Wallet popup appears immediately - no delays!
               signAndExecute(
                 { transaction: tx },
                 {
@@ -321,7 +313,6 @@ export default function SubscriptionPage() {
                       description: "Your organisation subscription is now active for 30 days.",
                       variant: "default",
                     });
-                    // Refetch subscription status after payment
                     setTimeout(() => navigate(`/orgs/${orgObjectId}`), 2000);
                   },
                   onError: (e) => {

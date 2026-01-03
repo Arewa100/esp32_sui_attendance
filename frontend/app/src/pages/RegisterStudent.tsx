@@ -26,11 +26,8 @@ export default function RegisterStudent() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Pre-fetch organisation object metadata immediately when component mounts
-  // This eliminates blocking network calls during transaction flow
   const { data: orgMetadata, isReady: isMetadataReady } = usePreFetchObjectMetadata(id);
 
-  // Pre-fetch metadata on mount
   useEffect(() => {
     if (id && !orgMetadata) {
       // Metadata will be fetched automatically by the hook

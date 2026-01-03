@@ -17,7 +17,6 @@ export default function RegisterStudentPage() {
   const [cardId, setCardId] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  // Pre-fetch organisation object metadata immediately when component mounts
   const { data: orgMetadata, isReady: isMetadataReady } = usePreFetchObjectMetadata(orgObjectId);
 
   const canSubmit =
@@ -183,15 +182,13 @@ export default function RegisterStudentPage() {
               return;
             }
             try {
-              // Use cached metadata - no blocking network calls here!
               const tx = buildRegisterStudentTx({
                 orgObjectId,
                 name: fullName.trim(),
                 department: department.trim(),
                 cardId: cardId.trim(),
-                orgMetadata, // Pass cached metadata
+                orgMetadata,
               });
-              // Wallet popup appears immediately - no delays!
               signAndExecute(
                 { transaction: tx },
                 {
