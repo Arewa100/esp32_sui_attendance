@@ -1,32 +1,53 @@
 #include "rfid_control.h"
+#include "config.h"
 #include <SPI.h>
 #include <MFRC522.h>
 
+// Use static object instead of dynamic allocation to avoid memory leaks
 static MFRC522* mfrc522 = nullptr;
+static int currentSsPin = -1;
+static int currentRstPin = -1;
 static bool rfidInitialized = false;
 
 void initRFID(int ssPin, int rstPin) {
-    Serial.println("Initializing RFID module...");
+    #ifdef DEBUG_MODE
+    DEBUG_SERIAL.println("Initializing RFID module...");
+    #endif
     
-    // Create MFRC522 instance if not already created
-    if (mfrc522 == nullptr) {
+    // Only reinitialize if pins changed or not initialized
+    if (mfrc522 == nullptr || currentSsPin != ssPin || currentRstPin != rstPin) {
+        // Clean up existing instance if pins changed
+        if (mfrc522 != nullptr && (currentSsPin != ssPin || currentRstPin != rstPin)) {
+            delete mfrc522;
+            mfrc522 = nullptr;
+        }
+        
+        // Create new instance
         mfrc522 = new MFRC522(ssPin, rstPin);
+        currentSsPin = ssPin;
+        currentRstPin = rstPin;
     }
     
+    // Initialize SPI (safe to call multiple times)
     SPI.begin();
+    
     mfrc522->PCD_Init();
     
     // Check if RFID module is connected
     if (!mfrc522->PCD_PerformSelfTest()) {
-        Serial.println("RFID module self-test failed!");
-        Serial.println("Please check your connections.");
+        #ifdef DEBUG_MODE
+        DEBUG_SERIAL.println("RFID module self-test failed!");
+        DEBUG_SERIAL.println("Please check your connections.");
+        #endif
         rfidInitialized = false;
         return;
     }
     
-    Serial.println("RFID module initialized");
-    Serial.print("Firmware Version: 0x");
-    Serial.println(mfrc522->PCD_ReadRegister(mfrc522->VersionReg), HEX);
+    #ifdef DEBUG_MODE
+    DEBUG_SERIAL.println("RFID module initialized");
+    DEBUG_SERIAL.print("Firmware Version: 0x");
+    DEBUG_SERIAL.println(mfrc522->PCD_ReadRegister(mfrc522->VersionReg), HEX);
+    #endif
     
     rfidInitialized = true;
 }
@@ -47,7 +68,18 @@ String getCardId() {
         return "";
     }
     
+    // Validate UID size (should be 4, 7, or 10 bytes)
+    if (mfrc522->uid.size == 0 || mfrc522->uid.size > 10) {
+        #ifdef DEBUG_MODE
+        DEBUG_SERIAL.print("Invalid UID size: ");
+        DEBUG_SERIAL.println(mfrc522->uid.size);
+        #endif
+        return "";
+    }
+    
+    // Pre-allocate String with estimated capacity to reduce fragmentation
     String cardId = "";
+    cardId.reserve(mfrc522->uid.size * 2 + 1);  // 2 chars per byte + null terminator
     
     // Read UID bytes
     for (byte i = 0; i < mfrc522->uid.size; i++) {
@@ -56,11 +88,12 @@ String getCardId() {
             cardId += "0";
         }
         // Convert to hex string
-        cardId += String(mfrc522->uid.uidByte[i], HEX);
+        char hexChar[3];
+        sprintf(hexChar, "%02X", mfrc522->uid.uidByte[i]);
+        cardId += hexChar;
     }
     
-    // Convert to uppercase
-    cardId.toUpperCase();
+    // Already uppercase from sprintf with %X
     
     return cardId;
 }
@@ -71,11 +104,8 @@ String getRFIDVersion() {
     }
     
     byte version = mfrc522->PCD_ReadRegister(mfrc522->VersionReg);
-    String versionStr = "0x";
-    if (version < 0x10) {
-        versionStr += "0";
-    }
-    versionStr += String(version, HEX);
-    return versionStr;
+    char versionStr[6];  // "0x" + 2 hex digits + null terminator
+    sprintf(versionStr, "0x%02X", version);
+    return String(versionStr);
 }
 

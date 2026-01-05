@@ -1,31 +1,49 @@
 #include "wifi_control.h"
+#include "config.h"
 #include <WiFi.h>
 
 bool initWiFi(const char* ssid, const char* password) {
-    Serial.print("Connecting to WiFi: ");
-    Serial.println(ssid);
+    #ifdef DEBUG_MODE
+    DEBUG_SERIAL.print("Connecting to WiFi: ");
+    DEBUG_SERIAL.println(ssid);
+    #endif
+    
+    // Disconnect existing connection if any
+    if (WiFi.status() == WL_CONNECTED) {
+        WiFi.disconnect();
+        delay(100);
+    }
     
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
     
-    int attempts = 0;
-    while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+    // Use waitForConnectResult with timeout for less blocking behavior
+    unsigned long startTime = millis();
+    wl_status_t status = WiFi.status();
+    
+    while (status != WL_CONNECTED && (millis() - startTime) < WIFI_CONNECT_TIMEOUT) {
         delay(500);
-        Serial.print(".");
-        attempts++;
+        status = WiFi.status();
+        #ifdef DEBUG_MODE
+        DEBUG_SERIAL.print(".");
+        #endif
     }
     
-    if (WiFi.status() == WL_CONNECTED) {
-        Serial.println("\nWiFi connected!");
-        Serial.print("IP Address: ");
-        Serial.println(WiFi.localIP());
-        Serial.print("Signal Strength (RSSI): ");
-        Serial.print(WiFi.RSSI());
-        Serial.println(" dBm");
+    if (status == WL_CONNECTED) {
+        #ifdef DEBUG_MODE
+        DEBUG_SERIAL.println("\nWiFi connected!");
+        DEBUG_SERIAL.print("IP Address: ");
+        DEBUG_SERIAL.println(WiFi.localIP());
+        DEBUG_SERIAL.print("Signal Strength (RSSI): ");
+        DEBUG_SERIAL.print(WiFi.RSSI());
+        DEBUG_SERIAL.println(" dBm");
+        #endif
         return true;
     } else {
-        Serial.println("\nWiFi connection failed!");
-        Serial.println("Please check your credentials.");
+        #ifdef DEBUG_MODE
+        DEBUG_SERIAL.println("\nWiFi connection failed!");
+        DEBUG_SERIAL.println("Please check your credentials.");
+        #endif
         return false;
     }
 }

@@ -3,17 +3,21 @@
 #include "wifi_control.h"
 #include "rfid_control.h"
 #include "attendance_client.h"
+#include "esp_task_wdt.h"
 
 unsigned long lastCardRead = 0;
-const unsigned long CARD_READ_COOLDOWN = 2000; // 2 seconds between reads
 
 unsigned long lastWiFiCheck = 0;
-const unsigned long WIFI_CHECK_INTERVAL = 5000; // Check WiFi every 5 seconds
 
 unsigned long lastHeartbeat = 0;
-const unsigned long HEARTBEAT_INTERVAL = 3600000; // 1 hour in milliseconds (3600000 ms)
+
+// Forward declaration
 void printConfiguration();
 void setup() {
+    // Initialize watchdog timer (30 second timeout)
+    esp_task_wdt_init(30, true);
+    esp_task_wdt_add(NULL);
+    
     DEBUG_SERIAL.begin(SERIAL_BAUD_RATE);
     delay(1000);
     
@@ -27,7 +31,9 @@ void setup() {
     
     // Initialize WiFi
     if (!initWiFi(WIFI_SSID, WIFI_PASSWORD)) {
+        #ifdef DEBUG_MODE
         DEBUG_SERIAL.println("WiFi initialization failed. System will retry in loop.");
+        #endif
     }
     
     // Initialize RFID
@@ -40,28 +46,35 @@ void setup() {
 
 // ========== MAIN LOOP ==========
 void loop() {
+    // Reset watchdog timer
+    esp_task_wdt_reset();
+    
     unsigned long now = millis();
     
-    // Check WiFi connection periodically
-    if (now - lastWiFiCheck >= WIFI_CHECK_INTERVAL) {
+    // Check WiFi connection periodically (overflow-safe comparison)
+    if ((unsigned long)(now - lastWiFiCheck) >= WIFI_CHECK_INTERVAL) {
         if (!isWiFiConnected()) {
+            #ifdef DEBUG_MODE
             DEBUG_SERIAL.println("WiFi disconnected. Reconnecting...");
+            #endif
             initWiFi(WIFI_SSID, WIFI_PASSWORD);
         }
         lastWiFiCheck = now;
     }
     
-    // Check for RFID card (with cooldown to prevent multiple reads)
-    if (now - lastCardRead >= CARD_READ_COOLDOWN) {
+    // Check for RFID card (with cooldown to prevent multiple reads, overflow-safe)
+    if ((unsigned long)(now - lastCardRead) >= CARD_READ_COOLDOWN) {
         if (isCardPresent()) {
             String cardId = getCardId();
             
             if (cardId.length() > 0) {
                 #ifdef DEBUG_MODE
-                DEBUG_SERIAL.println("Card detected: " + cardId);
+                DEBUG_SERIAL.print("Card detected: ");
+                DEBUG_SERIAL.println(cardId);
                 #endif
                 
                 // Send attendance record to server (orgObjectId is optional, server resolves from deviceId)
+                // Use const char* directly instead of String() to avoid temporary objects
                 #ifdef ORG_OBJECT_ID
                 bool success = sendAttendanceRecord(
                     SERVER_URL,
@@ -81,9 +94,13 @@ void loop() {
                 #endif
                 
                 if (success) {
+                    #ifdef DEBUG_MODE
                     DEBUG_SERIAL.println("Attendance processed successfully!");
+                    #endif
                 } else {
+                    #ifdef DEBUG_MODE
                     DEBUG_SERIAL.println("Failed to process attendance. Check server logs.");
+                    #endif
                 }
                 
                 lastCardRead = now;
@@ -91,8 +108,8 @@ void loop() {
         }
     }
     
-    // Send heartbeat every hour
-    if (now - lastHeartbeat >= HEARTBEAT_INTERVAL) {
+    // Send heartbeat every hour (overflow-safe comparison)
+    if ((unsigned long)(now - lastHeartbeat) >= HEARTBEAT_INTERVAL) {
         #ifdef DEBUG_MODE
         DEBUG_SERIAL.println("Sending device heartbeat...");
         #endif
@@ -104,9 +121,13 @@ void loop() {
         );
         
         if (heartbeatSuccess) {
+            #ifdef DEBUG_MODE
             DEBUG_SERIAL.println("Heartbeat sent successfully!");
+            #endif
         } else {
+            #ifdef DEBUG_MODE
             DEBUG_SERIAL.println("Failed to send heartbeat. Will retry on next interval.");
+            #endif
         }
         
         lastHeartbeat = now;
@@ -136,7 +157,7 @@ void printConfiguration() {
     DEBUG_SERIAL.print("RFID Version: ");
     DEBUG_SERIAL.println(getRFIDVersion());
     DEBUG_SERIAL.print("Heartbeat Interval: ");
-    DEBUG_SERIAL.print(HEARTBEAT_INTERVAL / 1000 / 60);
+    DEBUG_SERIAL.print((unsigned long)(HEARTBEAT_INTERVAL / 1000 / 60));
     DEBUG_SERIAL.println(" minutes");
     DEBUG_SERIAL.println("---------------------");
 }
