@@ -3,6 +3,7 @@
 #include "wifi_control.h"
 #include "rfid_control.h"
 #include "attendance_client.h"
+#include "buzzer_control.h"
 #include "esp_task_wdt.h"
 
 unsigned long lastCardRead = 0;
@@ -38,6 +39,10 @@ void setup() {
     
     // Initialize RFID
     initRFID(RFID_SS_PIN, RFID_RST_PIN);
+    
+    // Initialize Buzzer
+    initBuzzer(BUZZER_PIN);
+    
     printConfiguration();
     
     DEBUG_SERIAL.println("\nSystem ready!");

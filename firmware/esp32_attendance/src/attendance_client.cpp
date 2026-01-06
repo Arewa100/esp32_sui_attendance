@@ -3,6 +3,7 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include "wifi_control.h"
+#include "buzzer_control.h"
 
 static int lastResponseCode = 0;
 static char lastResponse[HTTP_MAX_RESPONSE_SIZE + 1] = "";  // Fixed-size buffer
@@ -133,6 +134,10 @@ bool sendAttendanceRecord(
                 DEBUG_SERIAL.println("Attendance record sent successfully!");
                 DEBUG_SERIAL.println("Server is processing the transaction...");
                 #endif
+                
+                // Beep buzzer 3 times on successful server response
+                beepSuccess();
+                
                 http.end();
                 return true;
             } else {
