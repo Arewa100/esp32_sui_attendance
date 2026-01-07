@@ -60,11 +60,20 @@ bool isCardPresent() {
     if (!isRFIDReady()) {
         return false;
     }
-    return mfrc522->PICC_IsNewCardPresent() && mfrc522->PICC_ReadCardSerial();
+    // Only check if card is present, don't read yet
+    return mfrc522->PICC_IsNewCardPresent();
 }
 
 String getCardId() {
-    if (!isRFIDReady() || !isCardPresent()) {
+    if (!isRFIDReady()) {
+        return "";
+    }
+    
+    // IMPORTANT: Don't check PICC_IsNewCardPresent() again here!
+    // It was already checked in main loop, and calling it again can cause issues
+    // Just try to read the serial directly (card_uid_checker does both in one call)
+    // Try reading the card serial - if card is present, this should work
+    if (!mfrc522->PICC_ReadCardSerial()) {
         return "";
     }
     
@@ -74,6 +83,9 @@ String getCardId() {
         DEBUG_SERIAL.print("Invalid UID size: ");
         DEBUG_SERIAL.println(mfrc522->uid.size);
         #endif
+        // Halt card before returning
+        mfrc522->PICC_HaltA();
+        mfrc522->PCD_StopCrypto1();
         return "";
     }
     
@@ -93,6 +105,10 @@ String getCardId() {
         cardId += hexChar;
     }
     
+    // Halt card communication (important for next read - like card_uid_checker)
+    mfrc522->PICC_HaltA();
+    mfrc522->PCD_StopCrypto1();
+    
     // Already uppercase from sprintf with %X
     
     return cardId;
@@ -107,5 +123,57 @@ String getRFIDVersion() {
     char versionStr[6];  // "0x" + 2 hex digits + null terminator
     sprintf(versionStr, "0x%02X", version);
     return String(versionStr);
+}
+
+// Direct card detection - matches card_uid_checker logic exactly
+bool checkCardPresentDirect() {
+    if (!isRFIDReady() || mfrc522 == nullptr) {
+        return false;
+    }
+    // Direct access like card_uid_checker - exactly the same call
+    return mfrc522->PICC_IsNewCardPresent();
+}
+
+// Direct card ID reading - matches card_uid_checker exactly
+// This reads the card immediately after detection (no second PICC_IsNewCardPresent check)
+String getCardIdDirect() {
+    if (!isRFIDReady() || mfrc522 == nullptr) {
+        return "";
+    }
+    
+    // Read card serial immediately (card was already detected, don't check again)
+    if (!mfrc522->PICC_ReadCardSerial()) {
+        return "";
+    }
+    
+    // Validate UID size (should be 4, 7, or 10 bytes)
+    if (mfrc522->uid.size == 0 || mfrc522->uid.size > 10) {
+        #ifdef DEBUG_MODE
+        DEBUG_SERIAL.print("Invalid UID size: ");
+        DEBUG_SERIAL.println(mfrc522->uid.size);
+        #endif
+        // Halt card before returning
+        mfrc522->PICC_HaltA();
+        mfrc522->PCD_StopCrypto1();
+        return "";
+    }
+    
+    // Pre-allocate String with estimated capacity to reduce fragmentation
+    String cardId = "";
+    cardId.reserve(mfrc522->uid.size * 2 + 1);  // 2 chars per byte + null terminator
+    
+    // Read UID bytes (exact same logic as card_uid_checker)
+    for (byte i = 0; i < mfrc522->uid.size; i++) {
+        if (mfrc522->uid.uidByte[i] < 0x10) cardId += "0";
+        char hexChar[3];
+        sprintf(hexChar, "%02X", mfrc522->uid.uidByte[i]);
+        cardId += hexChar;
+    }
+    
+    // Halt card communication (important for next read - like card_uid_checker)
+    mfrc522->PICC_HaltA();
+    mfrc522->PCD_StopCrypto1();
+    
+    return cardId;
 }
 

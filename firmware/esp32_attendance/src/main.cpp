@@ -68,9 +68,26 @@ void loop() {
     }
     
     // Check for RFID card (with cooldown to prevent multiple reads, overflow-safe)
+    // Using EXACT same logic as working card_uid_checker
     if ((unsigned long)(now - lastCardRead) >= CARD_READ_COOLDOWN) {
-        if (isCardPresent()) {
-            String cardId = getCardId();
+        // Look for new cards - check multiple times for better detection (EXACT match with card_uid_checker)
+        bool cardPresent = false;
+        for (int i = 0; i < 3; i++) {
+            if (checkCardPresentDirect()) {
+                cardPresent = true;
+                #ifdef DEBUG_MODE
+                DEBUG_SERIAL.println("Card presence detected!");
+                #endif
+                break;
+            }
+            delay(10); // Small delay between checks
+        }
+        
+        if (cardPresent) {
+            // Card detected - read it immediately (EXACT match with card_uid_checker)
+            // card_uid_checker does: if (PICC_IsNewCardPresent() && PICC_ReadCardSerial())
+            // So we need to read right after detection, not check again
+            String cardId = getCardIdDirect();
             
             if (cardId.length() > 0) {
                 #ifdef DEBUG_MODE
@@ -79,7 +96,6 @@ void loop() {
                 #endif
                 
                 // Send attendance record to server (orgObjectId is optional, server resolves from deviceId)
-                // Use const char* directly instead of String() to avoid temporary objects
                 #ifdef ORG_OBJECT_ID
                 bool success = sendAttendanceRecord(
                     SERVER_URL,
@@ -109,6 +125,12 @@ void loop() {
                 }
                 
                 lastCardRead = now;
+            } else {
+                // Card present but couldn't read - might need to be closer
+                #ifdef DEBUG_MODE
+                DEBUG_SERIAL.println("Card detected but couldn't read. Try moving card closer or hold it steady.");
+                #endif
+                delay(200);
             }
         }
     }
@@ -138,7 +160,7 @@ void loop() {
         lastHeartbeat = now;
     }
     
-    delay(MAIN_LOOP_DELAY);
+    delay(50); // Match card_uid_checker delay exactly
 }
 
 // ========== UTILITY FUNCTIONS ==========

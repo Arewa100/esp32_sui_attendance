@@ -14,6 +14,12 @@ String getCardId();
 // Get RFID module firmware version
 String getRFIDVersion();
 
+// Direct card detection (matches card_uid_checker logic)
+bool checkCardPresentDirect();
+
+// Direct card ID reading (matches card_uid_checker - reads immediately after detection)
+String getCardIdDirect();
+
 #endif // RFID_CONTROL_H
 
 
